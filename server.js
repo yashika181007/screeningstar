@@ -6,11 +6,6 @@ require('dotenv').config();
 
 const PORT = process.env.PORT;
 
-if (!PORT) {
-  console.error('Error: PORT environment variable is not set');
-  process.exit(1); 
-}
-
 const app = express();
 
 app.use(bodyParser.json());
