@@ -4,7 +4,6 @@ const clientController = require('../controllers/clientController');
 
 // Create a new client
 router.post('/clients', clientController.createClient);
-
 // Get all clients
 router.get('/clients', clientController.getClients);
 
