@@ -3,9 +3,10 @@ const {upload} = require('../config/multer');
 exports.createClient = (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
+            console.error('Error uploading file:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
+        console.log('upload:', upload);
         const clientLogo = req.file ? req.file.filename : null;
         const {
             organizationName,
