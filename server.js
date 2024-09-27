@@ -12,7 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/Screeningstar', authRoutes);
-
+const clientRoutes = require('./routes/clientRoutes');
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
