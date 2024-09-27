@@ -1,12 +1,11 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
-// Establish a connection to the database
+
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
 });
-
 const Client = sequelize.define('Client', {
     id: {
         type: DataTypes.INTEGER,
@@ -24,22 +23,48 @@ const Client = sequelize.define('Client', {
     },
     registeredAddress: {
         type: DataTypes.STRING,
-        allowNull: false,
     },
     state: {
         type: DataTypes.STRING,
-        allowNull: false,
     },
     stateCode: {
         type: DataTypes.STRING,
-        allowNull: false,
     },
     gstNumber: {
         type: DataTypes.STRING,
-        allowNull: false,
+    },
+    tat: {
+        type: DataTypes.STRING,
+    },
+    serviceAgreementDate: {
+        type: DataTypes.DATE,
+    },
+    clientProcedure: {
+        type: DataTypes.TEXT,
+    },
+    agreementPeriod: {
+        type: DataTypes.STRING,
+    },
+    customTemplate: {
+        type: DataTypes.TEXT,
     },
     clientLogo: {
         type: DataTypes.STRING, // Store the filename of the logo
+    },
+    accountManagement: {
+        type: DataTypes.STRING,
+    },
+    packageOptions: {
+        type: DataTypes.TEXT,
+    },
+    scopeOfServices: {
+        type: DataTypes.TEXT,
+    },
+    pricingPackages: {
+        type: DataTypes.TEXT,
+    },
+    loginRequired: {
+        type: DataTypes.ENUM('yes', 'no'),
     }
 });
 
