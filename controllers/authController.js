@@ -88,28 +88,40 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.updateUser = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-
-        const user = await User.findByPk(req.params.id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+exports.updateUser = (req, res) => {
+    uploadUserPhoto(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        user.name = name || user.name;
-        user.email = email || user.email;
+        const { employeeName, employeeMobile, email, designation, password, role } = req.body;
+        const employeePhoto = req.file ? req.file.filename : null;
 
-        if (password) {
-            user.password = await bcrypt.hash(password, 10);
+        try {
+            const user = await User.findByPk(req.params.id);
+            if (!user) {
+                return res.status(404).json({ message: 'user not found' });
+            }
+
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user.password = hashedPassword; 
+            }
+
+            user.employeeName = employeeName || user.employeeName;
+            user.employeeMobile = employeeMobile || user.employeeMobile;
+            user.email = email || user.email;
+            user.designation = designation || user.designation;
+            user.role = role || user.role;
+            user.employeePhoto = employeePhoto || user.employeePhoto;
+
+            await user.save(); 
+
+            res.status(200).json({ message: 'user updated successfully', user });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating user', error: error.message });
         }
-
-        await user.save();
-
-        res.status(200).json({ message: 'User updated successfully' });
-    } catch (err) {
-        res.status(500).json({ message: 'Error updating user', error: err.message });
-    }
+    });
 };
 
 exports.deleteUser = async (req, res) => {
