@@ -82,13 +82,13 @@ exports.updateClient = (req, res) => {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
         const clientLogo = req.file ? req.file.filename : null;
-        const {
-            organizationName,
-            clientId,
-            registeredAddress,
-            state,
-            stateCode,
-            gstNumber,
+        const { 
+            organizationName, 
+            clientId, 
+            registeredAddress, 
+            state, 
+            stateCode, 
+            gstNumber, 
             tat,
             serviceAgreementDate,
             clientProcedure,
@@ -98,7 +98,7 @@ exports.updateClient = (req, res) => {
             packageOptions,
             scopeOfServices,
             pricingPackages,
-            loginRequired
+            loginRequired 
         } = req.body;
 
         try {
@@ -106,7 +106,6 @@ exports.updateClient = (req, res) => {
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });
             }
-
             await client.update({
                 organizationName,
                 clientId,
@@ -119,12 +118,13 @@ exports.updateClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo: clientLogo || client.clientLogo,
+                clientLogo: clientLogo || client.clientLogo, 
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
                 pricingPackages,
-                loginRequired
+                loginRequired,
+                updatedAt: new Date() 
             });
 
             res.status(200).json({ message: 'Client updated successfully', client });
@@ -134,6 +134,7 @@ exports.updateClient = (req, res) => {
         }
     });
 };
+
 
 exports.deleteClient = async (req, res) => {
     try {
