@@ -1,8 +1,4 @@
-// controllers/clientController.js
-const Client = require('../models/Client');
 
-// Create a new client
-// controllers/clientController.js
 const Client = require('../models/Client');
 const upload = require('../config/multer'); // import multer config
 
