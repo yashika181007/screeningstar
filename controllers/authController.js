@@ -6,7 +6,7 @@ const { uploaduserphoto } =require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
-            console.error('Upload error:', err);
+               console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
         console.log('Uploaded file:', req.file); 
