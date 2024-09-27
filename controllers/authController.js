@@ -84,7 +84,7 @@ exports.getUserById = async (req, res) => {
     }
 };
 exports.updateUser = (req, res) => {
-    uploadUserPhoto(req, res, async (err) => {
+    uploaduserphoto(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
