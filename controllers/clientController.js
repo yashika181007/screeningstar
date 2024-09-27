@@ -1,5 +1,5 @@
 const Client = require('../models/Client');
-const upload = require('../config/multer');
+const {upload} = require('../config/multer');
 exports.createClient = (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
