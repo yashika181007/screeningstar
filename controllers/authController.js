@@ -38,46 +38,6 @@ exports.createuser = (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        // Check if the user exists by email
-        const user = await User.findOne({ where: { email } });
-        if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-
-        // Compare the provided password with the hashed password in the database
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        // Generate a JWT token
-        const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role }, // Payload
-            process.env.JWT_SECRET, // Secret key
-            { expiresIn: '1h' } // Token expiration
-        );
-
-
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            user: {
-                id: user.id,
-                name: user.employeeName,
-                email: user.email,
-                role: user.employeeMobile
-                role: user.designation
-                role: user.role
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Error logging in', error: error.message });
-    }
-};
-exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
