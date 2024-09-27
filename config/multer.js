@@ -1,11 +1,3 @@
-const multer = require('multer');
-const path = require('path');
-const storage = multer.diskStorage({
-    destination: '../uploads/', 
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
 const upload = multer({
     storage: storage,
     limits: { fileSize: 1000000 }, 
@@ -13,6 +5,7 @@ const upload = multer({
         checkFileType(file, cb);
     }
 }).single('clientLogo');
+
 const uploaduserphoto = multer({
     storage: storage,
     limits: { fileSize: 1000000 }, 
@@ -20,6 +13,7 @@ const uploaduserphoto = multer({
         checkFileType(file, cb);
     }
 }).single('employeePhoto'); 
+
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());

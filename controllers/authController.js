@@ -9,7 +9,9 @@ exports.createuser = (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
+
         console.log('Uploaded file:', req.file); 
+
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
             const employeePhoto = req.file ? req.file.filename : null;
