@@ -1,5 +1,11 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING); // Ensure you set this in your .env file
+const config = require('../config');
+
+// Establish a connection to the database
+const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
+    host: config.database.host,
+    dialect: 'mysql',
+});
 
 const Client = sequelize.define('Client', {
     id: {
