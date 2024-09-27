@@ -53,7 +53,9 @@ const Client = sequelize.define('clients', {
     },
     clientLogo: {
         type: DataTypes.STRING,
+        allowNull: true, 
     },
+    
     accountManagement: {
         type: DataTypes.STRING,
     },

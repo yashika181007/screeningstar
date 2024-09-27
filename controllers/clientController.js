@@ -2,14 +2,32 @@
 const Client = require('../models/Client');
 
 // Create a new client
-exports.createClient = async (req, res) => {
-    try {
-        const newClient = await Client.create(req.body);
-        res.status(201).json(newClient);
-    } catch (err) {
-        res.status(400).json({ message: 'Error creating client', error: err.message });
-    }
+// controllers/clientController.js
+const Client = require('../models/Client');
+const upload = require('../config/multer'); // import multer config
+
+// Create a new client
+exports.createClient = (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: 'Error uploading file', error: err });
+        }
+
+        // Access the file path from req.file if the upload is successful
+        const clientLogo = req.file ? req.file.filename : null;
+
+        try {
+            const newClient = await Client.create({
+                ...req.body,
+                clientLogo: clientLogo, // Store the filename in the DB
+            });
+            res.status(201).json(newClient);
+        } catch (err) {
+            res.status(400).json({ message: 'Error creating client', error: err.message });
+        }
+    });
 };
+
 
 // Fetch all clients
 exports.getClients = async (req, res) => {
