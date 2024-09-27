@@ -53,6 +53,7 @@ exports.createClient = (req, res) => {
 
             res.status(201).json({ message: 'Client created successfully', client: newClient });
         } catch (error) {
+            console.error('Database Error:', error); // Log the error
             res.status(500).json({ message: 'Error creating client', error: error.message });
         }
     });
