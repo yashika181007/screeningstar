@@ -66,7 +66,11 @@ const Client = sequelize.define('Client', {
     loginRequired: {
         type: DataTypes.ENUM('yes', 'no'),
     }
-});
+},   
+    {
+        modelName: 'Client',
+        timestamps: true, 
+    });
 
 Client.sync();
 
