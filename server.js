@@ -12,6 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/Screeningstar', authRoutes);
+app.use('/Screeningstar', clientRoutes);
 
 const PORT = process.env.PORT;
 
