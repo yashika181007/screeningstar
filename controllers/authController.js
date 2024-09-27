@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
-            attributes: ['employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role']
+            attributes: ['id','employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role']
         });
         res.status(200).json(users);
     } catch (err) {
@@ -77,7 +77,7 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {
-            attributes: ['employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role'] 
+            attributes: ['id','employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role'] 
         });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
