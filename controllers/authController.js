@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
             { expiresIn: '1h' } // Token expiration
         );
 
-        // Send token and user data back to the client
+
         res.status(200).json({
             message: 'Login successful',
             token,
@@ -68,6 +68,8 @@ exports.login = async (req, res) => {
                 id: user.id,
                 name: user.employeeName,
                 email: user.email,
+                role: user.employeeMobile
+                role: user.designation
                 role: user.role
             }
         });
@@ -75,7 +77,32 @@ exports.login = async (req, res) => {
         res.status(500).json({ message: 'Error logging in', error: error.message });
     }
 };
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+        const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
+
+        const userData = {
+            id: user.id,
+            name: user.employeeName,
+            email: user.email,
+            role: user.role
+        };
+
+        res.status(200).json({ token, user: userData });
+    } catch (err) {
+        res.status(400).json({ message: 'Error logging in', error: err.message });
+    }
+};
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({

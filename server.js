@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use('/uploads', express.static('uploads')); // Serve static files from uploads directory
+app.use('/uploads', express.static('uploads')); 
 
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
