@@ -1,13 +1,11 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
-// Establish a connection to the database
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
 });
 
-// Define the login_credentials model
 const User = sequelize.define('login_credentials', {
     id: {
         type: DataTypes.INTEGER,

@@ -49,7 +49,7 @@ const Client = sequelize.define('Client', {
         type: DataTypes.TEXT,
     },
     clientLogo: {
-        type: DataTypes.STRING, // Store the filename of the logo
+        type: DataTypes.STRING, 
     },
     accountManagement: {
         type: DataTypes.STRING,
@@ -68,7 +68,6 @@ const Client = sequelize.define('Client', {
     }
 });
 
-// Sync model with the database
 Client.sync();
 
 module.exports = Client;
