@@ -8,7 +8,6 @@ exports.createuser = (req, res) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
             const employeePhoto = req.file ? req.file.filename : null;
@@ -36,7 +35,6 @@ exports.createuser = (req, res) => {
         }
     });
 };
-
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -50,7 +48,6 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
         const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
-
         const userData = {
             id: user.id,
             name: user.employeeName,
@@ -73,7 +70,6 @@ exports.getAllUsers = async (req, res) => {
         res.status(500).json({ message: 'Error fetching users', error: err.message });
     }
 };
-
 exports.getUserById = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {
@@ -87,13 +83,11 @@ exports.getUserById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user', error: err.message });
     }
 };
-
 exports.updateUser = (req, res) => {
     uploadUserPhoto(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
         const { employeeName, employeeMobile, email, designation, password, role } = req.body;
         const employeePhoto = req.file ? req.file.filename : null;
 
@@ -102,19 +96,16 @@ exports.updateUser = (req, res) => {
             if (!user) {
                 return res.status(404).json({ message: 'user not found' });
             }
-
             if (password) {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 user.password = hashedPassword; 
             }
-
             user.employeeName = employeeName || user.employeeName;
             user.employeeMobile = employeeMobile || user.employeeMobile;
             user.email = email || user.email;
             user.designation = designation || user.designation;
             user.role = role || user.role;
             user.employeePhoto = employeePhoto || user.employeePhoto;
-
             await user.save(); 
 
             res.status(200).json({ message: 'user updated successfully', user });
@@ -123,16 +114,13 @@ exports.updateUser = (req, res) => {
         }
     });
 };
-
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         await user.destroy();
-
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Error deleting user', error: err.message });
