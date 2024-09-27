@@ -13,7 +13,6 @@ const upload = multer({
         checkFileType(file, cb);
     }
 }).single('clientLogo');
-
 const uploaduserphoto = multer({
     storage: storage,
     limits: { fileSize: 1000000 }, 
@@ -21,7 +20,6 @@ const uploaduserphoto = multer({
         checkFileType(file, cb);
     }
 }).single('employeePhoto'); 
-
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
