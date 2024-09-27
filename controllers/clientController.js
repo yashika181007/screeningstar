@@ -1,29 +1,32 @@
-
 const Client = require('../models/Client');
-const upload = require('../config/multer'); // import multer config
+const upload = require('../config/multer'); // Ensure you import multer config
 
 // Create a new client
 exports.createClient = (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: 'Error uploading file', error: err });
+            return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        // Access the file path from req.file if the upload is successful
-        const clientLogo = req.file ? req.file.filename : null;
+        const clientLogo = req.file ? req.file.filename : null; // Access the uploaded file
+        const { organizationName, clientId, registeredAddress, state, stateCode, gstNumber } = req.body;
 
         try {
             const newClient = await Client.create({
-                ...req.body,
-                clientLogo: clientLogo, // Store the filename in the DB
+                organizationName,
+                clientId,
+                registeredAddress,
+                state,
+                stateCode,
+                gstNumber,
+                clientLogo, // Store the logo filename/path
             });
-            res.status(201).json(newClient);
-        } catch (err) {
-            res.status(400).json({ message: 'Error creating client', error: err.message });
+            res.status(201).json({ message: 'Client created successfully', client: newClient });
+        } catch (error) {
+            res.status(500).json({ message: 'Error creating client', error: error.message });
         }
     });
 };
-
 
 // Fetch all clients
 exports.getClients = async (req, res) => {
@@ -49,18 +52,32 @@ exports.getClientById = async (req, res) => {
 };
 
 // Update a client
-exports.updateClient = async (req, res) => {
-    try {
-        const client = await Client.findByPk(req.params.id);
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
+exports.updateClient = (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        await client.update(req.body);
-        res.status(200).json(client);
-    } catch (err) {
-        res.status(400).json({ message: 'Error updating client', error: err.message });
-    }
+        const clientId = req.params.id;
+        const clientLogo = req.file ? req.file.filename : null; // Access the uploaded file
+
+        try {
+            const client = await Client.findByPk(clientId);
+            if (!client) {
+                return res.status(404).json({ message: 'Client not found' });
+            }
+
+            // Update fields, including clientLogo if a new one is uploaded
+            await client.update({
+                ...req.body,
+                clientLogo: clientLogo || client.clientLogo, // Retain old logo if no new one is uploaded
+            });
+
+            res.status(200).json({ message: 'Client updated successfully', client });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating client', error: error.message });
+        }
+    });
 };
 
 // Delete a client
@@ -74,6 +91,6 @@ exports.deleteClient = async (req, res) => {
         await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully' });
     } catch (err) {
-        res.status(400).json({ message: 'Error deleting client', error: err.message });
+        res.status(500).json({ message: 'Error deleting client', error: err.message });
     }
 };
