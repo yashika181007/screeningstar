@@ -1,6 +1,7 @@
-// userController.js
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 const { uploaduserphoto } = require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
@@ -46,12 +47,10 @@ exports.createuser = (req, res) => {
                 role,
             });
 
-            // Log after user creation
             console.log('User created:', newUser);
 
             res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
-            // Log the error if something goes wrong
             console.error('Error registering employee:', error);
             res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
