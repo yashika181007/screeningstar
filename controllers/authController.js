@@ -9,20 +9,14 @@ exports.createuser = (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
-        console.log('Uploaded file:', req.file);
-        console.log('Generated file name:', req.file.uploadedFileName);
-
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
             if (!req.file) {
-                console.error('No file uploaded');
+                return res.status(400).json({ message: 'File upload failed or no file provided' });
             }
 
-            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
-
-            console.log('Photo URL to save:', employeePhoto);
+            const employeePhoto = req.file.uploadedFileName ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
@@ -30,9 +24,6 @@ exports.createuser = (req, res) => {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Log before creating the user
-            console.log('Creating user with data:', { employeePhoto, employeeName, employeeMobile, email, designation, role });
 
             const newUser = await User.create({
                 employeePhoto,
@@ -44,12 +35,10 @@ exports.createuser = (req, res) => {
                 role,
             });
 
-            console.log('User created:', newUser);
-
-            res.status(201).json({ message: 'Employee registered successfully', user: newUser });
+            return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
             console.error('Error registering employee:', error);
-            res.status(500).json({ message: 'Error registering employee', error: error.message });
+            return res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
     });
 };
