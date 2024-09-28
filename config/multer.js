@@ -2,7 +2,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
-const { Readable } = require('stream'); // Add this import
 
 // Multer memory storage configuration
 const storage = multer.memoryStorage(); // Use memory storage to avoid local storage
@@ -36,6 +35,17 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     client.ftp.verbose = true;  // Optional: Verbose logging to see the FTP process
 
     try {
+        // Create a temporary file path
+        const tempFilePath = path.join(__dirname, 'temp', Date.now() + '.tmp');
+        
+        // Ensure the temp directory exists
+        if (!fs.existsSync(path.join(__dirname, 'temp'))) {
+            fs.mkdirSync(path.join(__dirname, 'temp'));
+        }
+
+        // Write the buffer to the temporary file
+        fs.writeFileSync(tempFilePath, fileBuffer);
+        
         await client.access({
             host: 'ftp.webstepdev.com',  // Replace with your FTP host
             user: 'u510451310.dev123',  // Replace with your FTP username
@@ -45,19 +55,23 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
 
         console.log('Connected to FTP server');
 
-        // Create a readable stream from the buffer
-        const stream = new Readable();
-        stream.push(fileBuffer);
-        stream.push(null); // Signifies the end of the stream
-
-        // Upload the buffer to the specified remote path
-        await client.uploadFromReadableStream(stream, remotePath);
+        // Upload the temporary file to the specified remote path
+        await client.uploadFrom(tempFilePath, remotePath);
         console.log('File uploaded to remote server:', remotePath);
         
     } catch (err) {
         console.error('FTP upload error:', err);
     } finally {
         client.close();  // Close the FTP connection
+
+        // Remove the temporary file
+        fs.unlink(tempFilePath, (err) => {
+            if (err) {
+                console.error('Error deleting temporary file:', err);
+            } else {
+                console.log('Temporary file deleted:', tempFilePath);
+            }
+        });
     }
 };
 
