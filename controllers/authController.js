@@ -2,25 +2,22 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { uploaduserphoto ,generateUniqueFileName } =require('../config/multer');
+const { uploaduserphoto, generateUniqueFileName, uploadToRemote } = require('../config/multer'); 
+
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        
-        console.log('Uploaded file:', req.file);
+
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
             // Generate a unique filename for the uploaded photo
             const uniqueFileName = generateUniqueFileName(req.file);
             const remotePath = `/uploads/${uniqueFileName}`; // Adjust as necessary
-            
-            // Construct the employee photo URL after uploading
-            const employeePhoto = req.file ? `${uniqueFileName}` : null;
-            
+
             // Check if the email is already in use
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
@@ -29,6 +26,13 @@ exports.createuser = (req, res) => {
 
             // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Upload the file to the remote server before creating the user
+            await uploadToRemote(req.file.buffer, remotePath);
+            console.log('File uploaded to FTP:', uniqueFileName);
+
+            // Construct the employee photo URL after uploading
+            const employeePhoto = uniqueFileName;
 
             // Create the new user record
             const newUser = await User.create({
@@ -40,9 +44,6 @@ exports.createuser = (req, res) => {
                 password: hashedPassword,
                 role,
             });
-
-            // Upload the file to the remote server
-            await uploadToRemote(req.file.buffer, remotePath);
 
             res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
