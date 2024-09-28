@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
+const { Readable } = require('stream'); // Add this import
 
 // Multer memory storage configuration
 const storage = multer.memoryStorage(); // Use memory storage to avoid local storage
@@ -43,9 +44,14 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         });
 
         console.log('Connected to FTP server');
-        
+
+        // Create a readable stream from the buffer
+        const stream = new Readable();
+        stream.push(fileBuffer);
+        stream.push(null); // Signifies the end of the stream
+
         // Upload the buffer to the specified remote path
-        await client.uploadFrom(fileBuffer, remotePath);
+        await client.uploadFromReadableStream(stream, remotePath);
         console.log('File uploaded to remote server:', remotePath);
         
     } catch (err) {
