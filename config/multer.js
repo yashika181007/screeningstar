@@ -85,5 +85,6 @@ const handleFileUpload  = (req, res) => {
     });
 };
 module.exports = {
-    uploaduserphoto: handleFileUpload
+ handleFileUpload,
+    uploaduserphoto
 };
