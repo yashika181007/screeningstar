@@ -3,33 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
 
-// Multer storage configuration
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = 'https://webstepdev.com/demo/screening_star/uploads/${req.file.filename}';  // Local directory for uploads
-
-        // Check if the local directory exists, if not, create it
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-            console.log('Directory created:', uploadPath);
-        }
-
-        // Check if the directory has write permissions
-        fs.access(uploadPath, fs.constants.W_OK, (err) => {
-            if (err) {
-                console.log('No write permissions for directory:', uploadPath);
-                return cb('Error: No write permissions for the upload directory');
-            }
-            console.log('Write permission check passed for:', uploadPath);
-            cb(null, uploadPath);  // Pass the directory where the file will be saved
-        });
-    },
-    filename: function (req, file, cb) {
-        const uniqueFileName = Date.now() + path.extname(file.originalname);
-        console.log('Generated file name:', uniqueFileName);
-        cb(null, uniqueFileName);  // Assign a unique filename
-    }
-});
+// Multer memory storage configuration
+const storage = multer.memoryStorage(); // Use memory storage to avoid local storage
 
 // File filter function to allow only images
 function checkFileType(file, cb) {
@@ -55,7 +30,7 @@ const uploaduserphoto = multer({
 }).single('employeePhoto');
 
 // FTP upload function using `basic-ftp`
-const uploadToRemote = async (localPath, remotePath) => {
+const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;  // Optional: Verbose logging to see the FTP process
 
@@ -69,8 +44,8 @@ const uploadToRemote = async (localPath, remotePath) => {
 
         console.log('Connected to FTP server');
         
-        // Upload the local file to the specified remote path
-        await client.uploadFrom(localPath, remotePath);
+        // Upload the buffer to the specified remote path
+        await client.uploadFrom(fileBuffer, remotePath);
         console.log('File uploaded to remote server:', remotePath);
         
     } catch (err) {
@@ -88,15 +63,15 @@ module.exports.uploaduserphoto = (req, res) => {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        console.log('Uploaded file locally:', req.file);
+        console.log('Uploaded file:', req.file);
 
-        const localPath = path.join(__dirname, 'uploads', req.file.filename);  // Local path to the file
-        const remotePath = `https://webstepdev.com/demo/screening_star/uploads/${req.file.filename}`;  // Remote path for the file
+        // Construct the remote path using the original filename
+        const remotePath = `demo/screening_star/uploads/${req.file.originalname}`;  // Remote path for the file
 
         // Upload the file to the remote FTP server
-        await uploadToRemote(localPath, remotePath);
+        await uploadToRemote(req.file.buffer, remotePath);
 
         // Return success response
-        res.status(200).json({ message: 'File uploaded successfully to remote server' });
+        res.status(200).json({ message: 'File uploaded successfully to remote server', remotePath: `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` });
     });
 };
