@@ -1,4 +1,3 @@
-optimize
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
