@@ -24,17 +24,22 @@ function checkFileType(file, cb) {
         cb(new Error('Error: Images Only!'));
     }
 }
-
-// FTP upload function
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
-    const tempFilePath = path.join(tempDir, `${Date.now()}.tmp`);
+
+    let tempFilePath = '';
 
     try {
-        fs.writeFileSync(tempFilePath, fileBuffer);  // Write buffer to temp file
+        tempFilePath = path.join(__dirname, 'temp', Date.now() + '.tmp');
+        
+        if (!fs.existsSync(path.join(__dirname, 'temp'))) {
+            fs.mkdirSync(path.join(__dirname, 'temp'));
+        }
+
+        fs.writeFileSync(tempFilePath, fileBuffer);
         await client.access({
-            host: process.env.FTP_HOST,      // Use environment variables for credentials
+            host: process.env.FTP_HOST,      
             user: process.env.FTP_USER,
             password: process.env.FTP_PASS,
             secure: false
@@ -43,19 +48,21 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         console.log('Connected to FTP server');
         await client.uploadFrom(tempFilePath, remotePath);
         console.log('File uploaded to remote server:', remotePath);
+        
     } catch (err) {
         console.error('FTP upload error:', err);
-        throw err;  // Re-throw error for proper handling
     } finally {
         client.close();
-        // Clean up the temporary file
-        fs.unlink(tempFilePath, (err) => {
-            if (err) {
-                console.error('Error deleting temporary file:', err);
-            } else {
-                console.log('Temporary file deleted:', tempFilePath);
-            }
-        });
+
+        if (tempFilePath) {
+            fs.unlink(tempFilePath, (err) => {
+                if (err) {
+                    console.error('Error deleting temporary file:', err);
+                } else {
+                    console.log('Temporary file deleted:', tempFilePath);
+                }
+            });
+        }
     }
 };
 
