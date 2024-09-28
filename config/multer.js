@@ -21,42 +21,34 @@ function checkFileType(file, cb) {
     if (mimetype && extname) {
         cb(null, true);
     } else {
-        cb('Error: Images Only!');
+        cb(new Error('Error: Images Only!'));
     }
 }
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1000000 }, 
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single('fileField');
 
 // FTP upload function
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
-    const tempFilePath = path.join(tempDir, Date.now() + '.tmp');
+    const tempFilePath = path.join(tempDir, `${Date.now()}.tmp`);
 
     try {
         fs.writeFileSync(tempFilePath, fileBuffer);  // Write buffer to temp file
         await client.access({
-            host: 'ftp.webstepdev.com',
-            user: 'u510451310.dev123',
-            password: 'Webs@0987#@!',
+            host: process.env.FTP_HOST,      // Use environment variables for credentials
+            user: process.env.FTP_USER,
+            password: process.env.FTP_PASS,
             secure: false
         });
 
         console.log('Connected to FTP server');
         await client.uploadFrom(tempFilePath, remotePath);
         console.log('File uploaded to remote server:', remotePath);
-
     } catch (err) {
         console.error('FTP upload error:', err);
         throw err;  // Re-throw error for proper handling
     } finally {
         client.close();
+        // Clean up the temporary file
         fs.unlink(tempFilePath, (err) => {
             if (err) {
                 console.error('Error deleting temporary file:', err);
@@ -67,11 +59,20 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
+// General multer upload handler
+const upload = (fieldName) => multer({
+    storage: storage,
+    limits: { fileSize: 1000000 }, // 1MB file size limit
+    fileFilter: function (req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single(fieldName);  // Use passed field name
+
 // Unified photo upload handler
 const uploadFile = (fieldName) => (req, res, next) => {
-    upload(req, res, async (err) => {
+    upload(fieldName)(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: 'File upload error', error: err });
+            return res.status(400).json({ message: 'File upload error', error: err.message });
         }
 
         const uniqueFileName = Date.now() + path.extname(req.file.originalname).toLowerCase();
@@ -83,7 +84,7 @@ const uploadFile = (fieldName) => (req, res, next) => {
             next();  // Proceed to the next middleware
         } catch (uploadErr) {
             console.error('FTP upload error:', uploadErr);
-            return res.status(500).json({ message: 'File upload failed', error: uploadErr });
+            return res.status(500).json({ message: 'File upload failed', error: uploadErr.message });
         }
     });
 };
