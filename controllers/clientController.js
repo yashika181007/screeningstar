@@ -8,7 +8,10 @@ exports.createClient = (req, res) => {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        // Correct file name reference
+        if (!req.file) {
+            return res.status(400).json({ message: 'File upload failed or no file provided' });
+        }
+
         const clientLogo =  req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
 
         const {
@@ -31,7 +34,6 @@ exports.createClient = (req, res) => {
         } = req.body;
 
         try {
-            // Creating a new client record in the database
             const newClient = await Client.create({
                 organizationName,
                 clientId,
@@ -44,7 +46,7 @@ exports.createClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo, // Use the correct file name
+                clientLogo, 
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
