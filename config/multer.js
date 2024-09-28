@@ -66,7 +66,7 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
-module.exports.uploaduserphoto = (req, res) => {
+const handleFileUpload  = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
@@ -85,5 +85,5 @@ module.exports.uploaduserphoto = (req, res) => {
     });
 };
 module.exports = {
-    uploaduserphoto
+    uploaduserphoto: handleFileUpload
 };
