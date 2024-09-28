@@ -9,28 +9,30 @@ exports.createuser = (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        console.log('Uploaded file:', req.file); 
-
-        // The filename is generated in the multer configuration
-        const filename = req.file.filename; // This will now contain the timestamped filename
-        const remotePath = `demo/screening_star/uploads/${filename}`;
-
-        // Upload the image to remote server
-        await uploadToRemote(req.file.buffer, remotePath);
-
+        
+        console.log('Uploaded file:', req.file);
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
+            // Generate a unique filename for the uploaded photo
+            const uniqueFileName = generateUniqueFileName(req.file);
+            const remotePath = `/uploads/${uniqueFileName}`; // Adjust as necessary
+            
+            // Construct the employee photo URL after uploading
+            const employeePhoto = req.file ? `${uniqueFileName}` : null;
+            
+            // Check if the email is already in use
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
                 return res.status(400).json({ message: 'Email already in use' });
             }
 
+            // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Store only the filename in the database
+            // Create the new user record
             const newUser = await User.create({
-                employeePhoto: filename,
+                employeePhoto,
                 employeeName,
                 employeeMobile,
                 email,
@@ -39,12 +41,17 @@ exports.createuser = (req, res) => {
                 role,
             });
 
+            // Upload the file to the remote server
+            await uploadToRemote(req.file.buffer, remotePath);
+
             res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
+            console.error('Error registering employee:', error.message);
             res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
     });
 };
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
