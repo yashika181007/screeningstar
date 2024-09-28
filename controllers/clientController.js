@@ -9,7 +9,7 @@ exports.createClient = (req, res) => {
         }
 
         // Correct file name reference
-        const clientLogo = req.file ? req.file.uploadedFileName : null;
+        const clientLogo =  req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
 
         const {
             organizationName,
@@ -59,7 +59,6 @@ exports.createClient = (req, res) => {
         }
     });
 };
-
 
 exports.getClients = async (req, res) => {
     try {

@@ -1,16 +1,11 @@
+optimize
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
 const multer = require('multer');
 
-// Use memory storage for uploads
-const storage = multer.memoryStorage();
-
-// Create temp directory on server startup if it doesn't exist
-const tempDir = path.join(__dirname, 'temp');
-if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir);
-}
+// Use memory storage for both uploads
+const storage = multer.memoryStorage(); 
 
 // Helper function to check file type
 function checkFileType(file, cb) {
@@ -21,13 +16,32 @@ function checkFileType(file, cb) {
     if (mimetype && extname) {
         cb(null, true);
     } else {
-        cb(new Error('Error: Images Only!'));
+        cb('Error: Images Only!');
     }
 }
+
+// Multer upload handler for employeePhoto
+const uploadEmployeePhoto = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 }, // 1MB file size limit
+    fileFilter: function (req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single('employeePhoto');
+
+// Multer upload handler for clientLogo
+const uploadClientLogo = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 }, // 1MB file size limit
+    fileFilter: function (req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single('clientLogo');
+
+// FTP upload function
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
-
     let tempFilePath = '';
 
     try {
@@ -39,9 +53,9 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
 
         fs.writeFileSync(tempFilePath, fileBuffer);
         await client.access({
-            host: process.env.FTP_HOST,      
-            user: process.env.FTP_USER,
-            password: process.env.FTP_PASS,
+            host: 'ftp.webstepdev.com',
+            user: 'u510451310.dev123',
+            password: 'Webs@0987#@!',
             secure: false
         });
 
@@ -51,6 +65,7 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         
     } catch (err) {
         console.error('FTP upload error:', err);
+        throw err; // Re-throw error for proper handling
     } finally {
         client.close();
 
@@ -65,16 +80,9 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         }
     }
 };
-const upload = (fieldName) => multer({
-    storage: storage,
-    limits: { fileSize: 1000000 }, // 1MB file size limit
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single(fieldName);  
 
-const uploadFile = (fieldName) => (req, res, next) => {
-    upload(fieldName)(req, res, async (err) => {
+const uploaduserphoto = (req, res, next) => {
+    uploadEmployeePhoto(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
@@ -82,17 +90,37 @@ const uploadFile = (fieldName) => (req, res, next) => {
         const uniqueFileName = Date.now() + path.extname(req.file.originalname).toLowerCase();
         const remotePath = `demo/screening_star/uploads/${uniqueFileName}`;
 
-        await uploadToRemote(req.file.buffer, remotePath);
+        try {
+            await uploadToRemote(req.file.buffer, remotePath);
+            req.file.uploadedFileName = uniqueFileName;
+            next(); // Proceed to the next middleware
+        } catch (uploadErr) {
+            return res.status(500).json({ message: 'File upload failed', error: uploadErr });
+        }
+    });
+};
 
-        req.file.uploadedFileName = uniqueFileName; 
-        res.status(200).json({ 
-            message: 'File uploaded successfully to remote server', 
-            remotePath: `https://webstepdev.com/demo/screening_star/uploads/${uniqueFileName}` 
-        });
+const clientlogoupload = (req, res, next) => {
+    uploadClientLogo(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: 'File upload error', error: err });
+        }
+
+        const uniqueFileName1 = Date.now() + path.extname(req.file.originalname).toLowerCase();
+        const remotePath1 = `demo/screening_star/uploads/${uniqueFileName1}`;
+
+        try {
+            await uploadToRemote(req.file.buffer, remotePath1);
+            req.file.uploadedFileName1 = uniqueFileName1;
+            next();
+        } catch (uploadErr) {
+            console.error('FTP upload error:', uploadErr);
+            return res.status(500).json({ message: 'File upload failed', error: uploadErr });
+        }
     });
 };
 
 module.exports = {
-    uploaduserphoto: uploadFile('employeePhoto'),
-    clientlogoupload: uploadFile('clientLogo')
+    uploaduserphoto,
+    clientlogoupload
 };
