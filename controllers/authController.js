@@ -6,13 +6,15 @@ const { uploaduserphoto } =require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
-               console.error('Upload error:', err);
+            console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        console.log('Uploaded file:', req.file); 
+        
+        console.log('Uploaded file:', req.file);
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
-            const employeePhoto = req.file ? req.file.filename : null;
+
+            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` : null;
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
