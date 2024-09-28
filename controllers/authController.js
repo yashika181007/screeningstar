@@ -9,12 +9,17 @@ exports.createuser = (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        
-        console.log('Uploaded file:', req.file);
+        console.log('Uploaded file:', req.file); 
+
+        // The filename is generated in the multer configuration
+        const filename = req.file.filename; // This will now contain the timestamped filename
+        const remotePath = `demo/screening_star/uploads/${filename}`;
+
+        // Upload the image to remote server
+        await uploadToRemote(req.file.buffer, remotePath);
+
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
-
-            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` : null;
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
@@ -23,8 +28,9 @@ exports.createuser = (req, res) => {
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
+            // Store only the filename in the database
             const newUser = await User.create({
-                employeePhoto,
+                employeePhoto: filename,
                 employeeName,
                 employeeMobile,
                 email,

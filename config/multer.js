@@ -1,10 +1,11 @@
-// multerConfig.js
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
 
-const storage = multer.memoryStorage();
+// Use memory storage to handle uploads in memory
+const storage = multer.memoryStorage(); 
+
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -17,6 +18,7 @@ function checkFileType(file, cb) {
         cb('Error: Images Only!');
     }
 }
+
 const uploaduserphoto = multer({
     storage: storage,
     limits: { fileSize: 1000000 }, 
@@ -24,6 +26,8 @@ const uploaduserphoto = multer({
         checkFileType(file, cb);
     }
 }).single('employeePhoto');
+
+// FTP upload function
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;  
@@ -66,4 +70,14 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
-module.exports = { uploaduserphoto, uploadToRemote };
+// Override the filename method to include the timestamp
+uploaduserphoto.filename = (req, file, cb) => {
+    const timestamp = Date.now();
+    const uniqueFileName = `${timestamp}${path.extname(file.originalname)}`;
+    cb(null, uniqueFileName);  // Pass the unique filename
+};
+
+module.exports = {
+    uploaduserphoto,
+    uploadToRemote,
+};
