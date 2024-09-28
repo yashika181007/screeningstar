@@ -16,7 +16,7 @@ exports.createuser = (req, res) => {
                 return res.status(400).json({ message: 'File upload failed or no file provided' });
             }
 
-            const employeePhoto = req.file.uploadedFileName ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
+            const employeePhoto = req.file.uploadedFileName ? `${req.file.uploadedFileName}` : null;
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
