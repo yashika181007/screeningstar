@@ -17,7 +17,7 @@ function checkFileType(file, cb) {
     }
 }
 
-const handleFileUpload = multer({
+const multerUpload = multer({
     storage: storage,
     limits: { fileSize: 1000000 },
     fileFilter: function (req, file, cb) {
@@ -67,7 +67,7 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
 };
 
 const uploaduserphoto  = (req, res) => {
-    uploaduserphoto(req, res, async (err) => {
+    multerUpload(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
@@ -85,6 +85,5 @@ const uploaduserphoto  = (req, res) => {
     });
 };
 module.exports = {
- handleFileUpload,
     uploaduserphoto
 };

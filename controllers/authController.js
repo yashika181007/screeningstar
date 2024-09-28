@@ -2,7 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { uploaduserphoto,handleFileUpload } = require('../config/multer');
+const { uploaduserphoto } = require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
