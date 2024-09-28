@@ -65,38 +65,33 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         }
     }
 };
-
-// General multer upload handler
 const upload = (fieldName) => multer({
     storage: storage,
     limits: { fileSize: 1000000 }, // 1MB file size limit
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
-}).single(fieldName);  // Use passed field name
+}).single(fieldName);  
 
-// Unified photo upload handler
 const uploadFile = (fieldName) => (req, res, next) => {
     upload(fieldName)(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: 'File upload error', error: err.message });
+            return res.status(400).json({ message: 'File upload error', error: err });
         }
 
         const uniqueFileName = Date.now() + path.extname(req.file.originalname).toLowerCase();
         const remotePath = `demo/screening_star/uploads/${uniqueFileName}`;
 
-        try {
-            await uploadToRemote(req.file.buffer, remotePath);
-            req.file.uploadedFileName = uniqueFileName;
-            next();  // Proceed to the next middleware
-        } catch (uploadErr) {
-            console.error('FTP upload error:', uploadErr);
-            return res.status(500).json({ message: 'File upload failed', error: uploadErr.message });
-        }
+        await uploadToRemote(req.file.buffer, remotePath);
+
+        req.file.uploadedFileName = uniqueFileName; 
+        res.status(200).json({ 
+            message: 'File uploaded successfully to remote server', 
+            remotePath: `https://webstepdev.com/demo/screening_star/uploads/${uniqueFileName}` 
+        });
     });
 };
 
-// Export handlers for specific upload fields
 module.exports = {
     uploaduserphoto: uploadFile('employeePhoto'),
     clientlogoupload: uploadFile('clientLogo')
