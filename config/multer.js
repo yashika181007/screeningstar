@@ -1,12 +1,12 @@
-// multerConfig.js
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
 
 // Multer memory storage configuration
-const storage = multer.memoryStorage();
+const storage = multer.memoryStorage(); // Use memory storage to avoid local storage
 
+// File filter function to allow only images
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -20,17 +20,19 @@ function checkFileType(file, cb) {
     }
 }
 
+// Multer upload configuration
 const uploaduserphoto = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, 
+    limits: { fileSize: 1000000 },  // Limit file size to 1MB
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
 }).single('employeePhoto');
 
+// FTP upload function using `basic-ftp`
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
-    client.ftp.verbose = true;  
+    client.ftp.verbose = true;  // Optional: Verbose logging to see the FTP process
     
     let tempFilePath = '';
 
@@ -49,6 +51,8 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
             password: 'Webs@0987#@!',
             secure: false
         });
+
+        console.log('Connected to FTP server');
 
         await client.uploadFrom(tempFilePath, remotePath);
         console.log('File uploaded to remote server:', remotePath);
@@ -70,4 +74,20 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
-module.exports = { uploaduserphoto, uploadToRemote };
+// Controller function to handle file upload and FTP transfer
+module.exports.uploaduserphoto = (req, res) => {
+    uploaduserphoto(req, res, async (err) => {
+        if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ message: 'File upload error', error: err });
+        }
+
+        console.log('Uploaded file:', req.file);
+
+        const remotePath = `demo/screening_star/uploads/${req.file.originalname}`;
+
+        await uploadToRemote(req.file.buffer, remotePath);
+
+        res.status(200).json({ message: 'File uploaded successfully to remote server', remotePath: `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` });
+    });
+};
