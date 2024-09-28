@@ -1,30 +1,41 @@
 // userController.js
-const User = require('../models/User');  // Adjust the path according to your project structure
+const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const { uploaduserphoto } = require('../config/multer');
-
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
+            console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
+
+        // Log the uploaded file details
+        console.log('Uploaded file:', req.file);
+        console.log('Generated file name:', req.file.uploadedFileName);
 
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
-            // Use the generated file name instead of the original one
+            // Log if no file is available
+            if (!req.file) {
+                console.error('No file uploaded');
+            }
+
             const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
 
-            // Check if the user already exists
+            // Log the photo URL
+            console.log('Photo URL to save:', employeePhoto);
+
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
                 return res.status(400).json({ message: 'Email already in use' });
             }
 
-            // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Create the new user
+            // Log before creating the user
+            console.log('Creating user with data:', { employeePhoto, employeeName, employeeMobile, email, designation, role });
+
             const newUser = await User.create({
                 employeePhoto,
                 employeeName,
@@ -35,8 +46,13 @@ exports.createuser = (req, res) => {
                 role,
             });
 
+            // Log after user creation
+            console.log('User created:', newUser);
+
             res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
+            // Log the error if something goes wrong
+            console.error('Error registering employee:', error);
             res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
     });
@@ -70,7 +86,7 @@ exports.login = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
-            attributes: ['id','employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role']
+            attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
         res.status(200).json(users);
     } catch (err) {
@@ -80,7 +96,7 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {
-            attributes: ['id','employeePhoto','employeeName', 'employeeMobile','email','designation', 'password', 'role'] 
+            attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -105,7 +121,7 @@ exports.updateUser = (req, res) => {
             }
             if (password) {
                 const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword; 
+                user.password = hashedPassword;
             }
             user.employeeName = employeeName || user.employeeName;
             user.employeeMobile = employeeMobile || user.employeeMobile;
@@ -113,7 +129,7 @@ exports.updateUser = (req, res) => {
             user.designation = designation || user.designation;
             user.role = role || user.role;
             user.employeePhoto = employeePhoto || user.employeePhoto;
-            await user.save(); 
+            await user.save();
 
             res.status(200).json({ message: 'user updated successfully', user });
         } catch (error) {

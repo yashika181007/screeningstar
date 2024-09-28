@@ -3,10 +3,8 @@ const fs = require('fs');
 const ftp = require('basic-ftp');
 const multer = require('multer');
 
-// Multer memory storage
 const storage = multer.memoryStorage(); 
 
-// File type checking function
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -19,7 +17,6 @@ function checkFileType(file, cb) {
     }
 }
 
-// Multer upload configuration
 const uploaduserphoto = multer({
     storage: storage,
     limits: { fileSize: 1000000 },
@@ -27,8 +24,6 @@ const uploaduserphoto = multer({
         checkFileType(file, cb);
     }
 }).single('employeePhoto');
-
-// FTP upload function
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
@@ -36,7 +31,6 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     let tempFilePath = '';
 
     try {
-        // Generate a unique filename and create a temporary file
         tempFilePath = path.join(__dirname, 'temp', Date.now() + '.tmp');
         
         if (!fs.existsSync(path.join(__dirname, 'temp'))) {
@@ -44,8 +38,6 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         }
 
         fs.writeFileSync(tempFilePath, fileBuffer);
-
-        // FTP connection details
         await client.access({
             host: 'ftp.webstepdev.com',
             user: 'u510451310.dev123',
@@ -83,11 +75,9 @@ module.exports.uploaduserphoto = (req, res) => {
         const uniqueFileName = Date.now() + path.extname(req.file.originalname).toLowerCase();
         const remotePath = `demo/screening_star/uploads/${uniqueFileName}`;
 
-        // Upload file with the generated name
         await uploadToRemote(req.file.buffer, remotePath);
 
-        req.file.uploadedFileName = uniqueFileName; // Save the generated name for later use
-
+        req.file.uploadedFileName = uniqueFileName; 
         res.status(200).json({ 
             message: 'File uploaded successfully to remote server', 
             remotePath: `https://webstepdev.com/demo/screening_star/uploads/${uniqueFileName}` 
