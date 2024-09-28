@@ -84,3 +84,6 @@ module.exports.uploaduserphoto = (req, res) => {
         });
     });
 };
+module.exports = {
+    uploaduserphoto
+};
