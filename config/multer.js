@@ -66,24 +66,25 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
-const uploaduserphoto  = (req, res) => {
+const uploaduserphoto = (req, res, next) => {
     multerUpload(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
         const uniqueFileName = Date.now() + path.extname(req.file.originalname).toLowerCase();
         const remotePath = `demo/screening_star/uploads/${uniqueFileName}`;
 
-        await uploadToRemote(req.file.buffer, remotePath);
-
-        req.file.uploadedFileName = uniqueFileName; 
-        res.status(200).json({ 
-            message: 'File uploaded successfully to remote server', 
-            remotePath: `https://webstepdev.com/demo/screening_star/uploads/${uniqueFileName}` 
-        });
+        try {
+            await uploadToRemote(req.file.buffer, remotePath);
+            req.file.uploadedFileName = uniqueFileName; 
+            next(); 
+        } catch (uploadErr) {
+            console.error('FTP upload error:', uploadErr);
+            return res.status(500).json({ message: 'File upload failed', error: uploadErr });
+        }
     });
 };
+
 module.exports = {
     uploaduserphoto
 };
