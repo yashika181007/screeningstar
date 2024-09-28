@@ -1,13 +1,16 @@
 const Client = require('../models/Client');
-const {upload} = require('../config/multer');
+const { clientlogoupload } = require('../config/multer');
+
 exports.createClient = (req, res) => {
-    upload(req, res, async (err) => {
+    clientlogoupload(req, res, async (err) => {
         if (err) {
             console.error('Error uploading file:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        console.log('upload:', upload);
-        const clientLogo = req.file ? req.file.filename : null;
+
+        // Correct file name reference
+        const clientLogo = req.file ? req.file.uploadedFileName : null;
+
         const {
             organizationName,
             clientId,
@@ -28,6 +31,7 @@ exports.createClient = (req, res) => {
         } = req.body;
 
         try {
+            // Creating a new client record in the database
             const newClient = await Client.create({
                 organizationName,
                 clientId,
@@ -40,7 +44,7 @@ exports.createClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo,
+                clientLogo, // Use the correct file name
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
@@ -55,6 +59,7 @@ exports.createClient = (req, res) => {
         }
     });
 };
+
 
 exports.getClients = async (req, res) => {
     try {
