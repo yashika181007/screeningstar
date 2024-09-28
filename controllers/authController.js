@@ -1,8 +1,7 @@
-const User = require('../models/User');
+// userController.js
+const User = require('../models/User');  // Adjust the path according to your project structure
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const { uploaduserphoto, generateUniqueFileName, uploadToRemote } = require('../config/multer'); 
+const { uploaduserphoto } = require('../config/multerConfig');
 
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
