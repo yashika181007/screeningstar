@@ -10,31 +10,20 @@ exports.createuser = (req, res) => {
             console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-
+        
+        console.log('Uploaded file:', req.file);
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
-            // Generate a unique filename for the uploaded photo
-            const uniqueFileName = generateUniqueFileName(req.file);
-            const remotePath = `/uploads/${uniqueFileName}`; // Adjust as necessary
+            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` : null;
 
-            // Check if the email is already in use
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
                 return res.status(400).json({ message: 'Email already in use' });
             }
 
-            // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Upload the file to the remote server before creating the user
-            await uploadToRemote(req.file.buffer, remotePath);
-            console.log('File uploaded to FTP:', uniqueFileName);
-
-            // Construct the employee photo URL after uploading
-            const employeePhoto = uniqueFileName;
-
-            // Create the new user record
             const newUser = await User.create({
                 employeePhoto,
                 employeeName,
@@ -47,7 +36,6 @@ exports.createuser = (req, res) => {
 
             res.status(201).json({ message: 'Employee registered successfully', user: newUser });
         } catch (error) {
-            console.error('Error registering employee:', error.message);
             res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
     });

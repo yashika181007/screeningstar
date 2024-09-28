@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const ftp = require('basic-ftp');
 
+// Multer memory storage configuration
 const storage = multer.memoryStorage();
 
 function checkFileType(file, cb) {
@@ -26,10 +27,6 @@ const uploaduserphoto = multer({
         checkFileType(file, cb);
     }
 }).single('employeePhoto');
-
-const generateUniqueFileName = (file) => {
-    return Date.now() + path.extname(file.originalname);
-};
 
 const uploadToRemote = async (fileBuffer, remotePath) => {
     const client = new ftp.Client();
@@ -73,4 +70,4 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
     }
 };
 
-module.exports = { uploaduserphoto, uploadToRemote, generateUniqueFileName };
+module.exports = { uploaduserphoto, uploadToRemote };
