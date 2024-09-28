@@ -1,14 +1,12 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Client = require('ssh2-sftp-client');  // Import the SFTP client
+const ftp = require('basic-ftp');
 
-const sftp = new Client();  // Create a new SFTP client instance
-
-// Storage configuration for local storage (temporary before uploading to the server)
+// Multer storage configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = 'uploads/';  // Local folder for storing the file
+        const uploadPath = 'uploads/';  // Local directory for uploads
 
         // Check if the local directory exists, if not, create it
         if (!fs.existsSync(uploadPath)) {
@@ -47,7 +45,7 @@ function checkFileType(file, cb) {
     }
 }
 
-// Multer upload configurations
+// Multer upload configuration
 const uploaduserphoto = multer({
     storage: storage,
     limits: { fileSize: 1000000 },  // Limit file size to 1MB
@@ -56,26 +54,33 @@ const uploaduserphoto = multer({
     }
 }).single('employeePhoto');
 
-// SFTP Upload Function
+// FTP upload function using `basic-ftp`
 const uploadToRemote = async (localPath, remotePath) => {
+    const client = new ftp.Client();
+    client.ftp.verbose = true;  // Optional: Verbose logging to see the FTP process
+
     try {
-        await sftp.connect({
+        await client.access({
             host: 'ftp.webstepdev.com',  // Replace with your FTP host
-            username: 'u510451310.dev123',  // Replace with your FTP username
+            user: 'u510451310.dev123',  // Replace with your FTP username
             password: 'Webs@0987#@!',  // Replace with your FTP password
+            secure: false  // Set to true if you want to use FTPS
         });
 
-        // Upload the file
-        await sftp.put(localPath, remotePath);
+        console.log('Connected to FTP server');
+        
+        // Upload the local file to the specified remote path
+        await client.uploadFrom(localPath, remotePath);
         console.log('File uploaded to remote server:', remotePath);
-
-        await sftp.end();  // Close the SFTP connection
+        
     } catch (err) {
-        console.error('SFTP upload error:', err);
+        console.error('FTP upload error:', err);
+    } finally {
+        client.close();  // Close the FTP connection
     }
 };
 
-// Controller function to handle file upload and transfer to remote server
+// Controller function to handle file upload and FTP transfer
 module.exports.uploaduserphoto = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
@@ -85,10 +90,10 @@ module.exports.uploaduserphoto = (req, res) => {
 
         console.log('Uploaded file locally:', req.file);
 
-        const localPath = path.join(__dirname, 'uploads', req.file.filename);
-        const remotePath = `/demo/screening_star/uploads/${req.file.filename}`;  // Remote path for the file
+        const localPath = path.join(__dirname, 'uploads', req.file.filename);  // Local path to the file
+        const remotePath = `https://webstepdev.com/demo/screening_star/uploads/${req.file.filename}`;  // Remote path for the file
 
-        // Upload the file to the remote server
+        // Upload the file to the remote FTP server
         await uploadToRemote(localPath, remotePath);
 
         // Return success response
