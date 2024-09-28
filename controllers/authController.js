@@ -6,23 +6,25 @@ const { uploaduserphoto } = require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
-            console.error('Upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        
-        console.log('Uploaded file:', req.file);
+
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
-            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.originalname}` : null;
+            // Use the generated file name instead of the original one
+            const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
 
+            // Check if the user already exists
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
                 return res.status(400).json({ message: 'Email already in use' });
             }
 
+            // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
 
+            // Create the new user
             const newUser = await User.create({
                 employeePhoto,
                 employeeName,
