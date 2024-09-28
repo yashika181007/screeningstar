@@ -18,6 +18,7 @@ function checkFileType(file, cb) {
 
 const uploadEmployeePhoto = multer({
     storage: storage,
+    limits: { fileSize: 1000000 }, 
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
@@ -25,6 +26,7 @@ const uploadEmployeePhoto = multer({
 
 const uploadClientLogo = multer({
     storage: storage,
+    limits: { fileSize: 1000000 }, 
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
@@ -56,7 +58,7 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         
     } catch (err) {
         console.error('FTP upload error:', err);
-        throw err; 
+        throw err; // Re-throw error for proper handling
     } finally {
         client.close();
 
@@ -84,7 +86,7 @@ const uploaduserphoto = (req, res, next) => {
         try {
             await uploadToRemote(req.file.buffer, remotePath);
             req.file.uploadedFileName = uniqueFileName;
-            next(); 
+            next(); // Proceed to the next middleware
         } catch (uploadErr) {
             return res.status(500).json({ message: 'File upload failed', error: uploadErr });
         }
