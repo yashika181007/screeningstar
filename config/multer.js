@@ -67,7 +67,7 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
 };
 
 const handleFileUpload  = (req, res) => {
-    uploaduserphoto(req, res, async (err) => {
+    uploaduserphotohandleFileUpload(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }

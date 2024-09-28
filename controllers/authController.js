@@ -10,21 +10,18 @@ exports.createuser = (req, res) => {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
 
-        // Log the uploaded file details
         console.log('Uploaded file:', req.file);
         console.log('Generated file name:', req.file.uploadedFileName);
 
         try {
             const { employeeName, employeeMobile, email, designation, password, role } = req.body;
 
-            // Log if no file is available
             if (!req.file) {
                 console.error('No file uploaded');
             }
 
             const employeePhoto = req.file ? `https://webstepdev.com/demo/screening_star/uploads/${req.file.uploadedFileName}` : null;
 
-            // Log the photo URL
             console.log('Photo URL to save:', employeePhoto);
 
             const existingUser = await User.findOne({ where: { email } });
