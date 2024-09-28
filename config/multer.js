@@ -6,7 +6,7 @@ const ftp = require('basic-ftp');
 // Multer storage configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = 'uploads/';  // Local directory for uploads
+        const uploadPath = 'https://webstepdev.com/demo/screening_star/uploads/${req.file.filename}';  // Local directory for uploads
 
         // Check if the local directory exists, if not, create it
         if (!fs.existsSync(uploadPath)) {
