@@ -66,7 +66,7 @@ const Client = sequelize.define('Client', {
         type: DataTypes.ENUM('yes', 'no'),
     },
     status: {
-        type: DataTypes.ENUM('Active', 'In Acrive'),
+        type: DataTypes.ENUM('Active', 'In Active'),
     }
     
 });

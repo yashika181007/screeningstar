@@ -157,7 +157,7 @@ exports.updateClient = (req, res) => {
 exports.getActiveClients = async (req, res) => {
     try {
         const activeClients = await Client.findAll({
-            where: { status: 'Active' }
+            where:{ status: 'Active' }
         });
 
         if (!activeClients || activeClients.length === 0) {
@@ -174,7 +174,7 @@ exports.getActiveClients = async (req, res) => {
 exports.getInactiveClients = async (req, res) => {
     try {
         const inactive = await Client.findAll({
-            where: { status: 'In Active' }
+            where:{ status: 'In Active' }
         });
         if (!inactive || inactive.length === 0) {
             res.status(404).json({ message: 'No inactive clients found' });
