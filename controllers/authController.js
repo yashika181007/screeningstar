@@ -33,6 +33,7 @@ exports.createuser = (req, res) => {
                 designation,
                 password: hashedPassword,
                 role,
+                status = 'Active',
             });
 
             return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
@@ -150,6 +151,7 @@ exports.updateUser = (req, res) => {
             user.designation = designation || user.designation;
             user.role = role || user.role;
             user.employeePhoto = employeePhoto || user.employeePhoto;
+            status,
             await user.save();
 
             res.status(200).json({ message: 'user updated successfully', user });
