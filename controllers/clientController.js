@@ -265,15 +265,17 @@ exports.changeClientStatus = async (req, res) => {
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        if (Client.status === 'Inactive') {
-            return res.status(400).json({ message: 'Client is already inactive' });
+        // Toggle the client status
+        if (client.status === 'Active') {
+            client.status = 'Inactive';
+        } else if (client.status === 'Inactive') {
+            client.status = 'Active';
         }
 
-        Client.status = 'Inactive';
-        await client.save(); 
+        await client.save(); // Save the updated client status
 
-        res.status(200).json({ message: 'Client status changed to Inactive' });
+        res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
-        res.status(500).json({ message: 'Error changing Client status', error: err.message });
+        res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
