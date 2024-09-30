@@ -68,7 +68,8 @@ exports.login = async (req, res) => {
 
         // Store the token in the session
         req.session.token = token;
-        
+        req.session.userRole = user.role; // Store user role in session
+
         // Send back the user data along with token
         const userData = {
             id: user.id,

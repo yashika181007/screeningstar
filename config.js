@@ -1,5 +1,3 @@
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
 
 module.exports = {
     database: {
@@ -10,12 +8,3 @@ module.exports = {
     },
     jwtSecret: 'screeningstar@2024',
 };
-
-app.use(cookieParser());
-
-app.use(session({
-    secret: 'screeningstar@2024',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 3600000 } 
-}));
