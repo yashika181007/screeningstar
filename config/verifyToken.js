@@ -1,3 +1,4 @@
+const config = require('../config');
 const verifyToken = (req, res, next) => {
     const token = req.session.token;
     if (!token) {
