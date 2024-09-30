@@ -2,6 +2,10 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const path = require('path');
+const fs = require('fs');
+const ftp = require('basic-ftp');
+
 const { uploaduserphoto } = require('../config/multer');
 exports.createuser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
@@ -128,38 +132,82 @@ exports.getUserById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user', error: err.message });
     }
 };
+
 exports.updateUser = (req, res) => {
     uploaduserphoto(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
+
         const { employeeName, employeeMobile, email, designation, password, role, status } = req.body;
-        const employeePhoto = req.file ? req.file.filename : null;
+        const newEmployeePhoto = req.file ? req.file.uploadedFileName : null;
 
         try {
+            // Fetch the existing user
             const user = await User.findByPk(req.params.id);
             if (!user) {
-                return res.status(404).json({ message: 'user not found' });
+                return res.status(404).json({ message: 'User not found' });
             }
+
+            // Handle password update
             if (password) {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 user.password = hashedPassword;
             }
+
+            // Handle new photo upload and delete old photo if a new one is provided
+            if (newEmployeePhoto) {
+                if (user.employeePhoto) {
+                    const oldRemotePath = `demo/screening_star/uploads/${user.employeePhoto}`;
+                    await deleteFromRemote(oldRemotePath); // Function to delete file from FTP
+                }
+            }
+
+            // Update user details
             user.employeeName = employeeName || user.employeeName;
             user.employeeMobile = employeeMobile || user.employeeMobile;
             user.email = email || user.email;
             user.designation = designation || user.designation;
             user.role = role || user.role;
-            user.employeePhoto = employeePhoto || user.employeePhoto;
-            status,
+            user.employeePhoto = newEmployeePhoto || user.employeePhoto; // Use new photo if uploaded, else keep existing one
+            user.status = status || user.status;
+
             await user.save();
 
-            res.status(200).json({ message: 'user updated successfully', user });
+            res.status(200).json({ message: 'User updated successfully', user });
+
         } catch (error) {
-            res.status(500).json({ message: 'Error updating user', error: error.message });
+            console.error('Error updating user:', error);
+            return res.status(500).json({ message: 'Error updating user', error: error.message });
         }
     });
 };
+
+// Function to delete old employee photo from FTP server
+const deleteFromRemote = async (remotePath) => {
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+    try {
+        await client.access({
+            host: 'ftp.webstepdev.com',
+            user: 'u510451310.dev123',
+            password: 'Webs@0987#@!',
+            secure: false
+        });
+
+        console.log('Connected to FTP server');
+        await client.remove(remotePath);  // Deleting the old photo from the FTP server
+        console.log('Old employee photo deleted:', remotePath);
+
+    } catch (err) {
+        console.error('Error deleting file from FTP:', err);
+        throw err;
+
+    } finally {
+        client.close();
+    }
+};
+
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);

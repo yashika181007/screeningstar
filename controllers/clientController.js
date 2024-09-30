@@ -162,24 +162,20 @@ exports.updateClient = (req, res) => {
         } = req.body;
 
         try {
-            // Fetch the existing client
             const client = await Client.findByPk(req.params.id);
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });
             }
 
-            // Determine if a new logo was uploaded
             const newClientLogo = req.file ? req.file.uploadedFileName1 : null;
 
             if (newClientLogo) {
-                // If there's an old logo, delete it from FTP
                 if (client.clientLogo) {
                     const oldRemotePath = `demo/screening_star/uploads/${client.clientLogo}`;
-                    await deleteFromRemote(oldRemotePath); // Function to delete file from FTP
+                    await deleteFromRemote(oldRemotePath);
                 }
             }
 
-            // Update the client information
             await client.update({
                 organizationName,
                 clientId,
@@ -192,7 +188,7 @@ exports.updateClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo: newClientLogo || client.clientLogo, // Use new logo if uploaded, else keep the existing one
+                clientLogo: newClientLogo || client.clientLogo, 
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
@@ -210,7 +206,6 @@ exports.updateClient = (req, res) => {
     });
 };
 
-// Function to delete old logo from FTP server
 const deleteFromRemote = async (remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
