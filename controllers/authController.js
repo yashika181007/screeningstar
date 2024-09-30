@@ -78,6 +78,42 @@ exports.getAllUsers = async (req, res) => {
         res.status(500).json({ message: 'Error fetching users', error: err.message });
     }
 };
+exports.getActiveUsers = async (req, res) => {
+    try {
+        const activeUsers = await User.findAll({
+            where: { status: 'Active' }
+        });
+
+        console.log('Active Users:', activeUsers); 
+
+        if (!activeUsers || activeUsers.length === 0) {
+            return res.status(404).json({ message: 'No active Users found' });
+        }
+
+        res.status(200).json(activeUsers);
+
+    } catch (err) {
+        console.error('Error fetching active Users:', err);
+        res.status(500).json({ message: 'Error fetching active Users', error: err.message });
+    }
+};
+exports.getInactiveUsers = async (req, res) => {
+    try {
+        const inactive = await User.findAll({
+            where: { status: 'Inactive' }
+        });
+        if (!inactive || inactive.length === 0) {
+            res.status(404).json({ message: 'No inactive Users found' });
+            
+        }
+        res.status(200).json(inactive);
+        
+    } catch (err) {
+        console.error('Error fetching inactive Users:', err);
+        res.status(500).json({ message: 'Error fetching inactive Users', error: err.message });
+        
+    }
+};
 exports.getUserById = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {

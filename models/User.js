@@ -40,7 +40,10 @@ const User = sequelize.define('Users', {
     role: {
         type: DataTypes.ENUM('admin', 'user', 'sub_user', 'super_user'),
         allowNull: false,
-    },
+    }, status: {
+        type: DataTypes.ENUM('Active', 'In Active'),
+        allowNull: false,
+    }
 }, {
     tableName: 'Users', 
     timestamps: true,  
