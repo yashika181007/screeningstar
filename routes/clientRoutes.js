@@ -15,6 +15,6 @@ router.get('/clients/:id', clientController.getClientById);
 router.put('/clients/:id', clientController.updateClient);
 
 router.delete('/clients/:id', clientController.deleteClient);
-router.put('/block/:id', authController.changeUserStatus);
+router.put('/block/:id', clientController.changeUserStatus);
 
 module.exports = router;
