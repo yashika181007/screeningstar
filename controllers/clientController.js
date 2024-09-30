@@ -216,7 +216,7 @@ const deleteFromRemote = async (remotePath) => {
     try {
         await client.access({
             host: 'ftp.webstepdev.com',
-            user: 'u510451310.dev123',
+            Client: 'u510451310.dev123',
             password: 'Webs@0987#@!',
             secure: false
         });
@@ -248,5 +248,24 @@ exports.deleteClient = async (req, res) => {
     } catch (error) {
         console.error('Error deleting client:', error);
         res.status(500).json({ message: 'Error deleting client.', error: error.message });
+    }
+};
+exports.changeClientStatus = async (req, res) => {
+    try {
+        const Client = await Client.findByPk(req.params.id);
+        if (!Client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        if (Client.status === 'Inactive') {
+            return res.status(400).json({ message: 'Client is already inactive' });
+        }
+
+        Client.status = 'Inactive';
+        await Client.save(); 
+
+        res.status(200).json({ message: 'Client status changed to Inactive' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error changing Client status', error: err.message });
     }
 };

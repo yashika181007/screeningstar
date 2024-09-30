@@ -198,7 +198,7 @@ const deleteFromRemote = async (remotePath) => {
         });
 
         console.log('Connected to FTP server');
-        await client.remove(remotePath);  // Deleting the old photo from the FTP server
+        await client.remove(remotePath); 
         console.log('Old employee photo deleted:', remotePath);
 
     } catch (err) {
@@ -220,5 +220,24 @@ exports.deleteUser = async (req, res) => {
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Error deleting user', error: err.message });
+    }
+};
+exports.changeUserStatus = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.status === 'Inactive') {
+            return res.status(400).json({ message: 'User is already inactive' });
+        }
+
+        user.status = 'Inactive';
+        await user.save(); 
+
+        res.status(200).json({ message: 'User status changed to Inactive' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error changing user status', error: err.message });
     }
 };
