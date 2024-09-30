@@ -65,8 +65,16 @@ const Client = sequelize.define('Client', {
     pricingPackages: {
         type: DataTypes.TEXT,
     },
+    standardProcess: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
     loginRequired: {
         type: DataTypes.ENUM('yes', 'no'),
+    },  
+    role: {
+        type: DataTypes.TEXT,
+        allowNull: false,
     },
     status: {
         type: DataTypes.ENUM('Active', 'In Active'),

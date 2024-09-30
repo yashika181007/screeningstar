@@ -37,6 +37,7 @@ exports.createClient = (req, res) => {
             packageOptions,
             scopeOfServices,
             pricingPackages,
+            standardProcess,
             loginRequired,
             role,
             status = 'Active' 
@@ -61,6 +62,7 @@ exports.createClient = (req, res) => {
                 packageOptions,
                 scopeOfServices,
                 pricingPackages,
+                standardProcess,
                 loginRequired,
                 role,
                 status,
@@ -162,6 +164,7 @@ exports.updateClient = (req, res) => {
             packageOptions,
             scopeOfServices,
             pricingPackages,
+            standardProcess,
             loginRequired,
             role,
             status
@@ -200,6 +203,7 @@ exports.updateClient = (req, res) => {
                 packageOptions,
                 scopeOfServices,
                 pricingPackages,
+                standardProcess,
                 loginRequired,
                 role,
                 status
@@ -256,8 +260,8 @@ exports.deleteClient = async (req, res) => {
 };
 exports.changeClientStatus = async (req, res) => {
     try {
-        const Client = await Client.findByPk(req.params.id);
-        if (!Client) {
+        const client = await Client.findByPk(req.params.id);
+        if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
 
