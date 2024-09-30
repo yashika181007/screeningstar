@@ -61,7 +61,9 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
 
         req.session.token = token;
+        console.log('Session created for login userId:', req.session.token);
         req.session.userRole = user.role; 
+        console.log('Session created for login role:', req.session.userRole);
 
         const userData = {
             id: user.id,
