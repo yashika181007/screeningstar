@@ -1,6 +1,10 @@
 const Client = require('../models/Client');
 const { clientlogoupload } = require('../config/multer');
 const { Op } = require('sequelize');  
+const path = require('path');
+const fs = require('fs');
+const ftp = require('basic-ftp');
+
 exports.createClient = (req, res) => {
     clientlogoupload(req, res, async (err) => {
         if (err) {
@@ -136,11 +140,7 @@ exports.updateClient = (req, res) => {
             console.error('File upload error:', err);
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        if (!req.file) {
-            res.status(400).json({ message: 'File upload failed or no file provided' });
-            
-        }
-        const clientLogo = req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
+
         const {
             organizationName,
             clientId,
@@ -158,14 +158,28 @@ exports.updateClient = (req, res) => {
             scopeOfServices,
             pricingPackages,
             loginRequired,
-            status 
+            status
         } = req.body;
 
         try {
+            // Fetch the existing client
             const client = await Client.findByPk(req.params.id);
             if (!client) {
                 return res.status(404).json({ message: 'Client not found' });
             }
+
+            // Determine if a new logo was uploaded
+            const newClientLogo = req.file ? req.file.uploadedFileName1 : null;
+
+            if (newClientLogo) {
+                // If there's an old logo, delete it from FTP
+                if (client.clientLogo) {
+                    const oldRemotePath = `demo/screening_star/uploads/${client.clientLogo}`;
+                    await deleteFromRemote(oldRemotePath); // Function to delete file from FTP
+                }
+            }
+
+            // Update the client information
             await client.update({
                 organizationName,
                 clientId,
@@ -178,22 +192,47 @@ exports.updateClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo, 
+                clientLogo: newClientLogo || client.clientLogo, // Use new logo if uploaded, else keep the existing one
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
                 pricingPackages,
                 loginRequired,
-                status 
+                status
             });
 
             res.status(200).json({ message: 'Client updated successfully', client });
 
         } catch (error) {
             console.error('Database Error:', error);
-            res.status(500).json({ message: 'Error updating client', error: error.message });
+            return res.status(500).json({ message: 'Error updating client', error: error.message });
         }
     });
+};
+
+// Function to delete old logo from FTP server
+const deleteFromRemote = async (remotePath) => {
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+    try {
+        await client.access({
+            host: 'ftp.webstepdev.com',
+            user: 'u510451310.dev123',
+            password: 'Webs@0987#@!',
+            secure: false
+        });
+
+        console.log('Connected to FTP server');
+        await client.remove(remotePath);  // Deleting the old logo from the FTP server
+        console.log('Old logo deleted:', remotePath);
+        
+    } catch (err) {
+        console.error('Error deleting file from FTP:', err);
+        throw err;
+        
+    } finally {
+        client.close();
+    }
 };
 
 exports.deleteClient = async (req, res) => {
