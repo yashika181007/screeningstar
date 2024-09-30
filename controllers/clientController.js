@@ -1,18 +1,21 @@
 const Client = require('../models/Client');
 const { clientlogoupload } = require('../config/multer');
+const { Op } = require('sequelize');  
 
 exports.createClient = (req, res) => {
     clientlogoupload(req, res, async (err) => {
         if (err) {
             console.error('Error uploading file:', err);
-            return res.status(400).json({ message: 'File upload error', error: err });
+            res.status(400).json({ message: 'File upload error', error: err });
+            process.exit(); // Exiting after response
         }
 
         if (!req.file) {
-            return res.status(400).json({ message: 'File upload failed or no file provided' });
+            res.status(400).json({ message: 'File upload failed or no file provided' });
+            process.exit(); // Exiting after response
         }
 
-        const clientLogo =  req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
+        const clientLogo = req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
 
         const {
             organizationName,
@@ -57,9 +60,11 @@ exports.createClient = (req, res) => {
             });
 
             res.status(201).json({ message: 'Client created successfully', client: newClient });
+            process.exit(); // Exiting after response
         } catch (error) {
             console.error('Database Error:', error);
             res.status(500).json({ message: 'Error creating client', error: error.message });
+            process.exit(); // Exiting after response
         }
     });
 };
@@ -68,65 +73,76 @@ exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
         res.status(200).json(clients);
+        process.exit(); // Exiting after response
     } catch (err) {
-        res.status(400).json({ message: 'Error fetching clients', error: err.message });
+        console.error('Error fetching clients:', err);
+        res.status(500).json({ message: 'Error fetching clients', error: err.message });
+        process.exit(); // Exiting after response
     }
 };
 
 exports.getClientById = async (req, res) => {
     try {
-
         const client = await Client.findByPk(req.params.id);
         if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
+            res.status(404).json({ message: 'Client not found' });
+            process.exit(); // Exiting after response
         }
         res.status(200).json(client);
+        process.exit(); // Exiting after response
     } catch (err) {
-        res.status(400).json({ message: 'Error fetching client', error: err.message });
+        console.error('Error fetching client:', err);
+        res.status(500).json({ message: 'Error fetching client', error: err.message });
+        process.exit(); // Exiting after response
     }
 };
+
 exports.getActiveClients = async (req, res) => {
     try {
         const clients = await Client.findAll({
-            where: {
-                status: 'Active'
-            }
+            where: { status: 'Active' }
         });
-        console.log(clients); // Log the result
         if (!clients.length) {
-            return res.status(404).json({ message: 'No active clients found' });
+            res.status(404).json({ message: 'No active clients found' });
+            process.exit(); // Exiting after response
         }
         res.status(200).json(clients);
+        process.exit(); // Exiting after response
     } catch (err) {
-        console.error(err); // Log the error
-        res.status(400).json({ message: 'Error fetching active clients', error: err.message });
+        console.error('Error fetching active clients:', err);
+        res.status(500).json({ message: 'Error fetching active clients', error: err.message });
+        process.exit(); // Exiting after response
     }
 };
 
 exports.getInactiveClients = async (req, res) => {
     try {
         const clients = await Client.findAll({
-            where: {
-                status: 'In Active'
-            }
+            where: { status: 'In Active' }
         });
-        console.log(clients); // Log the result
         if (!clients.length) {
-            return res.status(404).json({ message: 'No Inactive clients found' });
+            res.status(404).json({ message: 'No inactive clients found' });
+            process.exit(); // Exiting after response
         }
         res.status(200).json(clients);
+        process.exit(); // Exiting after response
     } catch (err) {
-        console.error(err); // Log the error
-        res.status(400).json({ message: 'Error fetching Inactive clients', error: err.message });
+        console.error('Error fetching inactive clients:', err);
+        res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
+        process.exit(); // Exiting after response
     }
 };
 
 exports.updateClient = (req, res) => {
-    upload(req, res, async (err) => {
+    clientlogoupload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: 'File upload error', error: err });
+            console.error('File upload error:', err);
+            res.status(400).json({ message: 'File upload error', error: err });
+            process.exit(); // Exiting after response
         }
+
         const clientLogo = req.file ? req.file.filename : null;
+
         const {
             organizationName,
             clientId,
@@ -149,7 +165,8 @@ exports.updateClient = (req, res) => {
         try {
             const client = await Client.findByPk(req.params.id);
             if (!client) {
-                return res.status(404).json({ message: 'Client not found' });
+                res.status(404).json({ message: 'Client not found' });
+                process.exit(); // Exiting after response
             }
 
             await client.update({
@@ -173,9 +190,11 @@ exports.updateClient = (req, res) => {
             });
 
             res.status(200).json({ message: 'Client updated successfully', client });
+            process.exit(); // Exiting after response
         } catch (error) {
             console.error('Database Error:', error);
             res.status(500).json({ message: 'Error updating client', error: error.message });
+            process.exit(); // Exiting after response
         }
     });
 };
@@ -184,13 +203,16 @@ exports.deleteClient = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
         if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
+            res.status(404).json({ message: 'Client not found' });
+            process.exit(); // Exiting after response
         }
 
         await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully' });
+        process.exit(); // Exiting after response
     } catch (err) {
+        console.error('Error deleting client:', err);
         res.status(500).json({ message: 'Error deleting client', error: err.message });
+        process.exit(); // Exiting after response
     }
 };
-const { Op } = require('sequelize');  // Ensure Op is imported
