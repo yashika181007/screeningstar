@@ -159,17 +159,27 @@ exports.deleteClient = async (req, res) => {
 };
 const { Op } = require('sequelize');  // Ensure Op is imported
 
-exports.getClients = async (req, res) => {
+exports.getActiveClients = async (req, res) => {
     try {
         const clients = await Client.findAll({
             where: {
-                status: {
-                    [Op.or]: ['Active', 'In Active']  
-                }
+                status: 'Active'  
             }
         });
         res.status(200).json(clients);
     } catch (err) {
-        res.status(400).json({ message: 'Error fetching clients', error: err.message });
+        res.status(400).json({ message: 'Error fetching active clients', error: err.message });
+    }
+};
+exports.getInactiveClients = async (req, res) => {
+    try {
+        const clients = await Client.findAll({
+            where: {
+                status: 'In Active' 
+            }
+        });
+        res.status(200).json(clients);
+    } catch (err) {
+        res.status(400).json({ message: 'Error fetching inactive clients', error: err.message });
     }
 };
