@@ -84,11 +84,6 @@ exports.getClients = async (req, res) => {
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
-        if (!client) {
-            res.status(404).json({ message: 'Client not found' });
-            process.exit();
-            
-        }
         res.status(200).json(client);
         
     } catch (err) {
@@ -129,11 +124,6 @@ exports.updateClient = (req, res) => {
 
         try {
             const client = await Client.findByPk(req.params.id);
-            if (!client) {
-                res.status(404).json({ message: 'Client not found' });
-                process.exit();
-                
-            }
 
             await client.update({
                 organizationName,
@@ -200,13 +190,7 @@ exports.getInactiveClients = async (req, res) => {
 };
 exports.deleteClient = async (req, res) => {
     try {
-        const client = await Client.findByPk(req.params.id);
-        if (!client) {
-            res.status(404).json({ message: 'Client not found' });
-            process.exit();
-            
-        }
-
+        const client = await Client.findByPk(req.params.id);        
         await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully' });
         
