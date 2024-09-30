@@ -75,6 +75,7 @@ exports.getClients = async (req, res) => {
 
 exports.getClientById = async (req, res) => {
     try {
+
         const client = await Client.findByPk(req.params.id);
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
@@ -86,6 +87,9 @@ exports.getClientById = async (req, res) => {
 };
 exports.getActiveClients = async (req, res) => {
     try {
+        if (!clients) {
+            return res.status(404).json({ message: 'Client not foundd' });
+        }
         const clients = await Client.findAll({
             where: {
                 status: 'Active'  
