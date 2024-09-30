@@ -7,12 +7,14 @@ exports.getActiveClients = async (req, res) => {
             where: { status: 'Active' }
         });
 
+        console.log('Active Clients:', activeClients); // Log query result for debugging
+
         if (!activeClients || activeClients.length === 0) {
             return res.status(404).json({ message: 'No active clients found' });
         }
 
         res.status(200).json(activeClients);
-        
+
     } catch (err) {
         console.error('Error fetching active clients:', err);
         res.status(500).json({ message: 'Error fetching active clients', error: err.message });
@@ -119,9 +121,7 @@ exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
         if (!client) {
-            res.status(404).json({ message: 'Client not found' });
-            process.exit();
-            
+            res.status(404).json({ message: 'Client not found1' });   
         }
         res.status(200).json(client);
         
@@ -164,7 +164,7 @@ exports.updateClient = (req, res) => {
         try {
             const client = await Client.findByPk(req.params.id);
             if (!client) {
-                res.status(404).json({ message: 'Client not found' });
+                res.status(404).json({ message: 'Client not found2' });
                 process.exit();
                 
             }
@@ -203,9 +203,7 @@ exports.deleteClient = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
         if (!client) {
-            res.status(404).json({ message: 'Client not found' });
-            process.exit();
-            
+            res.status(404).json({ message: 'Client not found3' });
         }
 
         await client.destroy();
