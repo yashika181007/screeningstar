@@ -1,7 +1,41 @@
 const Client = require('../models/Client');
 const { clientlogoupload } = require('../config/multer');
 const { Op } = require('sequelize');  
+exports.getActiveClients = async (req, res) => {
+    try {
+        const activeClients = await Client.findAll({
+            where: { status: 'Active' }
+        });
 
+        if (!activeClients || activeClients.length === 0) {
+            return res.status(404).json({ message: 'No active clients found' });
+        }
+
+        res.status(200).json(activeClients);
+        
+    } catch (err) {
+        console.error('Error fetching active clients:', err);
+        res.status(500).json({ message: 'Error fetching active clients', error: err.message });
+    }
+};
+
+exports.getInactiveClients = async (req, res) => {
+    try {
+        const inactive = await Client.findAll({
+            where: { status: 'In Active' }
+        });
+        if (!inactive || inactive.length === 0) {
+            res.status(404).json({ message: 'No inactive clients found' });
+            
+        }
+        res.status(200).json(inactive);
+        
+    } catch (err) {
+        console.error('Error fetching inactive clients:', err);
+        res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
+        
+    }
+};
 exports.createClient = (req, res) => {
     clientlogoupload(req, res, async (err) => {
         if (err) {
@@ -84,6 +118,11 @@ exports.getClients = async (req, res) => {
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
+        if (!client) {
+            res.status(404).json({ message: 'Client not found' });
+            process.exit();
+            
+        }
         res.status(200).json(client);
         
     } catch (err) {
@@ -124,6 +163,11 @@ exports.updateClient = (req, res) => {
 
         try {
             const client = await Client.findByPk(req.params.id);
+            if (!client) {
+                res.status(404).json({ message: 'Client not found' });
+                process.exit();
+                
+            }
 
             await client.update({
                 organizationName,
@@ -154,43 +198,16 @@ exports.updateClient = (req, res) => {
         }
     });
 };
-exports.getActiveClients = async (req, res) => {
-    try {
-        const activeClients = await Client.findAll({
-            where:{ status: 'Active' }
-        });
 
-        if (!activeClients || activeClients.length === 0) {
-            return res.status(404).json({ message: 'No active clients found' });
-        }else{
-            res.status(200).json(activeClients);
-        }       
-    } catch (err) {
-        console.error('Error fetching active clients:', err);
-        res.status(500).json({ message: 'Error fetching active clients', error: err.message });
-    }
-};
-
-exports.getInactiveClients = async (req, res) => {
-    try {
-        const inactive = await Client.findAll({
-            where:{ status: 'In Active' }
-        });
-        if (!inactive || inactive.length === 0) {
-            res.status(404).json({ message: 'No inactive clients found' });
-            
-        }
-        res.status(200).json(inactive);
-        
-    } catch (err) {
-        console.error('Error fetching inactive clients:', err);
-        res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
-        
-    }
-};
 exports.deleteClient = async (req, res) => {
     try {
-        const client = await Client.findByPk(req.params.id);        
+        const client = await Client.findByPk(req.params.id);
+        if (!client) {
+            res.status(404).json({ message: 'Client not found' });
+            process.exit();
+            
+        }
+
         await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully' });
         
