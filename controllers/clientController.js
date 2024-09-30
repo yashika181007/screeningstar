@@ -270,7 +270,7 @@ exports.changeClientStatus = async (req, res) => {
         }
 
         Client.status = 'Inactive';
-        await Client.save(); 
+        await client.save(); 
 
         res.status(200).json({ message: 'Client status changed to Inactive' });
     } catch (err) {
