@@ -99,32 +99,32 @@ exports.getClientById = async (req, res) => {
 
 exports.getActiveClients = async (req, res) => {
     try {
-        const clients = await Client.findAll({
+        const activeclients = await Client.findAll({
             where: { status: 'Active' }
         });
-        if (!clients.length) {
+        if (!activeclients.length) {
             res.status(404).json({ message: 'No active clients found' });
-            process.exit(); // Exiting after response
+            process.exit(); 
         }
-        res.status(200).json(clients);
+        res.status(200).json(activeclients);
         process.exit(); // Exiting after response
     } catch (err) {
         console.error('Error fetching active clients:', err);
         res.status(500).json({ message: 'Error fetching active clients', error: err.message });
-        process.exit(); // Exiting after response
+        process.exit();
     }
 };
 
 exports.getInactiveClients = async (req, res) => {
     try {
-        const clients = await Client.findAll({
+        const inactive = await Client.findAll({
             where: { status: 'In Active' }
         });
-        if (!clients.length) {
+        if (!inactive.length) {
             res.status(404).json({ message: 'No inactive clients found' });
             process.exit(); // Exiting after response
         }
-        res.status(200).json(clients);
+        res.status(200).json(inactive);
         process.exit(); // Exiting after response
     } catch (err) {
         console.error('Error fetching inactive clients:', err);
