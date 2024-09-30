@@ -172,10 +172,9 @@ exports.getActiveClients = async (req, res) => {
 
         if (!activeClients || activeClients.length === 0) {
             return res.status(404).json({ message: 'No active clients found' });
-        }
-
-        res.status(200).json(activeClients);
-        
+        }else{
+            res.status(200).json(activeClients);
+        }       
     } catch (err) {
         console.error('Error fetching active clients:', err);
         res.status(500).json({ message: 'Error fetching active clients', error: err.message });
