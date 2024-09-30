@@ -38,6 +38,7 @@ exports.createClient = (req, res) => {
             scopeOfServices,
             pricingPackages,
             loginRequired,
+            role,
             status = 'Active' 
         } = req.body;
 
@@ -61,6 +62,7 @@ exports.createClient = (req, res) => {
                 scopeOfServices,
                 pricingPackages,
                 loginRequired,
+                role,
                 status,
             });
 
@@ -161,6 +163,7 @@ exports.updateClient = (req, res) => {
             scopeOfServices,
             pricingPackages,
             loginRequired,
+            role,
             status
         } = req.body;
 
@@ -198,6 +201,7 @@ exports.updateClient = (req, res) => {
                 scopeOfServices,
                 pricingPackages,
                 loginRequired,
+                role,
                 status
             });
 
