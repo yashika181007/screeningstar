@@ -11,6 +11,8 @@ const app = express();
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); // To parse form data
+
 app.use('/uploads', express.static('uploads'));
 
 app.use(session({
