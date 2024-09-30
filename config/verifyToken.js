@@ -1,15 +1,18 @@
-const config = require('../config');
+const jwt = require('jsonwebtoken');
+
 const verifyToken = (req, res, next) => {
-    const token = req.session.token;
+    const token = req.headers['authorization'];
     if (!token) {
-        return res.status(403).json({ message: 'Access denied. No token provided.' });
+        return res.status(403).json({ message: 'No token provided.' });
     }
 
-    try {
-        const decoded = jwt.verify(token, config.jwtSecret);
-        req.user = decoded; 
-        next(); 
-    } catch (err) {
-        return res.status(403).json({ message: 'Invalid or expired token' });
-    }
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Unauthorized!' });
+        }
+        req.userId = decoded.id; // or any other data from the token
+        next();
+    });
 };
+
+module.exports = verifyToken;

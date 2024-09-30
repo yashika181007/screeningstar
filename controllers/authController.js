@@ -50,27 +50,19 @@ exports.createuser = (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        // Find the user by email
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-
-        // Check if the password is correct
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-
-        // Generate the JWT token
         const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
 
-        // Store the token in the session
         req.session.token = token;
-        req.session.userRole = user.role; // Store user role in session
+        req.session.userRole = user.role; 
 
-        // Send back the user data along with token
         const userData = {
             id: user.id,
             name: user.employeeName,
