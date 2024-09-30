@@ -1,6 +1,24 @@
 const Client = require('../models/Client');
 const { clientlogoupload } = require('../config/multer');
 const { Op } = require('sequelize');  
+// Get Client by ID
+exports.getClientById = async (req, res) => {
+    try {
+        const client = await Client.findByPk(req.params.id);
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });   
+        }
+
+        res.status(200).json(client);
+        
+    } catch (err) {
+        console.error('Error fetching client:', err);
+        res.status(500).json({ message: 'Error fetching client', error: err.message });
+    }
+};
+
+// Get Active Clients
 exports.getActiveClients = async (req, res) => {
     try {
         const activeClients = await Client.findAll({
@@ -113,21 +131,6 @@ exports.getClients = async (req, res) => {
     } catch (err) {
         console.error('Error fetching clients:', err);
         res.status(500).json({ message: 'Error fetching clients', error: err.message });
-        
-    }
-};
-
-exports.getClientById = async (req, res) => {
-    try {
-        const client = await Client.findByPk(req.params.id);
-        if (!client) {
-            res.status(404).json({ message: 'Client not found1' });   
-        }
-        res.status(200).json(client);
-        
-    } catch (err) {
-        console.error('Error fetching client:', err);
-        res.status(500).json({ message: 'Error fetching client', error: err.message });
         
     }
 };
