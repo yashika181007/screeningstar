@@ -143,33 +143,26 @@ exports.updateUser = (req, res) => {
         const newEmployeePhoto = req.file ? req.file.uploadedFileName : null;
 
         try {
-            // Fetch the existing user
             const user = await User.findByPk(req.params.id);
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
-
-            // Handle password update
             if (password) {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 user.password = hashedPassword;
             }
-
-            // Handle new photo upload and delete old photo if a new one is provided
             if (newEmployeePhoto) {
                 if (user.employeePhoto) {
                     const oldRemotePath = `demo/screening_star/uploads/${user.employeePhoto}`;
                     await deleteFromRemote(oldRemotePath); // Function to delete file from FTP
                 }
             }
-
-            // Update user details
             user.employeeName = employeeName || user.employeeName;
             user.employeeMobile = employeeMobile || user.employeeMobile;
             user.email = email || user.email;
             user.designation = designation || user.designation;
             user.role = role || user.role;
-            user.employeePhoto = newEmployeePhoto || user.employeePhoto; // Use new photo if uploaded, else keep existing one
+            user.employeePhoto = newEmployeePhoto || user.employeePhoto;
             user.status = status || user.status;
 
             await user.save();
@@ -183,7 +176,6 @@ exports.updateUser = (req, res) => {
     });
 };
 
-// Function to delete old employee photo from FTP server
 const deleteFromRemote = async (remotePath) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;

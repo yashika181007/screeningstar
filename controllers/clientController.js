@@ -23,6 +23,7 @@ exports.createClient = (req, res) => {
         const {
             organizationName,
             clientId,
+            mobileNumber,
             registeredAddress,
             state,
             stateCode,
@@ -44,6 +45,7 @@ exports.createClient = (req, res) => {
             const newClient = await Client.create({
                 organizationName,
                 clientId,
+                mobileNumber,
                 registeredAddress,
                 state,
                 stateCode,
@@ -144,6 +146,7 @@ exports.updateClient = (req, res) => {
         const {
             organizationName,
             clientId,
+            mobileNumber,
             registeredAddress,
             state,
             stateCode,
@@ -179,6 +182,7 @@ exports.updateClient = (req, res) => {
             await client.update({
                 organizationName,
                 clientId,
+                mobileNumber,
                 registeredAddress,
                 state,
                 stateCode,
