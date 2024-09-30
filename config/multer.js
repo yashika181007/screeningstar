@@ -18,7 +18,6 @@ function checkFileType(file, cb) {
 
 const uploadEmployeePhoto = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, 
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
@@ -26,7 +25,6 @@ const uploadEmployeePhoto = multer({
 
 const uploadClientLogo = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, 
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
