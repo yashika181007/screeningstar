@@ -50,21 +50,30 @@ exports.createuser = (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log(req.body); //
+        // Check if the user exists in the database
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
+
+        // Compare passwords using bcrypt
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
+
+        // Generate JWT token
         const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
 
+        // Store token and user role in session
         req.session.token = token;
         console.log('Session created for login userId:', req.session.token);
-        req.session.userRole = user.role; 
+
+        req.session.userRole = user.role;
         console.log('Session created for login role:', req.session.userRole);
 
+        // Prepare user data to return
         const userData = {
             id: user.id,
             name: user.employeeName,
@@ -72,9 +81,15 @@ exports.login = async (req, res) => {
             role: user.role
         };
 
+        // Log email and password for debugging purposes (remove in production)
+        console.log('Email:', email);
+        console.log('Password:', password);
+
+        // Return success response with user data
         res.status(200).json({ message: 'Login successful', user: userData });
 
     } catch (err) {
+        // Catch and return any error
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };

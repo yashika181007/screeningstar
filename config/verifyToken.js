@@ -13,16 +13,12 @@ const verifyToken = (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized!' });
         }
         
-        // Log the decoded token and userId
         console.log('Token successfully verified:', decoded);
-        
-        // Assign the decoded ID (or any other data) to the request object
+
         req.userId = decoded.id;
 
-        // Log session creation (if applicable)
         console.log('Session created for userId:', req.userId);
 
-        // Move to the next middleware or route handler
         next();
     });
 };
