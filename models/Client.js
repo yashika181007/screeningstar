@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
-
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
@@ -65,6 +64,9 @@ const Client = sequelize.define('Client', {
     },
     loginRequired: {
         type: DataTypes.ENUM('yes', 'no'),
+    },
+    status: {
+        type: DataTypes.ENUM('Active', 'In Acrive'),
     }
     
 });

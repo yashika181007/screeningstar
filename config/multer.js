@@ -56,7 +56,8 @@ const uploadToRemote = async (fileBuffer, remotePath) => {
         
     } catch (err) {
         console.error('FTP upload error:', err);
-        throw err; // Re-throw error for proper handling
+        throw err;
+        
     } finally {
         client.close();
 

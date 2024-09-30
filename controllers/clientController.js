@@ -31,6 +31,7 @@ exports.createClient = (req, res) => {
             scopeOfServices,
             pricingPackages,
             loginRequired,
+            status = 'Active' 
         } = req.body;
 
         try {
@@ -52,6 +53,7 @@ exports.createClient = (req, res) => {
                 scopeOfServices,
                 pricingPackages,
                 loginRequired,
+                status,
             });
 
             res.status(201).json({ message: 'Client created successfully', client: newClient });
