@@ -10,7 +10,7 @@ exports.createuser = (req, res) => {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
         try {
-            const { employeeName, employeeMobile, email, designation, password, role } = req.body;
+            const { employeeName, employeeMobile, email, designation, password, role, status = 'Active', } = req.body;
 
             if (!req.file) {
                 return res.status(400).json({ message: 'File upload failed or no file provided' });
@@ -33,7 +33,7 @@ exports.createuser = (req, res) => {
                 designation,
                 password: hashedPassword,
                 role,
-                status = 'Active',
+                status,
             });
 
             return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
@@ -133,7 +133,7 @@ exports.updateUser = (req, res) => {
         if (err) {
             return res.status(400).json({ message: 'File upload error', error: err });
         }
-        const { employeeName, employeeMobile, email, designation, password, role } = req.body;
+        const { employeeName, employeeMobile, email, designation, password, role, status } = req.body;
         const employeePhoto = req.file ? req.file.filename : null;
 
         try {
