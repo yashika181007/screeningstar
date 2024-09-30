@@ -134,12 +134,13 @@ exports.updateClient = (req, res) => {
     clientlogoupload(req, res, async (err) => {
         if (err) {
             console.error('File upload error:', err);
-            res.status(400).json({ message: 'File upload error', error: err });
+            return res.status(400).json({ message: 'File upload error', error: err });
+        }
+        if (!req.file) {
+            res.status(400).json({ message: 'File upload failed or no file provided' });
             
         }
-
-        const clientLogo = req.file ? req.file.filename : null;
-
+        const clientLogo = req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
         const {
             organizationName,
             clientId,
@@ -156,17 +157,15 @@ exports.updateClient = (req, res) => {
             packageOptions,
             scopeOfServices,
             pricingPackages,
-            loginRequired
+            loginRequired,
+            status 
         } = req.body;
 
         try {
             const client = await Client.findByPk(req.params.id);
             if (!client) {
-                res.status(404).json({ message: 'Client not found2' });
-                process.exit();
-                
+                return res.status(404).json({ message: 'Client not found' });
             }
-
             await client.update({
                 organizationName,
                 clientId,
@@ -179,20 +178,20 @@ exports.updateClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo: clientLogo || client.clientLogo,
+                clientLogo, 
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
                 pricingPackages,
-                loginRequired
+                loginRequired,
+                status 
             });
 
             res.status(200).json({ message: 'Client updated successfully', client });
-            
+
         } catch (error) {
             console.error('Database Error:', error);
             res.status(500).json({ message: 'Error updating client', error: error.message });
-            
         }
     });
 };
