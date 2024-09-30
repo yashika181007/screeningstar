@@ -1,28 +1,33 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const authRoutes = require('./routes/authRoutes');
-const clientRoutes = require('./routes/clientRoutes');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-
 require('dotenv').config();
+
+const authRoutes = require('./routes/authRoutes');
+const clientRoutes = require('./routes/clientRoutes');
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
-app.use('/uploads', express.static('uploads')); 
-
-app.use('/Screeningstar', authRoutes);
-app.use('/Screeningstar', clientRoutes);
 app.use(cookieParser());
+app.use(express.json()); 
+app.use('/uploads', express.static('uploads'));
 
 app.use(session({
-    secret: 'screeningstar@2024',
+    secret: process.env.SESSION_SECRET || 'screeningstar@2024',
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false, maxAge: 3600000 } 
 }));
+
+app.use('/Screeningstar', authRoutes);
+app.use('/Screeningstar', clientRoutes);
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!', error: err.message });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
