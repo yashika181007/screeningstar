@@ -166,19 +166,19 @@ exports.updateClient = (req, res) => {
 };
 exports.getActiveClients = async (req, res) => {
     try {
-        const activeclients = await Client.findAll({
+        const activeClients = await Client.findAll({
             where: { status: 'Active' }
         });
-        if (!activeclients.length) {
-            res.status(404).json({ message: 'No active clients found' });
-             
+
+        if (!activeClients || activeClients.length === 0) {
+            return res.status(404).json({ message: 'No active clients found' });
         }
-        res.status(200).json(activeclients);
+
+        res.status(200).json(activeClients);
         
     } catch (err) {
         console.error('Error fetching active clients:', err);
         res.status(500).json({ message: 'Error fetching active clients', error: err.message });
-        
     }
 };
 
@@ -187,7 +187,7 @@ exports.getInactiveClients = async (req, res) => {
         const inactive = await Client.findAll({
             where: { status: 'In Active' }
         });
-        if (!inactive.length) {
+        if (!inactive || inactive.length === 0) {
             res.status(404).json({ message: 'No inactive clients found' });
             
         }
