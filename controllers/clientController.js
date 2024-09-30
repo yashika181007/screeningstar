@@ -236,17 +236,17 @@ const deleteFromRemote = async (remotePath) => {
 
 exports.deleteClient = async (req, res) => {
     try {
-        const client = await Client.findByPk(req.params.id);
+        const clientId = req.params.id;
+        const client = await Client.findByPk(clientId); 
+
         if (!client) {
-            res.status(404).json({ message: 'Client not found3' });
+            return res.status(404).json({ message: 'Client not found.' });
         }
 
-        await client.destroy();
-        res.status(200).json({ message: 'Client deleted successfully' });
-        
-    } catch (err) {
-        console.error('Error deleting client:', err);
-        res.status(500).json({ message: 'Error deleting client', error: err.message });
-        
+        await client.destroy(); 
+        res.status(200).json({ message: 'Client deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting client:', error);
+        res.status(500).json({ message: 'Error deleting client.', error: error.message });
     }
 };
