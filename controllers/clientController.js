@@ -157,3 +157,19 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ message: 'Error deleting client', error: err.message });
     }
 };
+const { Op } = require('sequelize');  // Ensure Op is imported
+
+exports.getClients = async (req, res) => {
+    try {
+        const clients = await Client.findAll({
+            where: {
+                status: {
+                    [Op.or]: ['Active', 'In Active']  
+                }
+            }
+        });
+        res.status(200).json(clients);
+    } catch (err) {
+        res.status(400).json({ message: 'Error fetching clients', error: err.message });
+    }
+};
