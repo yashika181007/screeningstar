@@ -262,7 +262,6 @@ exports.logout = (req, res) => {
 
 exports.veriflogin = async (req, res) => {
     try {
-
         const token = req.headers['authorization']?.split(' ')[1];
 
         if (!token) {
@@ -278,15 +277,16 @@ exports.veriflogin = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const { email, password } = req.body;
-
-        if (email !== user.email || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-
-        res.status(200).json({ success: true, message: 'Login verified' });
+        res.status(200).json({ success: true, message: 'Login verified', userId });
     } catch (err) {
+
         console.error(err);
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ success: false, message: 'Invalid token' });
+        }
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ success: false, message: 'Token expired' });
+        }
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
