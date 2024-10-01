@@ -23,10 +23,10 @@ const verifyToken = (req, res, next) => {
     jwt.verify(jwtToken, process.env.jwtSecret, (err, decoded) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
-                // console.log('Token has expired:', err);
+                console.log('Token has expired:', err);
                 return res.status(401).json({ message: 'Token has expired. Please log in again.' });
             }
-            // console.log('Token verification error:', err);
+            console.log('Token verification error:', err);
             return res.status(401).json({ message: 'Unauthorized!' });
         }
         req.user_id = decoded.id;

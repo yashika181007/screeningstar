@@ -64,10 +64,10 @@ exports.login = async (req, res) => {
         }
         const token = jwt.sign({ id: user.id,role: user.role }, config.jwtSecret, { expiresIn: '6h' });
         req.session.token = token;
-        // console.log('Session created for login userId:', req.session.token);
+        console.log('Session created for login userId:', req.session.token);
 
         req.session.userRole = user.role;
-        // console.log('Session created for login role:', req.session.userRole);
+        console.log('Session created for login role:', req.session.userRole);
 
         const userData = {
             id: user.id,
