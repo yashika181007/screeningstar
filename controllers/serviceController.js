@@ -57,12 +57,9 @@ exports.updateService = async (req, res) => {
         if (!service) {
             return res.status(404).json({ message: 'Service not found' });
         }
-        if (serviceName !== undefined && serviceName.trim() !== '') {
-            service.serviceName = serviceName;
-        }
-        if (serviceDescription !== undefined && serviceDescription.trim() !== '') {
-            service.serviceDescription = serviceDescription;
-        }
+        service.serviceName = serviceName || service.serviceName;
+        service.serviceDescription = serviceDescription || service.serviceDescription;
+
         await service.save();
         res.status(200).json({ message: 'Service updated successfully', service });
 
