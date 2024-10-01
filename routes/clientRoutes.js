@@ -2,19 +2,19 @@ const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
 
-router.post('/clients', clientController.createClient);
+router.post('/clients',verifyToken, clientController.createClient);
 
-router.get('/clients', clientController.getClients);
+router.get('/clients',verifyToken, clientController.getClients);
 
-router.get('/clients/active', clientController.getActiveClients);
+router.get('/clients/active',verifyToken, clientController.getActiveClients);
 
-router.get('/clients/inactive', clientController.getInactiveClients);
+router.get('/clients/inactive',verifyToken, clientController.getInactiveClients);
 
-router.get('/clients/:id', clientController.getClientById);
+router.get('/clients/:id',verifyToken, clientController.getClientById);
 
-router.put('/clients/:id', clientController.updateClient);
+router.put('/clients/:id',verifyToken, clientController.updateClient);
 
-router.delete('/clients/:id', clientController.deleteClient);
-router.put('/clients/status/:id', clientController.changeClientStatus);
+router.delete('/clients/:id',verifyToken, clientController.deleteClient);
+router.put('/clients/status/:id',verifyToken, clientController.changeClientStatus);
 
 module.exports = router;

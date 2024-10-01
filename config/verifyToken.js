@@ -30,7 +30,9 @@ const verifyToken = (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized!' });
         }
         req.user_id = decoded.id;
+        req.role = decoded.role;
         console.log('userId:', req.user_id);
+        console.log('role:', req.role);
         next();
     });
 };

@@ -62,7 +62,7 @@ exports.login = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '6h' });
+        const token = jwt.sign({ id: user.id,role: user.role }, config.jwtSecret, { expiresIn: '6h' });
         req.session.token = token;
         console.log('Session created for login userId:', req.session.token);
 
@@ -246,7 +246,7 @@ exports.changeUserStatus = async (req, res) => {
 };
 exports.logout = (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; // Extract the token from headers
+        const token = req.headers['authorization']?.split(' ')[1]; 
 
         if (token) {
             addTokenToBlacklist(token);
