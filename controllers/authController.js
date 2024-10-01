@@ -100,9 +100,7 @@ exports.getActiveUsers = async (req, res) => {
         const activeUsers = await User.findAll({
             where: { status: 'Active' }
         });
-
         // console.log('Active Users:', activeUsers); 
-
         if (!activeUsers || activeUsers.length === 0) {
             return res.status(404).json({ message: 'No active Users found' });
         }
@@ -259,5 +257,36 @@ exports.logout = (req, res) => {
         });
     } catch (err) {
         res.status(400).json({ message: 'Error signing out', error: err.message });
+    }
+};
+
+exports.veriflogin = async (req, res) => {
+    try {
+
+        const token = req.headers['authorization']?.split(' ')[1];
+
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'No token provided' });
+        }
+
+        const decoded = jwt.verify(token, config.jwtSecret);
+        
+        const userId = decoded.id;
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const { email, password } = req.body;
+
+        if (email !== user.email || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        res.status(200).json({ success: true, message: 'Login verified' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };

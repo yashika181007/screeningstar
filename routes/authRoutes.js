@@ -3,11 +3,9 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
 
+router.post('/login', verifyToken, authController.login);
+router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', verifyToken, authController.createuser);
-
-router.post('/login', authController.login, (req, res) => {
-    res.status(200).json({ message: 'Access granted', userId: req.id, userRole: req.role });
-});
 
 router.get('/users', verifyToken, authController.getAllUsers);
 router.get('/users/active', verifyToken, authController.getActiveUsers);
