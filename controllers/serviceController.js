@@ -26,10 +26,7 @@ exports.createService = async (req, res) => {
 
 exports.getAllServices = async (req, res) => {
     try {
-        const services = await Service.findAll({
-            include: [{ model: Users, as: 'User' }] 
-        });
-
+        const services = await Service.findAll();
         res.status(200).json(services);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching services', error: error.message });
@@ -42,7 +39,6 @@ exports.getServiceById = async (req, res) => {
     try {
         const service = await Service.findOne({
             where: { id },
-            include: [{ model: Users, as: 'User' }]
         });
 
         if (!service) {
