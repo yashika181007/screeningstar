@@ -50,7 +50,7 @@ exports.createuser = (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(req.body); //
+        console.log(req.body); 
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -229,14 +229,13 @@ exports.changeUserStatus = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Toggle the user status
         if (user.status === 'Active') {
             user.status = 'Inactive';
         } else if (user.status === 'Inactive') {
             user.status = 'Active';
         }
 
-        await user.save(); // Save the updated user status
+        await user.save(); 
 
         res.status(200).json({ message: `User status changed to ${user.status}` });
     } catch (err) {
