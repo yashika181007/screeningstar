@@ -51,16 +51,13 @@ exports.getServiceById = async (req, res) => {
 
 exports.updateService = async (req, res) => {
     const { id } = req.params;
-    const { user_id, serviceName, serviceDescription } = req.body;
+    const { serviceName, serviceDescription } = req.body;
 
     try {
-        const service = await Service.findOne({ where: { id } });
-
+        const service = await Service.findByPk(req.params.id);
         if (!service) {
             return res.status(404).json({ message: 'Service not found' });
         }
-
-        service.user_id = user_id || service.user_id; 
         service.serviceName = serviceName || service.serviceName;
         service.serviceDescription = serviceDescription || service.serviceDescription;
 
