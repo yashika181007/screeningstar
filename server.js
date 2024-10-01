@@ -6,12 +6,12 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
-
+const serviceRoutes = require('./routes/serviceRoutes');
 const app = express();
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); // To parse form data
+app.use(express.urlencoded({ extended: true })); 
 
 app.use('/uploads', express.static('uploads'));
 
@@ -24,6 +24,7 @@ app.use(session({
 
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
+app.use('/Screeningstar', serviceRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
