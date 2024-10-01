@@ -1,4 +1,3 @@
-// verifytokenmiddleware.js
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { isTokenBlacklisted } = require('./blacklist');
@@ -15,10 +14,8 @@ const verifyToken = (req, res, next) => {
     if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
         return res.status(401).json({ message: 'Invalid token format.' });
     }
-
     const jwtToken = tokenParts[1];
 
-    // Check if token is blacklisted
     if (isTokenBlacklisted(jwtToken)) {
         return res.status(401).json({ message: 'Token has been blacklisted. Please log in again.' });
     }

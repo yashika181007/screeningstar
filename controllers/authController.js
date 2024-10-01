@@ -248,17 +248,14 @@ exports.logout = (req, res) => {
     try {
         const token = req.headers['authorization']?.split(' ')[1]; // Extract the token from headers
 
-        // Add the token to blacklist
         if (token) {
             addTokenToBlacklist(token);
         }
-
-        // Destroy the session
         req.session.destroy((err) => {
             if (err) {
                 return res.status(500).json({ message: 'Error while logging out.' });
             }
-            res.status(200).json({ message: 'logout successful. Token blacklisted and session cleared.' });
+            res.status(200).json({ message: 'logout successful.' });
         });
     } catch (err) {
         res.status(400).json({ message: 'Error signing out', error: err.message });
