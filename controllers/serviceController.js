@@ -6,8 +6,8 @@ const config = require('../config');
 exports.createService = async (req, res) => {
     try {
         const { serviceName, serviceDescription } = req.body;
-        const user_id = req.user_id; 
-        console.log('user_id',req.session.userId)
+        const user_id = req.session.userId;
+        console.log('user_id',user_id)
 
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
