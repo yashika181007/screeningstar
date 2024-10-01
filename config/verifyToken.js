@@ -16,10 +16,13 @@ const verifyToken = (req, res, next) => {
 
     jwt.verify(tokenParts[1], process.env.jwtSecret, (err, decoded) => {
         if (err) {
+            if (err.name === 'TokenExpiredError') {
+                console.log('Token has expired:', err);
+                return res.status(401).json({ message: 'Token has expired. Please log in again.' });
+            }
             console.log('Token verification error:', err);
             return res.status(401).json({ message: 'Unauthorized!' });
         }
-
         req.userId = decoded.id;
         console.log('userId',req.userId)
         next();
