@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
+const packageRoutes = require('./routes/packageRoutes');
 const app = express();
 app.use(cors());
 app.use(cookieParser());
@@ -25,7 +26,7 @@ app.use(session({
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
 app.use('/Screeningstar', serviceRoutes);
-
+app.use('/Screeningstar', packageRoutes);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
