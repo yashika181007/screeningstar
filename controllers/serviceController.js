@@ -34,20 +34,18 @@ exports.getAllServices = async (req, res) => {
 };
 
 exports.getServiceById = async (req, res) => {
-    const { id } = req.params;
-
     try {
-        const service = await Service.findOne({
-            where: { id },
-        });
-
-        if (!service) {
-            return res.status(404).json({ message: 'Service not found' });
+        const services = await Service.findByPk(req.params.id);
+        
+        if (!services) {
+            return res.status(404).json({ message: 'services not found' });   
         }
 
-        res.status(200).json(service);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching service', error: error.message });
+        res.status(200).json(services);
+        
+    } catch (err) {
+        console.error('Error fetching services:', err);
+        res.status(500).json({ message: 'Error fetching services', error: err.message });
     }
 };
 
