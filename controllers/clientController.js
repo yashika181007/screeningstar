@@ -17,7 +17,6 @@ exports.createClient = (req, res) => {
             res.status(400).json({ message: 'File upload failed or no file provided' });
             
         }
-
         const clientLogo = req.file.uploadedFileName1 ? `${req.file.uploadedFileName1}` : null;
 
         const {
@@ -94,7 +93,7 @@ exports.getActiveClients = async (req, res) => {
             where: { status: 'Active' }
         });
 
-        console.log('Active Clients:', activeClients); // Log query result for debugging
+        console.log('Active Clients:', activeClients); 
 
         if (!activeClients || activeClients.length === 0) {
             return res.status(404).json({ message: 'No active clients found' });
@@ -117,7 +116,6 @@ exports.getInactiveClients = async (req, res) => {
             
         }
         res.status(200).json(inactive);
-        
     } catch (err) {
         console.error('Error fetching inactive clients:', err);
         res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
@@ -131,7 +129,6 @@ exports.getClientById = async (req, res) => {
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });   
         }
-
         res.status(200).json(client);
         
     } catch (err) {
@@ -264,15 +261,13 @@ exports.changeClientStatus = async (req, res) => {
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-
-        // Toggle the client status
         if (client.status === 'Active') {
             client.status = 'Inactive';
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
         }
 
-        await client.save(); // Save the updated client status
+        await client.save();
 
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {

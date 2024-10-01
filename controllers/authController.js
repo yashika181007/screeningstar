@@ -52,7 +52,7 @@ exports.createuser = (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(req.body); 
+        // console.log(req.body); 
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -101,7 +101,7 @@ exports.getActiveUsers = async (req, res) => {
             where: { status: 'Active' }
         });
 
-        console.log('Active Users:', activeUsers); 
+        // console.log('Active Users:', activeUsers); 
 
         if (!activeUsers || activeUsers.length === 0) {
             return res.status(404).json({ message: 'No active Users found' });
@@ -199,9 +199,9 @@ const deleteFromRemote = async (remotePath) => {
             secure: false
         });
 
-        console.log('Connected to FTP server');
-        await client.remove(remotePath); 
-        console.log('Old employee photo deleted:', remotePath);
+        // console.log('Connected to FTP server');
+        // await client.remove(remotePath); 
+        // console.log('Old employee photo deleted:', remotePath);
 
     } catch (err) {
         console.error('Error deleting file from FTP:', err);
