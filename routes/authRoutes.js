@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
 
-router.post('/login', verifyToken, authController.login);
+router.post('/login',  authController.login);
 router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', verifyToken, authController.createuser);
 
