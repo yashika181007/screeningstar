@@ -11,6 +11,7 @@ router.get('/users/inactive', verifyToken, authController.getInactiveUsers);
 router.get('/users/:id', verifyToken, authController.getUserById);
 router.put('/users/:id', verifyToken, authController.updateUser);
 router.delete('/users/:id', verifyToken, authController.deleteUser);
-router.put('/users/status/:id', authController.changeUserStatus);
+router.put('/users/status/:id',verifyToken, authController.changeUserStatus);
+router.post('/logout',verifyToken, authController.logout);
 
 module.exports = router;

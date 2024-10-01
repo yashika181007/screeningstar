@@ -1,8 +1,12 @@
+// verifytokenmiddleware.js
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { isTokenBlacklisted } = require('./blacklist');
+
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
     console.log('Incoming request headers:', req.headers);
+
     if (!token) {
         return res.status(403).json({ message: 'No token provided.' });
     }
@@ -11,10 +15,15 @@ const verifyToken = (req, res, next) => {
     if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
         return res.status(401).json({ message: 'Invalid token format.' });
     }
-   
-    console.log('jwtSecret:', process.env.jwtSecret);
 
-    jwt.verify(tokenParts[1], process.env.jwtSecret, (err, decoded) => {
+    const jwtToken = tokenParts[1];
+
+    // Check if token is blacklisted
+    if (isTokenBlacklisted(jwtToken)) {
+        return res.status(401).json({ message: 'Token has been blacklisted. Please log in again.' });
+    }
+
+    jwt.verify(jwtToken, process.env.jwtSecret, (err, decoded) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
                 console.log('Token has expired:', err);
@@ -23,8 +32,8 @@ const verifyToken = (req, res, next) => {
             console.log('Token verification error:', err);
             return res.status(401).json({ message: 'Unauthorized!' });
         }
-        req.user_id  = decoded.id;
-        console.log('userId',req.user_id )
+        req.user_id = decoded.id;
+        console.log('userId:', req.user_id);
         next();
     });
 };
