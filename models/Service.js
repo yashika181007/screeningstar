@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
+const Users = require('../models/User');
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
@@ -16,8 +17,8 @@ const Service = sequelize.define('Service', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Users',   // References the Users table
-            key: 'id'         // Foreign key for the Users table
+            model: 'Users',   
+            key: 'id'         
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
@@ -44,7 +45,6 @@ const Service = sequelize.define('Service', {
     timestamps: false
 });
 
-// Association between Service and Users
 Service.belongsTo(Users, {
     foreignKey: 'user_id',
     as: 'User',
@@ -52,7 +52,6 @@ Service.belongsTo(Users, {
     onUpdate: 'CASCADE'
 });
 
-// Sync the table with the database
 Service.sync();
 
 module.exports = Service;
