@@ -5,6 +5,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     host: config.database.host,
     dialect: 'mysql',
 });
+
 const Service = sequelize.define('Service', {
     id: {
         type: DataTypes.INTEGER,
@@ -15,8 +16,8 @@ const Service = sequelize.define('Service', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Users',
-            key: 'id'
+            model: 'Users',   // References the Users table
+            key: 'id'         // Foreign key for the Users table
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
@@ -43,6 +44,7 @@ const Service = sequelize.define('Service', {
     timestamps: false
 });
 
+// Association between Service and Users
 Service.belongsTo(Users, {
     foreignKey: 'user_id',
     as: 'User',
@@ -50,6 +52,7 @@ Service.belongsTo(Users, {
     onUpdate: 'CASCADE'
 });
 
-Client.sync();
+// Sync the table with the database
+Service.sync();
 
 module.exports = Service;
