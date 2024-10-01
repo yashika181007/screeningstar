@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const serviceRoutes = require('../controllers/serviceRoutes');
+const serviceController = require('../controllers/serviceController');
 
 router.post('/service', serviceController.createService);
 router.get('/service', serviceController.getAllServices);
