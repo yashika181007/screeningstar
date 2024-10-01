@@ -50,7 +50,6 @@ exports.getServiceById = async (req, res) => {
 };
 
 exports.updateService = async (req, res) => {
-    const { id } = req.params;
     const { serviceName, serviceDescription } = req.body;
 
     try {
@@ -58,14 +57,18 @@ exports.updateService = async (req, res) => {
         if (!service) {
             return res.status(404).json({ message: 'Service not found' });
         }
-        service.serviceName = serviceName || service.serviceName;
-        service.serviceDescription = serviceDescription || service.serviceDescription;
-
+        if (serviceName !== undefined && serviceName.trim() !== '') {
+            service.serviceName = serviceName;
+        }
+        if (serviceDescription !== undefined && serviceDescription.trim() !== '') {
+            service.serviceDescription = serviceDescription;
+        }
         await service.save();
-
         res.status(200).json({ message: 'Service updated successfully', service });
+
     } catch (error) {
-        res.status(500).json({ message: 'Error updating service', error: error.message });
+        console.error('Error updating service:', error);
+        return res.status(500).json({ message: 'Error updating service', error: error.message });
     }
 };
 
