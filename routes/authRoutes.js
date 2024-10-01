@@ -5,7 +5,7 @@ const verifyToken = require('../config/verifyToken');
 
 router.post('/createuser', verifyToken, authController.createuser);
 
-router.get('/login', verifyToken,uthController.login, (req, res) => {
+router.get('/login', verifyToken,authController.login, (req, res) => {
     res.status(200).json({ message: 'Access granted', userId: req.id, userRole: req.role });
 });
 
