@@ -5,7 +5,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     host: config.database.host,
     dialect: 'mysql',
 });
-const Client = sequelize.define('Client', {
+const Client = sequelize.define('client', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

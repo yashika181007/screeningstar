@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const Service = sequelize.define('Service', {
+const Service = sequelize.define('service', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -41,7 +41,7 @@ const Service = sequelize.define('Service', {
         onUpdate: DataTypes.NOW
     }
 }, {
-    tableName: 'Service',
+    tableName: 'service',
     timestamps: false
 });
 

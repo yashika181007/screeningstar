@@ -6,7 +6,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const User = sequelize.define('Users', {
+const User = sequelize.define('users', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -45,7 +45,7 @@ const User = sequelize.define('Users', {
         allowNull: false,
     }
 }, {
-    tableName: 'Users', 
+    tableName: 'users', 
     timestamps: true,  
 });
 
