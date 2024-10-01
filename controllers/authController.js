@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '6h' });
         req.session.token = token;
         console.log('Session created for login userId:', req.session.token);
 
