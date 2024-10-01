@@ -6,7 +6,7 @@ const config = require('../config');
 exports.createService = async (req, res) => {
     try {
         const { serviceName, serviceDescription } = req.body;
-        const user_id = req.session.userId;
+        const user_id = req.user_id; 
         console.log('user_id',req.session.userId)
 
         if (!user_id) {

@@ -23,8 +23,8 @@ const verifyToken = (req, res, next) => {
             console.log('Token verification error:', err);
             return res.status(401).json({ message: 'Unauthorized!' });
         }
-        req.userId = decoded.id;
-        console.log('userId',req.userId)
+        req.user_id  = decoded.id;
+        console.log('userId',req.user_id )
         next();
     });
 };
