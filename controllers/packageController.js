@@ -8,7 +8,7 @@ exports.createpackage = async (req, res) => {
         const { packageName, packageDescription } = req.body;
         console.log('req.body', req.body);
 
-        const user_id = 1; 
+        const user_id = decoded.id;
         console.log('user_id', user_id);
 
         if (!user_id) {
