@@ -56,19 +56,20 @@ exports.getpackageById = async (req, res) => {
     }
 };
 
-exports.updatepackage = async (req, res) => {
+exports.updatepackage = async (req, res) => { 
     const { packageName, packageDescription } = req.body;
 
     try {
-        const package = await package.findByPk(req.params.id);
-        if (!package) {
-            return res.status(404).json({ message: 'package not found' });
+        const foundPackage = await package.findByPk(req.params.id);
+        if (!foundPackage) {
+            return res.status(404).json({ message: 'Package not found' });
         }
-        package.packageName = packageName || package.packageName;
-        package.packageDescription = packageDescription || package.packageDescription;
 
-        await package.save();
-        res.status(200).json({ message: 'package updated successfully', package });
+        foundPackage.packageName = packageName || foundPackage.packageName;
+        foundPackage.packageDescription = packageDescription || foundPackage.packageDescription;
+
+        await foundPackage.save();
+        res.status(200).json({ message: 'Package updated successfully', package: foundPackage });
 
     } catch (error) {
         console.error('Error updating package:', error);
