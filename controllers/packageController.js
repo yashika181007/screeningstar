@@ -6,6 +6,7 @@ const config = require('../config');
 exports.createpackage = async (req, res) => {
     try {
         const { packageName, packageDescription } = req.body;
+        console.log('req.body',req.body);
         const user_id = 1;
         console.log('user_id',user_id)
 
