@@ -8,15 +8,30 @@ exports.createpackage = async (req, res) => {
         const { packageName, packageDescription } = req.body;
         console.log('req.body', req.body);
 
+        const token = req.session.token;
+
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, config.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
         const user_id = decoded.id;
         console.log('user_id', user_id);
 
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
+
         if (!packageName || !packageDescription) {
             return res.status(400).json({ message: 'Package name and description are required' });
         }
+
         const newpackage = await package.create({
             user_id,
             packageName,
