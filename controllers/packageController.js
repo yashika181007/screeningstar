@@ -12,12 +12,15 @@ exports.createpackage = async (req, res) => {
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
+        if(!packageName || !packageDescription){
+            console.log('Empty feilds');
+        }
         const newpackage = await package.create({
             user_id,
             packageName,
             packageDescription
         });
-
+console.log('newpackage',newpackage);
         res.status(201).json({ message: 'package created successfully', package: newpackage });
     } catch (error) {
         res.status(500).json({ message: 'Error creating package', error: error.message });
