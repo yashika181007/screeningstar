@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 const Users = require('../models/User');
-const Package = require('../models/Package');
+
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',

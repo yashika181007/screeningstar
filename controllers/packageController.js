@@ -1,4 +1,4 @@
-const Package = require('../models/Package');
+const package = require('../models/Package');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
