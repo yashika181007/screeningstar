@@ -81,16 +81,17 @@ exports.deletepackage = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const package = await package.findOne({ where: { id } });
+        const foundPackage = await package.findOne({ where: { id } });
 
-        if (!package) {
-            return res.status(404).json({ message: 'package not found' });
+        if (!foundPackage) {
+            return res.status(404).json({ message: 'Package not found' });
         }
 
-        await package.destroy(); 
+        await foundPackage.destroy(); 
 
-        res.status(200).json({ message: 'package deleted successfully' });
+        res.status(200).json({ message: 'Package deleted successfully' });
     } catch (error) {
+        console.error('Error deleting package:', error);
         res.status(500).json({ message: 'Error deleting package', error: error.message });
     }
 };
