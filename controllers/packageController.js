@@ -15,7 +15,6 @@ exports.createpackage = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
         if (!packageName || !packageDescription) {
-            console.log('Empty fields');
             return res.status(400).json({ message: 'Package name and description are required' });
         }
         const newpackage = await package.create({
