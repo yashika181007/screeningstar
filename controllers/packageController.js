@@ -6,24 +6,28 @@ const config = require('../config');
 exports.createpackage = async (req, res) => {
     try {
         const { packageName, packageDescription } = req.body;
-        console.log('req.body',req.body);
-        const user_id = 1;
-        console.log('user_id',user_id)
+        console.log('req.body', req.body);
+
+        const user_id = 1; 
+        console.log('user_id', user_id);
 
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
-        if(!packageName || !packageDescription){
-            console.log('Empty feilds');
+        if (!packageName || !packageDescription) {
+            console.log('Empty fields');
+            return res.status(400).json({ message: 'Package name and description are required' });
         }
         const newpackage = await package.create({
             user_id,
             packageName,
             packageDescription
         });
-console.log('newpackage',newpackage);
-        res.status(201).json({ message: 'package created successfully', package: newpackage });
+
+        console.log('newpackage', newpackage);
+        res.status(201).json({ message: 'Package created successfully', package: newpackage });
     } catch (error) {
+        console.error('Error creating package:', error);
         res.status(500).json({ message: 'Error creating package', error: error.message });
     }
 };
