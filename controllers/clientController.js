@@ -23,7 +23,7 @@ exports.createClient = async (req, res) => {
     }
     
     const {
-        user_id,
+       
         clientLogo,
         organizationName,
         clientId,
@@ -49,6 +49,7 @@ exports.createClient = async (req, res) => {
 
     try {
         const newClient = await Client.create({
+            user_id,
             clientLogo,
             organizationName,
             clientId,
