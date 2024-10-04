@@ -3,15 +3,38 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
+const Service = require('../models/Service');
+const jwt = require('jsonwebtoken');
+
 exports.createService = async (req, res) => {
     try {
         const { serviceName, serviceDescription } = req.body;
-        const user_id = 1;
-        console.log('user_id',user_id)
 
+        const token = req.headers['authorization'];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
+
+        const tokenParts = token.split(' ');
+        const jwtToken = tokenParts[1];
+
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
+        const user_id = decodedToken.id;
+        const role = decodedToken.role;
+      
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
+
+        if (!serviceName || !serviceDescription) {
+            return res.status(400).json({ message: 'Service name and description are required.' });
+        }
+
         const newService = await Service.create({
             user_id,
             serviceName,
@@ -20,6 +43,7 @@ exports.createService = async (req, res) => {
 
         res.status(201).json({ message: 'Service created successfully', service: newService });
     } catch (error) {
+        console.error('Error creating service:', error);
         res.status(500).json({ message: 'Error creating service', error: error.message });
     }
 };
