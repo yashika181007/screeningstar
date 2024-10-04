@@ -9,19 +9,26 @@ exports.createpackage = async (req, res) => {
         console.log('req.body', req.body);
 
         const token = req.headers['authorization'];
-        console.log('req.headers', req.headers['authorization'])
+        console.log('req.headers', req.headers['authorization']);
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
+
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
-        jwt.verify(jwtToken, process.env.jwtSecret, (err, decoded) => {
 
-            const user_id = decoded.id;
-            const role = decoded.role;
-            console.log('user_id:', req.user_id);
-            console.log('role:', req.role);
-        });
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
+
+        const user_id = decodedToken.id;
+        const role = decodedToken.role;
+        console.log('user_id:', user_id);
+        console.log('role:', role);
+
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
