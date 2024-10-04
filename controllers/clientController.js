@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken'); 
-const Client = require('../models/Client'); 
-
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 exports.createClient = async (req, res) => {  
     const token = req.headers['authorization'];
     if (!token) {
@@ -46,7 +46,7 @@ exports.createClient = async (req, res) => {
         status = 'Active' 
     } = req.body;
        console.log('req.body',req.body);
-    // Basic validation for required fields
+
     if (!organizationName || !clientId || !standardProcess || !role) {
         return res.status(400).json({
             message: 'Please provide organizationName, clientId, standardProcess, and role.'
