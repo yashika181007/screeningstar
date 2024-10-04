@@ -23,7 +23,6 @@ exports.createClient = async (req, res) => {
     }
     
     const {
-       
         clientLogo,
         organizationName,
         clientId,
@@ -46,6 +45,13 @@ exports.createClient = async (req, res) => {
         role,
         status = 'Active' 
     } = req.body;
+       console.log('req.body',req.body)
+    // Basic validation for required fields
+    if (!organizationName || !clientId || !standardProcess || !role) {
+        return res.status(400).json({
+            message: 'Please provide organizationName, clientId, standardProcess, and role.'
+        });
+    }
 
     try {
         const newClient = await Client.create({
@@ -74,6 +80,7 @@ exports.createClient = async (req, res) => {
         });
 
         res.status(201).json({ message: 'Client created successfully', client: newClient });
+        console.log('newClient',newClient)
         
     } catch (error) {
         console.error('Database Error:', error);
