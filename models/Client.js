@@ -6,10 +6,6 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     host: config.database.host,
     dialect: 'mysql',
 });
-const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
-    host: config.database.host,
-    dialect: 'mysql',
-});
 
 const Client = sequelize.define('client', {
     id: {
