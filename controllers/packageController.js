@@ -9,7 +9,7 @@ exports.createpackage = async (req, res) => {
         console.log('req.body', req.body);
 
         const token = req.session.token;
-
+       console.log('req.session.token',req.session.token)
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
