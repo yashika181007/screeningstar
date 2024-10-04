@@ -1,5 +1,7 @@
-const Client = require('../models/Client');
-exports.createClient = (req, res) => {
+const jwt = require('jsonwebtoken'); 
+const Client = require('../models/Client'); 
+
+exports.createClient = async (req, res) => {  
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -14,11 +16,38 @@ exports.createClient = (req, res) => {
     } catch (err) {
         return res.status(401).json({ message: 'Invalid token. Please log in again.' });
     }
+    
     const user_id = decodedToken.id;
     if (!user_id) {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
-        const {
+    
+    const {
+        clientLogo,
+        organizationName,
+        clientId,
+        mobileNumber,
+        registeredAddress,
+        state,
+        stateCode,
+        gstNumber,
+        tat,
+        serviceAgreementDate,
+        clientProcedure,
+        agreementPeriod,
+        customTemplate,
+        accountManagement,
+        packageOptions,
+        scopeOfServices,
+        pricingPackages,
+        standardProcess,
+        loginRequired,
+        role,
+        status = 'Active' 
+    } = req.body;
+
+    try {
+        const newClient = await Client.create({ // Now this is valid
             clientLogo,
             organizationName,
             clientId,
@@ -39,43 +68,17 @@ exports.createClient = (req, res) => {
             standardProcess,
             loginRequired,
             role,
-            status = 'Active' 
-        } = req.body;
+            status,
+        });
 
-        try {
-            const newClient = await Client.create({
-                clientLogo,
-                organizationName,
-                clientId,
-                mobileNumber,
-                registeredAddress,
-                state,
-                stateCode,
-                gstNumber,
-                tat,
-                serviceAgreementDate,
-                clientProcedure,
-                agreementPeriod,
-                customTemplate,
-                clientLogo, 
-                accountManagement,
-                packageOptions,
-                scopeOfServices,
-                pricingPackages,
-                standardProcess,
-                loginRequired,
-                role,
-                status,
-            });
-
-            res.status(201).json({ message: 'Client created successfully', client: newClient });
-            
-        } catch (error) {
-            console.error('Database Error:', error);
-            res.status(500).json({ message: 'Error creating client', error: error.message });
-            
-        }
+        res.status(201).json({ message: 'Client created successfully', client: newClient });
+        
+    } catch (error) {
+        console.error('Database Error:', error);
+        res.status(500).json({ message: 'Error creating client', error: error.message });
+    }
 };
+
 exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
