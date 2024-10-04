@@ -6,14 +6,10 @@ const config = require('../config');
 exports.createpackage = async (req, res) => {
     try {
         const { packageName, packageDescription } = req.body;
-        console.log('req.body', req.body);
-
         const token = req.headers['authorization'];
-        console.log('req.headers', req.headers['authorization']);
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
-
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
 
@@ -26,9 +22,7 @@ exports.createpackage = async (req, res) => {
 
         const user_id = decodedToken.id;
         const role = decodedToken.role;
-        console.log('user_id:', user_id);
-        console.log('role:', role);
-
+       
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
@@ -36,7 +30,6 @@ exports.createpackage = async (req, res) => {
         if (!packageName || !packageDescription) {
             return res.status(400).json({ message: 'Package name and description are required' });
         }
-
         const newpackage = await package.create({
             user_id,
             packageName,
