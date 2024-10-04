@@ -5,36 +5,35 @@ const config = require('../config');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
-exports.createuser = (req, res) => {
-   
-        try {
-            const { employeePhoto,employeeName, employeeMobile, email, designation, password, role, status = 'Active', } = req.body;
+exports.createuser = async (req, res) => {  // Declare the function as async
+    try {
+        const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
 
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) {
-                return res.status(400).json({ message: 'Email already in use' });
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            const newUser = await User.create({
-                employeePhoto,
-                employeeName,
-                employeeMobile,
-                email,
-                designation,
-                password: hashedPassword,
-                role,
-                status,
-            });
-
-            return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
-        } catch (error) {
-            console.error('Error registering employee:', error);
-            return res.status(500).json({ message: 'Error registering employee', error: error.message });
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already in use' });
         }
-    
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({
+            employeePhoto,
+            employeeName,
+            employeeMobile,
+            email,
+            designation,
+            password: hashedPassword,
+            role,
+            status,
+        });
+
+        return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
+    } catch (error) {
+        console.error('Error registering employee:', error);
+        return res.status(500).json({ message: 'Error registering employee', error: error.message });
+    }
 };
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
