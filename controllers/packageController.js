@@ -13,7 +13,7 @@ exports.createpackage = async (req, res) => {
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
-
+        const jwtToken = tokenParts[1];
         jwt.verify(jwtToken, process.env.jwtSecret, (err, decoded) => {
 
             req.user_id = decoded.id;
