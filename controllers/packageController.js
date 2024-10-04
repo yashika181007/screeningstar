@@ -17,8 +17,8 @@ exports.createpackage = async (req, res) => {
         const jwtToken = tokenParts[1];
         jwt.verify(jwtToken, process.env.jwtSecret, (err, decoded) => {
 
-            req.user_id = decoded.id;
-            req.role = decoded.role;
+            const user_id = decoded.id;
+            const role = decoded.role;
             console.log('user_id:', req.user_id);
             console.log('role:', req.role);
         });
