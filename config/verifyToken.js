@@ -4,7 +4,7 @@ const { isTokenBlacklisted } = require('./blacklist');
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
-    console.log('Incoming request headers:', req.headers);
+    console.log('Incoming request headers:', req.headers['authorization']);
     if (!token) {
         return res.status(403).json({ message: 'No token provided.' });
     }
