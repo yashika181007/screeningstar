@@ -2,27 +2,13 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const path = require('path');
-const fs = require('fs');
-const ftp = require('basic-ftp');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
-const { uploaduserphoto } = require('../config/multer');
 
 exports.createuser = (req, res) => {
-    uploaduserphoto(req, res, async (err) => {
-        if (err) {
-            console.error('Upload error:', err);
-            return res.status(400).json({ message: 'File upload error', error: err });
-        }
+   
         try {
-            const { employeeName, employeeMobile, email, designation, password, role, status = 'Active', } = req.body;
-
-            if (!req.file) {
-                return res.status(400).json({ message: 'File upload failed or no file provided' });
-            }
-
-            const employeePhoto = req.file.uploadedFileName ? `${req.file.uploadedFileName}` : null;
+            const { employeePhoto,employeeName, employeeMobile, email, designation, password, role, status = 'Active', } = req.body;
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
@@ -47,7 +33,7 @@ exports.createuser = (req, res) => {
             console.error('Error registering employee:', error);
             return res.status(500).json({ message: 'Error registering employee', error: error.message });
         }
-    });
+    
 };
 exports.login = async (req, res) => {
     try {
