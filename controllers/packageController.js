@@ -19,7 +19,8 @@ exports.createpackage = async (req, res) => {
 
             req.user_id = decoded.id;
             req.role = decoded.role;
-            console.log('user_id', user_id);
+            console.log('user_id:', req.user_id);
+            console.log('role:', req.role);
         });
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
