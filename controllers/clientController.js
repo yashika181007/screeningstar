@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-exports.createClient = async (req, res) => {  
+exports.createClient = async (req, res) => {
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -15,12 +15,12 @@ exports.createClient = async (req, res) => {
     } catch (err) {
         return res.status(401).json({ message: 'Invalid token. Please log in again.' });
     }
-    
+
     const user_id = decodedToken.id;
     if (!user_id) {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
-    
+
     const {
         clientLogo,
         organizationName,
@@ -42,15 +42,9 @@ exports.createClient = async (req, res) => {
         standardProcess,
         loginRequired,
         role,
-        status = 'Active' 
+        status = 'Active'
     } = req.body;
-       console.log('req.body',req.body);
-
-    if (!organizationName || !clientId || !standardProcess || !role) {
-        return res.status(400).json({
-            message: 'Please provide organizationName, clientId, standardProcess, and role.'
-        });
-    }
+    console.log('req.body', req.body);
 
     try {
         const newClient = await Client.create({
@@ -79,8 +73,8 @@ exports.createClient = async (req, res) => {
         });
 
         res.status(201).json({ message: 'Client created successfully', client: newClient });
-        console.log('newClient',newClient);
-        
+        console.log('newClient', newClient);
+
     } catch (error) {
         console.error('Database Error:', error);
         res.status(500).json({ message: 'Error creating client', error: error.message });
@@ -91,11 +85,11 @@ exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
         res.status(200).json(clients);
-        
+
     } catch (err) {
         console.error('Error fetching clients:', err);
         res.status(500).json({ message: 'Error fetching clients', error: err.message });
-        
+
     }
 };
 exports.getActiveClients = async (req, res) => {
@@ -104,7 +98,7 @@ exports.getActiveClients = async (req, res) => {
             where: { status: 'Active' }
         });
 
-        console.log('Active Clients:', activeClients); 
+        console.log('Active Clients:', activeClients);
 
         if (!activeClients || activeClients.length === 0) {
             return res.status(404).json({ message: 'No active clients found' });
@@ -124,24 +118,24 @@ exports.getInactiveClients = async (req, res) => {
         });
         if (!inactive || inactive.length === 0) {
             res.status(404).json({ message: 'No inactive clients found' });
-            
+
         }
         res.status(200).json(inactive);
     } catch (err) {
         console.error('Error fetching inactive clients:', err);
         res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
-        
+
     }
 };
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
-        
+
         if (!client) {
-            return res.status(404).json({ message: 'Client not found' });   
+            return res.status(404).json({ message: 'Client not found' });
         }
         res.status(200).json(client);
-        
+
     } catch (err) {
         console.error('Error fetching client:', err);
         res.status(500).json({ message: 'Error fetching client', error: err.message });
@@ -206,7 +200,7 @@ exports.updateClient = (req, res) => {
                 clientProcedure,
                 agreementPeriod,
                 customTemplate,
-                clientLogo: newClientLogo || client.clientLogo, 
+                clientLogo: newClientLogo || client.clientLogo,
                 accountManagement,
                 packageOptions,
                 scopeOfServices,
@@ -240,11 +234,11 @@ const deleteFromRemote = async (remotePath) => {
         console.log('Connected to FTP server');
         await client.remove(remotePath);  // Deleting the old logo from the FTP server
         console.log('Old logo deleted:', remotePath);
-        
+
     } catch (err) {
         console.error('Error deleting file from FTP:', err);
         throw err;
-        
+
     } finally {
         client.close();
     }
@@ -253,13 +247,13 @@ const deleteFromRemote = async (remotePath) => {
 exports.deleteClient = async (req, res) => {
     try {
         const clientId = req.params.id;
-        const client = await Client.findByPk(clientId); 
+        const client = await Client.findByPk(clientId);
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found.' });
         }
 
-        await client.destroy(); 
+        await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully.' });
     } catch (error) {
         console.error('Error deleting client:', error);
