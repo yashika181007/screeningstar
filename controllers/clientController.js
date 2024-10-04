@@ -1,4 +1,5 @@
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); 
+const Client = require('../models/Client'); 
 const config = require('../config');
 exports.createClient = async (req, res) => {
     const token = req.headers['authorization'];
