@@ -7,6 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
+// Define the ClientSpoc model
 const ClientSpoc = sequelize.define('clientspoc', {
     id: {
         type: DataTypes.INTEGER,
@@ -72,3 +73,6 @@ const ClientSpoc = sequelize.define('clientspoc', {
 }, {
     timestamps: true,
 });
+sequelize.sync()
+    .then(() => console.log('Database & tables created!'))
+    .catch(error => console.error('Error creating database:', error));
