@@ -51,14 +51,8 @@ exports.createClientSpoc = async (req, res) => {
 // READ all ClientSpoc entries
 exports.getAllClientSpocs = async (req, res) => {
     try {
-        const clientSpocs = await ClientSpoc.findAll({
-            include: [{
-                model: Users,
-                as: 'User',
-                attributes: ['id', 'name'] // Add other fields as necessary
-            }]
-        });
-        
+        const clientSpocs = await ClientSpoc.findAll();
+   
         res.status(200).json(clientSpocs);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -69,14 +63,8 @@ exports.getAllClientSpocs = async (req, res) => {
 exports.getClientSpocById = async (req, res) => {
     try {
         const { id } = req.params;
-        const clientSpoc = await ClientSpoc.findByPk(id, {
-            include: [{
-                model: Users,
-                as: 'User',
-                attributes: ['id', 'name'] // Add other fields as necessary
-            }]
-        });
-        
+        const clientSpoc = await ClientSpoc.findByPk(req.params.id);
+
         if (!clientSpoc) {
             return res.status(404).json({ error: 'ClientSpoc not found' });
         }
