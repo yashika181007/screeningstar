@@ -134,6 +134,7 @@ exports.getInactiveClients = async (req, res) => {
 exports.changeClientStatus = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
+        console.log('client',client);
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
