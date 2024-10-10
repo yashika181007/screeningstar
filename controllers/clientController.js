@@ -134,6 +134,9 @@ exports.getInactiveClients = async (req, res) => {
 exports.changeClientStatus = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
         if (client.status === 'Active') {
             client.status = 'Inactive';
         } else if (client.status === 'Inactive') {
@@ -145,6 +148,7 @@ exports.changeClientStatus = async (req, res) => {
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
+
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
