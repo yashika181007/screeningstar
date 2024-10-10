@@ -17,7 +17,7 @@ const Client = sequelize.define('client', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Users,   // Use the imported Users model
+            model: Users,  
             key: 'id',
         },
         onDelete: 'CASCADE',

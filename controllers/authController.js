@@ -64,7 +64,35 @@ exports.login = async (req, res) => {
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };
+exports.veriflogin = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
 
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'No token provided' });
+        }
+
+        const decoded = jwt.verify(token, config.jwtSecret);
+        
+        const userId = decoded.id;
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'Login verified', userId });
+    } catch (err) {
+        console.error(err);
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ success: false, message: 'Invalid token' });
+        }
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ success: false, message: 'Token expired' });
+        }
+        res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
+    }
+};
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
@@ -120,7 +148,7 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.updateUser = async (req, res) => {  // Make sure this is async as well
+exports.updateUser = async (req, res) => {  
         
         const {employeePhoto, employeeName, employeeMobile, email, designation, password, role, status } = req.body;
        
@@ -200,32 +228,4 @@ exports.logout = (req, res) => {
     }
 };
 
-exports.veriflogin = async (req, res) => {
-    try {
-        const token = req.headers['authorization']?.split(' ')[1];
 
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        
-        const userId = decoded.id;
-
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        res.status(200).json({ success: true, message: 'Login verified', userId });
-    } catch (err) {
-        console.error(err);
-        if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ success: false, message: 'Invalid token' });
-        }
-        if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ success: false, message: 'Token expired' });
-        }
-        res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
-    }
-};

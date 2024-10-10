@@ -1,0 +1,112 @@
+const ClientSpoc = require('../models/ClientSpoc'); // Model for clientspoc
+const Users = require('../models/User'); // Model for users
+
+// CREATE a new ClientSpoc entry
+exports.createClientSpoc = async (req, res) => {
+    try {
+        const { user_id, spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
+        
+        const newClientSpoc = await ClientSpoc.create({
+            user_id,
+            spocName,
+            designation,
+            contactNumber,
+            emailId,
+            emailId1,
+            emailId2,
+            emailId3,
+            emailId4,
+        });
+        
+        res.status(201).json(newClientSpoc);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// READ all ClientSpoc entries
+exports.getAllClientSpocs = async (req, res) => {
+    try {
+        const clientSpocs = await ClientSpoc.findAll({
+            include: [{
+                model: Users,
+                as: 'User',
+                attributes: ['id', 'name'] // Add other fields as necessary
+            }]
+        });
+        
+        res.status(200).json(clientSpocs);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// READ a single ClientSpoc by ID
+exports.getClientSpocById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const clientSpoc = await ClientSpoc.findByPk(id, {
+            include: [{
+                model: Users,
+                as: 'User',
+                attributes: ['id', 'name'] // Add other fields as necessary
+            }]
+        });
+        
+        if (!clientSpoc) {
+            return res.status(404).json({ error: 'ClientSpoc not found' });
+        }
+        
+        res.status(200).json(clientSpoc);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// UPDATE a ClientSpoc entry by ID
+exports.updateClientSpoc = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
+        
+        const clientSpoc = await ClientSpoc.findByPk(id);
+        
+        if (!clientSpoc) {
+            return res.status(404).json({ error: 'ClientSpoc not found' });
+        }
+        
+        clientSpoc.spocName = spocName;
+        clientSpoc.designation = designation;
+        clientSpoc.contactNumber = contactNumber;
+        clientSpoc.emailId = emailId;
+        clientSpoc.emailId1 = emailId1;
+        clientSpoc.emailId2 = emailId2;
+        clientSpoc.emailId3 = emailId3;
+        clientSpoc.emailId4 = emailId4;
+        
+        await clientSpoc.save();
+        
+        res.status(200).json(clientSpoc);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// DELETE a ClientSpoc entry by ID
+exports.deleteClientSpoc = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const clientSpoc = await ClientSpoc.findByPk(id);
+        
+        if (!clientSpoc) {
+            return res.status(404).json({ error: 'ClientSpoc not found' });
+        }
+        
+        await clientSpoc.destroy();
+        
+        res.status(204).json();
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
