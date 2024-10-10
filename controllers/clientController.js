@@ -117,17 +117,21 @@ exports.getInactiveClients = async (req, res) => {
         const inactive = await Client.findAll({
             where: { status: 'Inactive' }
         });
+
+        console.log('Inactive Clients:', inactive);
+
         if (!inactive || inactive.length === 0) {
-            res.status(404).json({ message: 'No inactive clients found' });
-
+            return res.status(404).json({ message: 'No Inactive clients found' });
         }
-        res.status(200).json(inactive);
-    } catch (err) {
-        console.error('Error fetching inactive clients:', err);
-        res.status(500).json({ message: 'Error fetching inactive clients', error: err.message });
 
+        res.status(200).json(inactive);
+
+    } catch (err) {
+        console.error('Error fetching active clients:', err);
+        res.status(500).json({ message: 'Error fetching active clients', error: err.message });
     }
 };
+
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
