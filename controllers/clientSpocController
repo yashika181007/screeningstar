@@ -4,9 +4,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 // CREATE a new ClientSpoc 
-exports.createService = async (req, res) => {
+exports.createClientSpoc = async (req, res) => {
   try {
-    const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
+      const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
       const token = req.headers['authorization'];
       if (!token) {
           return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -17,28 +17,26 @@ exports.createService = async (req, res) => {
 
       let decodedToken;
       try {
-          decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+          decodedToken = jwt.verify(jwtToken, process.env.JWT_SECRET);
       } catch (err) {
           return res.status(401).json({ message: 'Invalid token. Please log in again.' });
       }
+
       const user_id = decodedToken.id;
-      const role = decodedToken.role;
-    
       if (!user_id) {
           return res.status(401).json({ message: 'User not authenticated. Please log in.' });
       }
 
-
       const newClientSpoc = await ClientSpoc.create({
-        user_id,
-        spocName,
-        designation,
-        contactNumber,
-        emailId,
-        emailId1,
-        emailId2,
-        emailId3,
-        emailId4,
+          user_id,
+          spocName,
+          designation,
+          contactNumber,
+          emailId,
+          emailId1,
+          emailId2,
+          emailId3,
+          emailId4,
       });
 
       res.status(201).json({ message: 'ClientSpoc created successfully', ClientSpoc: newClientSpoc });
@@ -47,7 +45,6 @@ exports.createService = async (req, res) => {
       res.status(500).json({ message: 'Error creating ClientSpoc', error: error.message });
   }
 };
-
 
 // READ all ClientSpoc entries
 exports.getAllClientSpocs = async (req, res) => {
