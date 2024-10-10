@@ -17,8 +17,7 @@ const ClientSpoc = sequelize.define('clientspoc', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Users,
-            key: 'id',
+            model: Users,  
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
@@ -26,92 +25,50 @@ const ClientSpoc = sequelize.define('clientspoc', {
     spocName: {
         type: DataTypes.STRING,
         allowNull: false,
-        trim: true
     },
     designation: {
         type: DataTypes.STRING,
         allowNull: false,
-        trim: true
     },
     contactNumber: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
             isNumeric: true,
-            len: {
-                args: [10, 10],
-                msg: 'Contact number must be 10 digits long'
-            }
+            len: [10, 10],
         }
     },
     emailId: {
         type: DataTypes.STRING,
         allowNull: false,
-        trim: true,
-        lowercase: true,
         validate: {
-            isEmail: {
-                msg: 'Please enter a valid email address'
-            }
+            isEmail: true,
         }
     },
     emailId1: {
         type: DataTypes.STRING,
-        allowNull: false,
-        trim: true,
-        lowercase: true,
         validate: {
-            isEmail: {
-                msg: 'Please enter a valid email address'
-            }
+            isEmail: true,
         }
     },
     emailId2: {
         type: DataTypes.STRING,
-        allowNull: false,
-        trim: true,
-        lowercase: true,
         validate: {
-            isEmail: {
-                msg: 'Please enter a valid email address'
-            }
+            isEmail: true,
         }
     },
     emailId3: {
         type: DataTypes.STRING,
-        allowNull: false,
-        trim: true,
-        lowercase: true,
         validate: {
-            isEmail: {
-                msg: 'Please enter a valid email address'
-            }
+            isEmail: true,
         }
     },
     emailId4: {
         type: DataTypes.STRING,
-        allowNull: false,
-        trim: true,
-        lowercase: true,
         validate: {
-            isEmail: {
-                msg: 'Please enter a valid email address'
-            }
+            isEmail: true,
         }
     },
 }, {
-    timestamps: true
+    timestamps: true,
 });
-
-ClientSpoc.belongsTo(Users, {
-    foreignKey: 'user_id',
-    as: 'User',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-});
-
-sequelize.sync()
-    .then(() => console.log('ClientSpoc table created successfully.'))
-    .catch(error => console.error('Error creating ClientSpoc table:', error));
-
-module.exports = ClientSpoc;

@@ -3,8 +3,6 @@ const router = express.Router();
 const verifyToken = require('../config/verifyToken');
 const clientSpocController = require('../controllers/clientSpocController');
 
-const router = express.Router();
-
 router.post('/clientspoc',verifyToken ,clientSpocController.createClientSpoc);
 router.get('/clientspoc',verifyToken, clientSpocController.getAllClientSpocs);
 router.get('/clientspoc/:id',verifyToken, clientSpocController.getClientSpocById);
