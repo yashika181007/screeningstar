@@ -90,6 +90,7 @@ const Client = sequelize.define('client', {
     },
     status: {
         type: DataTypes.ENUM('Active', 'In Active'),
+        allowNull: false,
     },
 });
 
