@@ -131,7 +131,20 @@ exports.getInactiveClients = async (req, res) => {
         res.status(500).json({ message: 'Error fetching active clients', error: err.message });
     }
 };
-
+exports.changeClientStatus = async (req, res) => {
+    try {
+        const client = await Client.findByPk(req.params.id);
+        if (client.status === 'Active') {
+            client.status = 'Inactive';
+        } else if (client.status === 'Inactive') {
+            client.status = 'Active';
+        }
+        await client.save();
+        res.status(200).json({ message: `Client status changed to ${client.status}` });
+    } catch (err) {
+        res.status(500).json({ message: 'Error changing client status', error: err.message });
+    }
+};
 exports.getClientById = async (req, res) => {
     try {
         const client = await Client.findByPk(req.params.id);
@@ -257,30 +270,10 @@ exports.deleteClient = async (req, res) => {
         if (!client) {
             return res.status(404).json({ message: 'Client not found.' });
         }
-
         await client.destroy();
         res.status(200).json({ message: 'Client deleted successfully.' });
     } catch (error) {
         console.error('Error deleting client:', error);
         res.status(500).json({ message: 'Error deleting client.', error: error.message });
-    }
-};
-exports.changeClientStatus = async (req, res) => {
-    try {
-        const client = await Client.findByPk(req.params.id);
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-        if (client.status === 'Active') {
-            client.status = 'Inactive';
-        } else if (client.status === 'Inactive') {
-            client.status = 'Active';
-        }
-
-        await client.save();
-
-        res.status(200).json({ message: `Client status changed to ${client.status}` });
-    } catch (err) {
-        res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
