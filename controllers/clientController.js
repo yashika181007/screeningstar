@@ -1,84 +1,45 @@
 const jwt = require('jsonwebtoken'); 
 const Client = require('../models/Client'); 
 const config = require('../config');
-exports.createClient = async (req, res) => {
-    const token = req.headers['authorization'];
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided. Please log in.' });
-    }
-
-    const tokenParts = token.split(' ');
-    const jwtToken = tokenParts[1];
-
-    let decodedToken;
+exports.createClientSpoc = async (req, res) => {
     try {
-        decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
-    } catch (err) {
-        return res.status(401).json({ message: 'Invalid token. Please log in again.' });
-    }
+        const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
+        const token = req.headers['authorization'];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
 
-    const user_id = decodedToken.id;
-    if (!user_id) {
-        return res.status(401).json({ message: 'User not authenticated. Please log in.' });
-    }
+        const tokenParts = token.split(' ');
+        const jwtToken = tokenParts[1];
 
-    const {
-        clientLogo,
-        organizationName,
-        clientId,
-        mobileNumber,
-        registeredAddress,
-        state,
-        stateCode,
-        gstNumber,
-        tat,
-        serviceAgreementDate,
-        clientProcedure,
-        agreementPeriod,
-        customTemplate,
-        accountManagement,
-        packageOptions,
-        scopeOfServices,
-        pricingPackages,
-        standardProcess,
-        loginRequired,
-        role,
-        status = 'Active'
-    } = req.body;
-    console.log('req.body', req.body);
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
 
-    try {
-        const newClient = await Client.create({
+        const user_id = decodedToken.id;
+        if (!user_id) {
+            return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+        }
+
+        const newClientSpoc = await ClientSpoc.create({
             user_id,
-            clientLogo,
-            organizationName,
-            clientId,
-            mobileNumber,
-            registeredAddress,
-            state,
-            stateCode,
-            gstNumber,
-            tat,
-            serviceAgreementDate,
-            clientProcedure,
-            agreementPeriod,
-            customTemplate,
-            accountManagement,
-            packageOptions,
-            scopeOfServices,
-            pricingPackages,
-            standardProcess,
-            loginRequired,
-            role,
-            status,
+            spocName,
+            designation,
+            contactNumber,
+            emailId,
+            emailId1,
+            emailId2,
+            emailId3,
+            emailId4,
         });
 
-        res.status(201).json({ message: 'Client created successfully', client: newClient });
-        console.log('newClient', newClient);
-
+        res.status(201).json({ message: 'ClientSpoc created successfully', ClientSpoc: newClientSpoc });
     } catch (error) {
-        console.error('Database Error:', error);
-        res.status(500).json({ message: 'Error creating client', error: error.message });
+        console.error('Error creating ClientSpoc:', error);
+        res.status(500).json({ message: 'Error creating ClientSpoc', error: error.message });
     }
 };
 
