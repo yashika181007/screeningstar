@@ -3,28 +3,51 @@ const Users = require('../models/User'); // Model for users
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-// CREATE a new ClientSpoc entry
-exports.createClientSpoc = async (req, res) => {
-    try {
-        const { user_id, spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
-        
-        const newClientSpoc = await ClientSpoc.create({
-            user_id,
-            spocName,
-            designation,
-            contactNumber,
-            emailId,
-            emailId1,
-            emailId2,
-            emailId3,
-            emailId4,
-        });
-        
-        res.status(201).json(newClientSpoc);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+// CREATE a new ClientSpoc 
+exports.createService = async (req, res) => {
+  try {
+    const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
+      const token = req.headers['authorization'];
+      if (!token) {
+          return res.status(401).json({ message: 'No token provided. Please log in.' });
+      }
+
+      const tokenParts = token.split(' ');
+      const jwtToken = tokenParts[1];
+
+      let decodedToken;
+      try {
+          decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+      } catch (err) {
+          return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+      }
+      const user_id = decodedToken.id;
+      const role = decodedToken.role;
+    
+      if (!user_id) {
+          return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+      }
+
+
+      const newClientSpoc = await ClientSpoc.create({
+        user_id,
+        spocName,
+        designation,
+        contactNumber,
+        emailId,
+        emailId1,
+        emailId2,
+        emailId3,
+        emailId4,
+      });
+
+      res.status(201).json({ message: 'ClientSpoc created successfully', ClientSpoc: newClientSpoc });
+  } catch (error) {
+      console.error('Error creating ClientSpoc:', error);
+      res.status(500).json({ message: 'Error creating ClientSpoc', error: error.message });
+  }
 };
+
 
 // READ all ClientSpoc entries
 exports.getAllClientSpocs = async (req, res) => {
