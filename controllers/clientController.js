@@ -285,8 +285,7 @@ exports.updateClient = (req, res) => {
 
 exports.deleteClient = async (req, res) => {
     try {
-        const clientId = req.params.id;
-        const client = await Client.findByPk(clientId);
+        const client = await Client.findByPk(req.params.id);
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found.' });
