@@ -73,22 +73,22 @@ exports.getallescalationmanagerById = async (req, res) => {
 exports.updateescalationmanager = async (req, res) => {
     try {
         const { id } = req.params;
-        const { escalationName, designation, contactNumber, emailId} = req.body;
+        const { escalationName, designation, contactNumber, emailId } = req.body;
         
-        const EscalationManager = await EscalationManager.findByPk(id);
+        const escalationManagerRecord = await EscalationManager.findByPk(id);
         
-        if (!EscalationManager) {
+        if (!escalationManagerRecord) {
             return res.status(404).json({ error: 'Escalation Manager not found' });
         }
         
-        EscalationManager.escalationName = escalationName;
-        EscalationManager.designation = designation;
-        EscalationManager.contactNumber = contactNumber;
-        EscalationManager.emailId = emailId;
+        escalationManagerRecord.escalationName = escalationName;
+        escalationManagerRecord.designation = designation;
+        escalationManagerRecord.contactNumber = contactNumber;
+        escalationManagerRecord.emailId = emailId;
   
-        await EscalationManager.save();
+        await escalationManagerRecord.save();
         
-        res.status(200).json(EscalationManager);
+        res.status(200).json(escalationManagerRecord);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -97,15 +97,15 @@ exports.updateescalationmanager = async (req, res) => {
 exports.deleteescalationmanager = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const escalationManagerRecord = await EscalationManager.findByPk(id);
         
-        const EscalationManager = await EscalationManager.findByPk(id);
-        
-        if (!EscalationManager) {
+        if (!escalationManagerRecord) {
             return res.status(404).json({ error: 'Escalation Manager not found' });
         }
         
-        await EscalationManager.destroy();
-        res.status(200).json({ message: 'Escalation Manager  deleted successfully.' });
+        await escalationManagerRecord.destroy();
+        res.status(200).json({ message: 'Escalation Manager deleted successfully.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

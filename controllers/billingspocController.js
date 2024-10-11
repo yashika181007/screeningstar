@@ -74,39 +74,36 @@ exports.getallBillingSpocById = async (req, res) => {
 exports.updateBillingSpoc = async (req, res) => {
     try {
         const { id } = req.params;
-        const { spocName, designation, contactNumber, emailId} = req.body;
+        const { spocName, designation, contactNumber, emailId } = req.body;
         
-        const BillingSpoc = await BillingSpoc.findByPk(id);
+        const billingSpocRecord = await BillingSpoc.findByPk(id);
         
-        if (!BillingSpoc) {
-            return res.status(404).json({ error: 'Escalation Manager not found' });
+        if (!billingSpocRecord) {
+            return res.status(404).json({ error: 'Billing SPOC not found' });
         }
         
-        BillingSpoc.spocName = spocName;
-        BillingSpoc.designation = designation;
-        BillingSpoc.contactNumber = contactNumber;
-        BillingSpoc.emailId = emailId;
+        billingSpocRecord.spocName = spocName;
+        billingSpocRecord.designation = designation;
+        billingSpocRecord.contactNumber = contactNumber;
+        billingSpocRecord.emailId = emailId;
   
-        await BillingSpoc.save();
+        await billingSpocRecord.save();
         
-        res.status(200).json(BillingSpoc);
+        res.status(200).json(billingSpocRecord);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
-
 exports.deleteBillingSpoc = async (req, res) => {
     try {
         const { id } = req.params;
+        const billingSpocRecord = await BillingSpoc.findByPk(id);
         
-        const BillingSpoc = await BillingSpoc.findByPk(id);
-        
-        if (!BillingSpoc) {
-            return res.status(404).json({ error: 'Escalation Manager not found' });
-        }
-        
-        await BillingSpoc.destroy();
-        res.status(200).json({ message: 'Escalation Manager  deleted successfully.' });
+        if (!billingSpocRecord) {
+            return res.status(404).json({ error: 'Billing SPOC not found' });
+        } 
+        await billingSpocRecord.destroy();
+        res.status(200).json({ message: 'Billing SPOC deleted successfully.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
