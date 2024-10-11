@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const BillingEscalation = sequelize.define('billing_escalation', {
+const BillingEscalation = sequelize.define('billingescalation', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
