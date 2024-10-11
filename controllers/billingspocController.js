@@ -37,18 +37,20 @@ exports.createBillingSpoc = async (req, res) => {
          
       });
 
-      res.status(201).json({ message: 'Escalation Manager created successfully', BillingSpoc: newBillingSpoc });
+      res.status(201).json({ message: 'Billing SPOC created successfully', BillingSpoc: newBillingSpoc });
       console.log('newBillingSpoc', newBillingSpoc);
   } catch (error) {
       console.error('Error creating BillingSpoc:', error);
-      res.status(500).json({ message: 'Error creating Escalation Manager', error: error.message });
+      res.status(500).json({ message: 'Error creating Billing SPOC', error: error.message });
   }
 };
 
 exports.getAllBillingSpoc = async (req, res) => {
     try {
         const BillingSpocs = await BillingSpoc.findAll();
-   
+        if (!BillingSpocs) {
+            return res.status(404).json({ error: 'Billing SPOC not found' });
+        }
         res.status(200).json(BillingSpocs);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -62,7 +64,7 @@ exports.getallBillingSpocById = async (req, res) => {
         const billingSpocRecord = await BillingSpoc.findByPk(id);
 
         if (!billingSpocRecord) {
-            return res.status(404).json({ error: 'Escalation Manager not found' });
+            return res.status(404).json({ error: 'Billing SPOC not found' });
         }
         
         res.status(200).json(billingSpocRecord);
