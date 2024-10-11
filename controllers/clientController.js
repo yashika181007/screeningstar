@@ -178,7 +178,7 @@ exports.getClientById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching client', error: err.message });
     }
 };
-exports.updateClient = (req, res) => {
+exports.updateClient = async (req, res) => {
     const {
         organizationName,
         clientId,
@@ -205,7 +205,7 @@ exports.updateClient = (req, res) => {
     } = req.body;
 
     try {
-        const client = await Client.findByPk(req.params.id);
+        const client = await Client.findByPk(req.params.id);  // Marking the function as async makes 'await' valid
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
@@ -239,30 +239,6 @@ exports.updateClient = (req, res) => {
         return res.status(500).json({ message: 'Error updating Client', error: error.message });
     }
 };
-
-// const deleteFromRemote = async (remotePath) => {
-//     const client = new ftp.Client();
-//     client.ftp.verbose = true;
-//     try {
-//         await client.access({
-//             host: 'ftp.webstepdev.com',
-//             Client: 'u510451310.dev123',
-//             password: 'Webs@0987#@!',
-//             secure: false
-//         });
-
-//         console.log('Connected to FTP server');
-//         await client.remove(remotePath);  // Deleting the old logo from the FTP server
-//         console.log('Old logo deleted:', remotePath);
-
-//     } catch (err) {
-//         console.error('Error deleting file from FTP:', err);
-//         throw err;
-
-//     } finally {
-//         client.close();
-//     }
-// };
 
 exports.deleteClient = async (req, res) => {
     try {
