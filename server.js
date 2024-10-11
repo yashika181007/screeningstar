@@ -10,6 +10,7 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const clientSpocRoutes = require('./routes/clientSpocRoutes');
 const escalationmanagerRoutes = require('./routes/escalationmanagerRoutes');
+const billingspocRoutes = require('./routes/billingspocRoutes');
 const app = express();
 app.use(cors());
 app.use(cookieParser());
@@ -31,7 +32,7 @@ app.use('/Screeningstar', serviceRoutes);
 app.use('/Screeningstar', packageRoutes);
 app.use('/Screeningstar', clientSpocRoutes);
 app.use('/Screeningstar', escalationmanagerRoutes);
-
+app.use('/billingspocRoutes', billingspocRoutes);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });

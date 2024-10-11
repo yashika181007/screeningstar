@@ -58,13 +58,13 @@ exports.getAllescalationmanager = async (req, res) => {
 exports.getallescalationmanagerById = async (req, res) => {
     try {
         const { id } = req.params;
-        const EscalationManager = await EscalationManager.findByPk(req.params.id);
+        const escalationManagerRecord = await EscalationManager.findByPk(id);
 
-        if (!EscalationManager) {
+        if (!escalationManagerRecord) {
             return res.status(404).json({ error: 'Escalation Manager not found' });
         }
         
-        res.status(200).json(EscalationManager);
+        res.status(200).json(escalationManagerRecord);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

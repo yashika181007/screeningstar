@@ -58,13 +58,14 @@ exports.getAllBillingSpoc = async (req, res) => {
 exports.getallBillingSpocById = async (req, res) => {
     try {
         const { id } = req.params;
-        const BillingSpoc = await BillingSpoc.findByPk(req.params.id);
 
-        if (!BillingSpoc) {
+        const billingSpocRecord = await BillingSpoc.findByPk(id);
+
+        if (!billingSpocRecord) {
             return res.status(404).json({ error: 'Escalation Manager not found' });
         }
         
-        res.status(200).json(BillingSpoc);
+        res.status(200).json(billingSpocRecord);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
