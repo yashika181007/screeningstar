@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken'); 
-const Client = require('../models/Client'); 
+const jwt = require('jsonwebtoken');
+const Client = require('../models/Client');
 const config = require('../config');
 exports.createClient = async (req, res) => {
     const token = req.headers['authorization'];
@@ -178,15 +178,38 @@ exports.getClientById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching client', error: err.message });
     }
 };
-
 exports.updateClient = (req, res) => {
-    clientlogoupload(req, res, async (err) => {
-        if (err) {
-            console.error('File upload error:', err);
-            return res.status(400).json({ message: 'File upload error', error: err });
-        }
+    const {
+        organizationName,
+        clientId,
+        mobileNumber,
+        email,
+        registeredAddress,
+        state,
+        stateCode,
+        gstNumber,
+        tat,
+        serviceAgreementDate,
+        clientProcedure,
+        agreementPeriod,
+        customTemplate,
+        clientLogo,
+        accountManagement,
+        packageOptions,
+        scopeOfServices,
+        pricingPackages,
+        standardProcess,
+        loginRequired,
+        role,
+        status
+    } = req.body;
 
-        const {
+    try {
+        const client = await Client.findByPk(req.params.id);
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        await client.update({
             organizationName,
             clientId,
             mobileNumber,
@@ -200,6 +223,7 @@ exports.updateClient = (req, res) => {
             clientProcedure,
             agreementPeriod,
             customTemplate,
+            clientLogo,
             accountManagement,
             packageOptions,
             scopeOfServices,
@@ -208,55 +232,12 @@ exports.updateClient = (req, res) => {
             loginRequired,
             role,
             status
-        } = req.body;
-
-        try {
-            const client = await Client.findByPk(req.params.id);
-            if (!client) {
-                return res.status(404).json({ message: 'Client not found' });
-            }
-
-            const newClientLogo = req.file ? req.file.uploadedFileName1 : null;
-
-            if (newClientLogo) {
-                if (client.clientLogo) {
-                    const oldRemotePath = `demo/screening_star/uploads/${client.clientLogo}`;
-                    await deleteFromRemote(oldRemotePath);
-                }
-            }
-
-            await client.update({
-                organizationName,
-                clientId,
-                mobileNumber,
-                email,
-                registeredAddress,
-                state,
-                stateCode,
-                gstNumber,
-                tat,
-                serviceAgreementDate,
-                clientProcedure,
-                agreementPeriod,
-                customTemplate,
-                clientLogo: newClientLogo || client.clientLogo,
-                accountManagement,
-                packageOptions,
-                scopeOfServices,
-                pricingPackages,
-                standardProcess,
-                loginRequired,
-                role,
-                status
-            });
-
-            res.status(200).json({ message: 'Client updated successfully', client });
-
-        } catch (error) {
-            console.error('Database Error:', error);
-            return res.status(500).json({ message: 'Error updating client', error: error.message });
-        }
-    });
+        });
+        res.status(200).json({ message: 'Client updated successfully', client });
+    } catch (error) {
+        console.error('Error updating Client:', error);
+        return res.status(500).json({ message: 'Error updating Client', error: error.message });
+    }
 };
 
 // const deleteFromRemote = async (remotePath) => {
