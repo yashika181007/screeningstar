@@ -133,19 +133,31 @@ exports.getInactiveClients = async (req, res) => {
 };
 exports.changeClientStatus = async (req, res) => {
     try {
+        console.log('Request ID:', req.params.id);  // Log the client ID from the request
         const client = await Client.findByPk(req.params.id);
-        console.log('client',client);
+        console.log('Client:', client);  // Log the client object
+
         if (!client) {
+            console.log('Client not found');  // Log if the client is not found
             return res.status(404).json({ message: 'Client not found' });
         }
+
+        console.log('Current Status:', client.status);  // Log the current status of the client
+
         if (client.status === 'Active') {
             client.status = 'Inactive';
+            console.log('Changing status to Inactive');  // Log status change to Inactive
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
+            console.log('Changing status to Active');  // Log status change to Active
         }
+
         await client.save();
+        console.log('Client status saved:', client.status);  // Log the saved status
+
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
+        console.log('Error:', err.message);  // Log the error message
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
