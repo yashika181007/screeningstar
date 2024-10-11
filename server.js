@@ -9,6 +9,7 @@ const clientRoutes = require('./routes/clientRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const clientSpocRoutes = require('./routes/clientSpocRoutes');
+const escalationmanagerRoutes = require('./routes/escalationmanagerRoutes');
 const app = express();
 app.use(cors());
 app.use(cookieParser());
@@ -29,6 +30,7 @@ app.use('/Screeningstar', clientRoutes);
 app.use('/Screeningstar', serviceRoutes);
 app.use('/Screeningstar', packageRoutes);
 app.use('/Screeningstar', clientSpocRoutes);
+app.use('/Screeningstar', escalationmanagerRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);

@@ -3,7 +3,7 @@ const Users = require('../models/User'); // Model for users
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-// CREATE a new ClientSpoc 
+
 exports.createClientSpoc = async (req, res) => {
   try {
     const token = req.headers['authorization'];
@@ -48,7 +48,6 @@ exports.createClientSpoc = async (req, res) => {
   }
 };
 
-// READ all ClientSpoc entries
 exports.getAllClientSpocs = async (req, res) => {
     try {
         const clientSpocs = await ClientSpoc.findAll();
@@ -59,7 +58,6 @@ exports.getAllClientSpocs = async (req, res) => {
     }
 };
 
-// READ a single ClientSpoc by ID
 exports.getClientSpocById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -75,7 +73,6 @@ exports.getClientSpocById = async (req, res) => {
     }
 };
 
-// UPDATE a ClientSpoc entry by ID
 exports.updateClientSpoc = async (req, res) => {
     try {
         const { id } = req.params;
@@ -104,7 +101,7 @@ exports.updateClientSpoc = async (req, res) => {
     }
 };
 
-// DELETE a ClientSpoc entry by ID
+
 exports.deleteClientSpoc = async (req, res) => {
     try {
         const { id } = req.params;
