@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const BillingEscalation = sequelize.define('billingescalation', {
+const AuthorizedDetails = sequelize.define('authorizeddetails', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -50,4 +50,4 @@ sequelize.sync()
     .then(() => console.log('Database & tables created!'))
     .catch(error => console.error('Error creating database:', error));
     
-    module.exports = BillingEscalation;
+    module.exports = AuthorizedDetails;

@@ -41,9 +41,7 @@ const BillingSpoc = sequelize.define('billingspoc', {
     emailId: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-            isEmail: true,
-        }
+       
     },
 }, {
     timestamps: true,

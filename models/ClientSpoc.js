@@ -42,33 +42,23 @@ const ClientSpoc = sequelize.define('clientspoc', {
     emailId: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-            isEmail: true,
-        }
+       
     },
     emailId1: {
         type: DataTypes.STRING,
-        validate: {
-            isEmail: true,
-        }
+       
     },
     emailId2: {
         type: DataTypes.STRING,
-        validate: {
-            isEmail: true,
-        }
+       
     },
     emailId3: {
         type: DataTypes.STRING,
-        validate: {
-            isEmail: true,
-        }
+       
     },
     emailId4: {
         type: DataTypes.STRING,
-        validate: {
-            isEmail: true,
-        }
+       
     },
 }, {
     timestamps: true,

@@ -41,9 +41,7 @@ const EscalationManager = sequelize.define('escalationmanager', {
     emailId: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-            isEmail: true,
-        }
+       
     },
 }, {
     timestamps: true,
