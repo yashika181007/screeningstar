@@ -35,6 +35,13 @@ const Client = sequelize.define('client', {
     mobileNumber: {
         type: DataTypes.STRING,
     },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            isEmail: true,
+        }
+    },
     registeredAddress: {
         type: DataTypes.STRING,
     },

@@ -27,6 +27,7 @@ exports.createClient = async (req, res) => {
         organizationName,
         clientId,
         mobileNumber,
+        email,
         registeredAddress,
         state,
         stateCode,
@@ -54,6 +55,7 @@ exports.createClient = async (req, res) => {
             organizationName,
             clientId,
             mobileNumber,
+            email,
             registeredAddress,
             state,
             stateCode,
@@ -188,6 +190,7 @@ exports.updateClient = (req, res) => {
             organizationName,
             clientId,
             mobileNumber,
+            email,
             registeredAddress,
             state,
             stateCode,
@@ -226,6 +229,7 @@ exports.updateClient = (req, res) => {
                 organizationName,
                 clientId,
                 mobileNumber,
+                email,
                 registeredAddress,
                 state,
                 stateCode,
@@ -255,29 +259,29 @@ exports.updateClient = (req, res) => {
     });
 };
 
-const deleteFromRemote = async (remotePath) => {
-    const client = new ftp.Client();
-    client.ftp.verbose = true;
-    try {
-        await client.access({
-            host: 'ftp.webstepdev.com',
-            Client: 'u510451310.dev123',
-            password: 'Webs@0987#@!',
-            secure: false
-        });
+// const deleteFromRemote = async (remotePath) => {
+//     const client = new ftp.Client();
+//     client.ftp.verbose = true;
+//     try {
+//         await client.access({
+//             host: 'ftp.webstepdev.com',
+//             Client: 'u510451310.dev123',
+//             password: 'Webs@0987#@!',
+//             secure: false
+//         });
 
-        console.log('Connected to FTP server');
-        await client.remove(remotePath);  // Deleting the old logo from the FTP server
-        console.log('Old logo deleted:', remotePath);
+//         console.log('Connected to FTP server');
+//         await client.remove(remotePath);  // Deleting the old logo from the FTP server
+//         console.log('Old logo deleted:', remotePath);
 
-    } catch (err) {
-        console.error('Error deleting file from FTP:', err);
-        throw err;
+//     } catch (err) {
+//         console.error('Error deleting file from FTP:', err);
+//         throw err;
 
-    } finally {
-        client.close();
-    }
-};
+//     } finally {
+//         client.close();
+//     }
+// };
 
 exports.deleteClient = async (req, res) => {
     try {
