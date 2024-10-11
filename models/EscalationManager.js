@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const EscalationManager = sequelize.define('escalation_manager', {
+const EscalationManager = sequelize.define('escalationmanager', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

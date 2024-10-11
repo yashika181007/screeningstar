@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const BillingSpoc = sequelize.define('billing_spoc', {
+const BillingSpoc = sequelize.define('billingspoc', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
