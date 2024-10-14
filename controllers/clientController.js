@@ -123,15 +123,14 @@ exports.fetchPassword = async (req, res) => {
 
         console.log('client', client);
 
-        // Check if the client exists and if the account is active
         if (!client) {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
         }
 
-        if (!client.status) {
+        if (client.status !== 'Active') {
             return res.status(400).json({ message: 'Account is inactive! You cannot log in.' });
         }
-
+        
         res.status(200).json({
             message: 'Client found',
             email: client.email,
