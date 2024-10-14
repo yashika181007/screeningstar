@@ -100,7 +100,8 @@ exports.createClient = async (req, res) => {
 
         // Create the head branch entry
         await Branch.create({
-            clientId: newClient.clientId, // Link the branch to the client
+            clientId: newClient.clientId, 
+            user_id,
             branchEmail: email, // Use client email
             branchName: organizationName, // Use organization name
             isHeadBranch: true // Mark as head branch
@@ -112,6 +113,7 @@ exports.createClient = async (req, res) => {
                 const { branchEmail, branchName } = branch; // Destructure branch object
                 return await Branch.create({
                     clientId: newClient.clientId, // Link the branch to the client
+                    user_id,
                     branchEmail,
                     branchName,
                     isHeadBranch: false // Mark additional branches as not head branches
