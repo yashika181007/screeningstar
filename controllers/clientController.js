@@ -1,5 +1,5 @@
 const Client = require('../models/Client');
-const Client = require('../models/Branch');
+const Branch = require('../models/Branch');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
