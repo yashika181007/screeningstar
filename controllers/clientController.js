@@ -108,10 +108,11 @@ exports.createClient = async (req, res) => {
 exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
-        console.log('clientId',req.session.clientId);
+        console.log('clientId', clientId);
+        
         const { email } = req.body; 
-        console.log('req.body',req.body);
-    
+        console.log('req.body', req.body);
+
         if (!email || !clientId) {
             return res.status(400).json({ message: 'Email and Client ID are required' });
         }
@@ -119,13 +120,16 @@ exports.fetchPassword = async (req, res) => {
         const client = await Client.findOne({ 
             where: { email, clientId } 
         });
-        console.log('client',client);
+        
+        console.log('client', client);
+        
         if (!client) {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
         }
-
+        
         res.status(200).json({ 
             message: 'Client found', 
+            email: client.email,
             password: client.password 
         });
         
