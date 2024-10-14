@@ -74,7 +74,7 @@ exports.createClient = async (req, res) => {
             role,
             status,
         });
-
+        req.session.clientId = newClient.clientId;
         res.status(201).json({ message: 'Client created successfully', client: newClient });
         console.log('newClient', newClient);
 

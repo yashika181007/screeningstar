@@ -3,6 +3,7 @@ const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const config = require('./config');
 
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -19,14 +20,29 @@ app.use(cookieParser());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
-app.use('/uploads', express.static('uploads'));
-
 app.use(session({
     secret: process.env.SESSION_SECRET || 'screeningstar@2024',
+    tore: sessionStore,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 3600000 } 
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 6 * 60 * 60 * 1000 // 6 hours in milliseconds
+    }
 }));
+const sessionStoreOptions = {
+    expiration: 21600000, // 6 hours in milliseconds
+    createDatabaseTable: true,
+    schema: {
+        tableName: 'sessions',
+        columnNames: {
+            session_id: 'session_id',
+            expires: 'expires',
+            data: 'data'
+        }
+    }
+};
+
+const sessionStore = new MySQLStore(sessionStoreOptions, config);
 
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
