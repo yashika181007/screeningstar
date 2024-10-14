@@ -125,11 +125,7 @@ exports.fetchPassword = async (req, res) => {
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
-        }
-
-        if (client.status !== 'Inactive') {
-            return res.status(400).json({ message: 'Account is inactive! You cannot log in.' });
-        }
+        }re
         
         res.status(200).json({
             message: 'Client found',
