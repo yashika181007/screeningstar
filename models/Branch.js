@@ -45,14 +45,7 @@ const Branch = sequelize.define('branch', {
     timestamps: true,
 });
 
-Branch.associate = (models) => {
-    Branch.belongsTo(models.Client, {
-        foreignKey: 'clientId',
-        as: 'client',
-    });
-};
-
-sequelize.sync()
+1sequelize.sync()
     .then(() => console.log('Branch table created successfully.'))
     .catch(error => console.error('Error creating Branch table:', error));
 
