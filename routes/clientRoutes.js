@@ -4,7 +4,9 @@ const verifyToken = require('../config/verifyToken');
 const clientController = require('../controllers/clientController');
 
 router.post('/clients',verifyToken, clientController.createClient);
-
+router.post('/loginClient',verifyToken, clientController.createClient);
+router.post('/logoutClient',verifyToken, clientController.createClient);
+router.post('/fetchPassword',verifyToken, clientController.fetchPassword);
 router.get('/clients',verifyToken, clientController.getClients);
 
 router.get('/clients/active',verifyToken, clientController.getActiveClients);

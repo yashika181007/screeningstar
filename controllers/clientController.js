@@ -1,54 +1,71 @@
-const jwt = require('jsonwebtoken');
 const Client = require('../models/Client');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const config = require('../config');
+
+const generatePassword = (length = 12) => {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+    return password;
+};
+
 exports.createClient = async (req, res) => {
-    const token = req.headers['authorization'];
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided. Please log in.' });
-    }
-
-    const tokenParts = token.split(' ');
-    const jwtToken = tokenParts[1];
-
-    let decodedToken;
     try {
-        decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
-    } catch (err) {
-        return res.status(401).json({ message: 'Invalid token. Please log in again.' });
-    }
+        const token = req.headers['authorization'];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
 
-    const user_id = decodedToken.id;
-    if (!user_id) {
-        return res.status(401).json({ message: 'User not authenticated. Please log in.' });
-    }
+        const tokenParts = token.split(' ');
+        const jwtToken = tokenParts[1];
 
-    const {
-        clientLogo,
-        organizationName,
-        clientId,
-        mobileNumber,
-        email,
-        registeredAddress,
-        state,
-        stateCode,
-        gstNumber,
-        tat,
-        serviceAgreementDate,
-        clientProcedure,
-        agreementPeriod,
-        customTemplate,
-        accountManagement,
-        packageOptions,
-        scopeOfServices,
-        pricingPackages,
-        standardProcess,
-        loginRequired,
-        role,
-        status = 'Active'
-    } = req.body;
-    // console.log('req.body', req.body);
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
 
-    try {
+        const user_id = decodedToken.id;
+        if (!user_id) {
+            return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+        }
+
+        const {
+            clientLogo,
+            organizationName,
+            clientId,
+            mobileNumber,
+            email,
+            registeredAddress,
+            state,
+            stateCode,
+            gstNumber,
+            tat,
+            serviceAgreementDate,
+            clientProcedure,
+            agreementPeriod,
+            customTemplate,
+            accountManagement,
+            packageOptions,
+            scopeOfServices,
+            pricingPackages,
+            standardProcess,
+            loginRequired,
+            role,
+            status = 'Active'
+        } = req.body;
+
+        const plainPassword = generatePassword();
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const existingClient = await Client.findOne({ where: { email } });
+        if (existingClient) {
+            return res.status(400).json({ message: 'Email already in use' });
+        }
         const newClient = await Client.create({
             user_id,
             clientLogo,
@@ -73,14 +90,118 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
+            password: hashedPassword 
         });
-        req.session.clientId = newClient.clientId;
-        res.status(201).json({ message: 'Client created successfully', client: newClient });
-        // console.log('newClient', newClient);
 
+        req.session.clientId = newClient.clientId;
+
+        res.status(201).json({ 
+            message: 'Client created successfully', 
+            client: newClient, 
+            plainPassword  
+        });
     } catch (error) {
-        console.error('Database Error:', error);
-        res.status(500).json({ message: 'Error creating client', error: error.message });
+        console.error('Error creating client:', error);
+        return res.status(500).json({ message: 'Error creating client', error: error.message });
+    }
+};
+exports.fetchPassword = async (req, res) => {
+    try {
+        const clientId = req.session.clientId;
+        const { email } = req.body;
+
+        if (!email || !clientId) {
+            return res.status(400).json({ message: 'Email and Client ID are required' });
+        }
+
+        const client = await Client.findOne({ 
+            where: { email, clientId } 
+        });
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
+        }
+
+        res.status(200).json({ 
+            message: 'Client found', 
+            password: client.password  
+        });
+    } catch (error) {
+        console.error('Error fetching client password:', error);
+        res.status(500).json({ message: 'Error fetching client password', error: error.message });
+    }
+};
+
+exports.loginClient = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const client = await Client.findOne({ where: { email } });
+        if (!client) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, client.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign(
+            { id: client.id, email: client.email, role: client.role },
+            process.env.jwtSecret,
+            { expiresIn: '6h' } 
+        );
+
+        return res.status(200).json({
+            message: 'Login successful',
+            token,
+            client: {
+                id: client.id,
+                email: client.email,
+                organizationName: client.organizationName,
+                role: client.role,
+                status: client.status
+            }
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+        return res.status(500).json({ message: 'Error during login', error: error.message });
+    }
+};
+
+exports.verifyLogin = async (req, res) => {
+    try {
+        
+        const token = req.headers['authorization']?.split(' ')[1];
+
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'No token provided' });
+        }
+
+        const decoded = jwt.verify(token, process.env.jwtSecret);
+        const clientId = decoded.id;  
+
+        const client = await Client.findByPk(clientId);
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Login verified', 
+            client: { id: client.id, email: client.email, role: client.role } 
+        });
+    } catch (err) {
+        console.error(err);
+
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ success: false, message: 'Invalid token' });
+        }
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ success: false, message: 'Token expired' });
+        }
+
+        res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
 
