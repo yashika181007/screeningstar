@@ -215,17 +215,17 @@ exports.logout = (req, res) => {
         const token = req.headers['authorization']?.split(' ')[1]; 
 
         if (token) {
-            addTokenToBlacklist(token);
+            addTokenToBlacklist(token); // Assuming this is defined elsewhere
         }
         req.session.destroy((err) => {
             if (err) {
-                return res.status(500).json({ message: 'Error while logging out.' });
+                console.error('Error destroying session:', err); 
+                return res.status(500).json({ message: 'Error while logging out.', error: err.message });
             }
-            res.status(200).json({ message: 'logout successful.' });
+            res.status(200).json({ message: 'Logout successful.' });
         });
     } catch (err) {
+        console.error('Error during logout:', err);
         res.status(400).json({ message: 'Error signing out', error: err.message });
     }
 };
-
-
