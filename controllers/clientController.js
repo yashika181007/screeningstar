@@ -110,14 +110,11 @@ exports.fetchPassword = async (req, res) => {
         const clientId = req.session.clientId;
         console.log('clientId', clientId);
 
-        const { email, status = 'Active' } = req.body;
+        const { email } = req.body; 
         console.log('req.body', req.body);
 
         if (!email || !clientId) {
             return res.status(400).json({ message: 'Email and Client ID are required' });
-        }
-        if (status !== 'Active') {
-            return res.status(400).json({ message: 'Account is inactive! You cannot log in.' });
         }
 
         const client = await Client.findOne({
@@ -126,14 +123,19 @@ exports.fetchPassword = async (req, res) => {
 
         console.log('client', client);
 
+        // Check if the client exists and if the account is active
         if (!client) {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
+        }
+
+        if (!client.status) {
+            return res.status(400).json({ message: 'Account is inactive! You cannot log in.' });
         }
 
         res.status(200).json({
             message: 'Client found',
             email: client.email,
-            password: client.password
+            password: client.password 
         });
 
     } catch (error) {
