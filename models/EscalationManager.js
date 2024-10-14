@@ -1,6 +1,7 @@
 const Users = require('../models/User');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
+const Client = require('../models/Client')
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
@@ -21,6 +22,14 @@ const EscalationManager = sequelize.define('escalationmanager', {
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
+    },
+    client_id : {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        references: {
+            model: Client,  
+        },
     },
     escalationName: {
         type: DataTypes.STRING,

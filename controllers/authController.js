@@ -234,12 +234,10 @@ exports.logout = (req, res) => {
     try {
         const token = req.headers['authorization']?.split(' ')[1]; 
 
-        // Add token to the blacklist if it exists
         if (token) {
-            addTokenToBlacklist(token); // Ensure this function is properly defined
+            addTokenToBlacklist(token); 
         }
 
-        // Destroy the session
         req.session.destroy((err) => {
             if (err) {
                 console.error('Error destroying session:', err);

@@ -1,4 +1,5 @@
 const Users = require('../models/User');
+const Client = require('../models/Client');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
@@ -21,6 +22,14 @@ const BillingEscalation = sequelize.define('billingescalation', {
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
+    },
+    client_id : {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        references: {
+            model: Client,  
+        },
     },
     spocName: {
         type: DataTypes.STRING,
