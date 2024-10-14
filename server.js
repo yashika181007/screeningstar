@@ -1,12 +1,15 @@
+// Import dependencies
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const mysql = require('mysql2/promise'); // Raw MySQL connection for session store
+const MySQLStore = require('express-mysql-session')(session); // Session store for MySQL
 require('dotenv').config();
-const MySQLStore = require('express-mysql-session')(session);
-const config = require('./config');
 const { Sequelize } = require('sequelize');
+const config = require('./config');
 
+// Import routes
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
@@ -17,17 +20,20 @@ const billingspocRoutes = require('./routes/billingspocRoutes');
 const billingescalationRoutes = require('./routes/billingescalationRoutes');
 const authorizeddetailsRoutes = require('./routes/authorizeddetailsRoutes');
 
+// Initialize express app
 const app = express();
+
+// Middleware setup
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Set up Sequelize for ORM functionality
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
-    logging: console.log,
-    port: 3306,
+    logging: console.log, // Enable query logging for debugging
     pool: {
         max: 5,
         min: 0,
@@ -36,6 +42,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     },
 });
 
+// Authenticate Sequelize connection
 (async () => {
     try {
         await sequelize.authenticate();
@@ -46,21 +53,32 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     }
 })();
 
+// Create a raw MySQL connection for session management
+const sessionConnection = mysql.createPool({
+    host: config.database.host,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.database
+});
+
+// Session store configuration
 const sessionStoreOptions = {
-    expiration: 21600000, 
+    expiration: 21600000, // 6 hours in milliseconds
     createDatabaseTable: true,
     schema: {
         tableName: 'sessions',
         columnNames: {
             session_id: 'session_id',
             expires: 'expires',
-            data: 'data',
+            data: 'data'
         },
     },
 };
 
-const sessionStore = new MySQLStore(sessionStoreOptions, sequelize);
+// Initialize MySQLStore with raw MySQL connection
+const sessionStore = new MySQLStore(sessionStoreOptions, sessionConnection);
 
+// Session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET || 'screeningstar@2024',
     store: sessionStore,
@@ -71,6 +89,7 @@ app.use(session({
     },
 }));
 
+// Mounting routes
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
 app.use('/Screeningstar', serviceRoutes);
@@ -81,12 +100,14 @@ app.use('/Screeningstar', billingspocRoutes);
 app.use('/Screeningstar', billingescalationRoutes);
 app.use('/Screeningstar', authorizeddetailsRoutes);
 
+// Error-handling middleware for general errors
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
-const PORT = process.env.PORT || 3000; 
+// Define the port and start the server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
