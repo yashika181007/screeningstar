@@ -9,6 +9,11 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
 });
 
 const Branch = sequelize.define('branches', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -22,12 +27,7 @@ const Branch = sequelize.define('branches', {
     clientId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: {
-            model: Client,   
-            key: 'id',      
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
+       
     },
     branchEmail: {
         type: DataTypes.STRING,
