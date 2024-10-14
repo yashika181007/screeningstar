@@ -38,63 +38,81 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
+        
+        // If user not found, return error
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+        // Compare hashed password with the one stored in DB
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+        // Generate JWT token
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
+
+        // Set session variables
         req.session.token = token;
         req.session.userRole = user.role;
+        req.session.isLoggedIn = true;
+        req.session.email = user.email;
 
+        // Prepare user data to send in the response
         const userData = {
             id: user.id,
             name: user.employeeName,
             email: user.email,
             role: user.role
         };
-        req.session.isLoggedIn = true;
-        req.session.email = user.email;
      
-        res.status(200).json({ message: 'Login successful', user: userData, token: token });
+        // Send success response with token
+        res.status(200).json({ message: 'Login successful', user: userData, token });
 
     } catch (err) {
+        // Handle errors and send appropriate response
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };
+
 exports.veriflogin = async (req, res) => {
     try {
+        // Get token from Authorization header
         const token = req.headers['authorization']?.split(' ')[1];
 
         if (!token) {
             return res.status(400).json({ success: false, message: 'No token provided' });
         }
 
+        // Verify token
         const decoded = jwt.verify(token, config.jwtSecret);
-        
         const userId = decoded.id;
 
+        // Fetch user by ID
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        res.status(200).json({ success: true, message: 'Login verified', userId });
+        // If valid, return user information
+        res.status(200).json({ success: true, message: 'Login verified', user: { id: user.id, email: user.email, role: user.role } });
     } catch (err) {
         console.error(err);
+
+        // Handle JWT errors (invalid or expired tokens)
         if (err.name === 'JsonWebTokenError') {
             return res.status(401).json({ success: false, message: 'Invalid token' });
         }
         if (err.name === 'TokenExpiredError') {
             return res.status(401).json({ success: false, message: 'Token expired' });
         }
+
+        // Handle other errors
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
+
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
@@ -216,16 +234,18 @@ exports.logout = (req, res) => {
     try {
         const token = req.headers['authorization']?.split(' ')[1]; 
 
+        // Add token to the blacklist if it exists
         if (token) {
-            addTokenToBlacklist(token); 
+            addTokenToBlacklist(token); // Ensure this function is properly defined
         }
-        req.session.destroy(err => {
+
+        // Destroy the session
+        req.session.destroy((err) => {
             if (err) {
                 console.error('Error destroying session:', err);
-                res.status(500).send('Internal Server Error');
-            } else {
-                res.status(200).json({ message: 'Logout successful.' });
+                return res.status(500).json({ message: 'Error while logging out.' });
             }
+            res.status(200).json({ message: 'Logout successful.' });
         });
     } catch (err) {
         console.error('Error during logout:', err);
