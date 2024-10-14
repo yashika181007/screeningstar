@@ -90,15 +90,15 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
-            password: hashedPassword 
+            password: hashedPassword
         });
 
         req.session.clientId = newClient.clientId;
 
-        res.status(201).json({ 
-            message: 'Client created successfully', 
-            client: newClient, 
-            plainPassword  
+        res.status(201).json({
+            message: 'Client created successfully',
+            client: newClient,
+            plainPassword
         });
     } catch (error) {
         console.error('Error creating client:', error);
@@ -109,30 +109,33 @@ exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
         console.log('clientId', clientId);
-        
-        const { email } = req.body; 
+
+        const { email, status = 'Active' } = req.body;
         console.log('req.body', req.body);
 
         if (!email || !clientId) {
             return res.status(400).json({ message: 'Email and Client ID are required' });
         }
+        if (status !== 'Active') {
+            return res.status(400).json({ message: 'Account is inactive! You cannot log in.' });
+        }
 
-        const client = await Client.findOne({ 
-            where: { email, clientId } 
+        const client = await Client.findOne({
+            where: { email, clientId }
         });
-        
+
         console.log('client', client);
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
         }
-        
-        res.status(200).json({ 
-            message: 'Client found', 
+
+        res.status(200).json({
+            message: 'Client found',
             email: client.email,
-            password: client.password 
+            password: client.password
         });
-        
+
     } catch (error) {
         console.error('Error fetching client password:', error);
         res.status(500).json({ message: 'Error fetching client password', error: error.message });
@@ -156,7 +159,7 @@ exports.loginClient = async (req, res) => {
         const token = jwt.sign(
             { id: client.id, email: client.email, role: client.role },
             process.env.jwtSecret,
-            { expiresIn: '6h' } 
+            { expiresIn: '6h' }
         );
 
         return res.status(200).json({
@@ -178,7 +181,7 @@ exports.loginClient = async (req, res) => {
 
 exports.verifyLogin = async (req, res) => {
     try {
-        
+
         const token = req.headers['authorization']?.split(' ')[1];
 
         if (!token) {
@@ -186,17 +189,17 @@ exports.verifyLogin = async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.jwtSecret);
-        const clientId = decoded.id;  
+        const clientId = decoded.id;
 
         const client = await Client.findByPk(clientId);
         if (!client) {
             return res.status(404).json({ success: false, message: 'Client not found' });
         }
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Login verified', 
-            client: { id: client.id, email: client.email, role: client.role } 
+        res.status(200).json({
+            success: true,
+            message: 'Login verified',
+            client: { id: client.id, email: client.email, role: client.role }
         });
     } catch (err) {
         console.error(err);
