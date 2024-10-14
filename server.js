@@ -7,7 +7,6 @@ const MySQLStore = require('express-mysql-session')(session);
 const config = require('./config');
 const { Sequelize } = require('sequelize');
 
-// Import your routes
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
@@ -24,11 +23,11 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Set up Sequelize for MySQL
+
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
-    port: 3306, // Default MySQL port
+    port: 3306,
     pool: {
         max: 5,
         min: 0,
@@ -37,20 +36,18 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     },
 });
 
-// Test the database connection
 (async () => {
     try {
         await sequelize.authenticate();
         console.log('Connection to the database has been established successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
-        process.exit(1); // Exit the application if database connection fails
+        process.exit(1); 
     }
 })();
 
-// Set up MySQL session store
 const sessionStoreOptions = {
-    expiration: 21600000, // 6 hours in milliseconds
+    expiration: 21600000, 
     createDatabaseTable: true,
     schema: {
         tableName: 'sessions',
@@ -62,7 +59,6 @@ const sessionStoreOptions = {
     },
 };
 
-// Initialize session store
 const sessionStore = new MySQLStore(sessionStoreOptions, sequelize);
 
 app.use(session({
@@ -75,7 +71,6 @@ app.use(session({
     },
 }));
 
-// Define routes
 app.use('/Screeningstar', authRoutes);
 app.use('/Screeningstar', clientRoutes);
 app.use('/Screeningstar', serviceRoutes);
@@ -86,14 +81,12 @@ app.use('/Screeningstar', billingspocRoutes);
 app.use('/Screeningstar', billingescalationRoutes);
 app.use('/Screeningstar', authorizeddetailsRoutes);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000; // Fallback to 3000 if PORT is not defined
+const PORT = process.env.PORT || 3000; 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
