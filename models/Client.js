@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const Client = sequelize.define('client', {
+const Client = sequelize.define('Client', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -38,10 +38,9 @@ const Client = sequelize.define('client', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-       
     },
     password: {
-        type: DataTypes.STRING(255),  
+        type: DataTypes.STRING,  
         allowNull: false,
     },
     registeredAddress: {
@@ -103,11 +102,17 @@ const Client = sequelize.define('client', {
     },
 });
 
+// Associations
 Client.belongsTo(Users, {
     foreignKey: 'user_id',
     as: 'User',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+});
+
+Client.hasMany(Branch, {
+    foreignKey: 'clientId',
+    as: 'branches',
 });
 
 sequelize.sync()
