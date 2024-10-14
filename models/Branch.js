@@ -1,4 +1,5 @@
 const Users = require('../models/User'); 
+const Client = require('../models/Client');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
@@ -22,10 +23,12 @@ const Branch = sequelize.define('branch', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'clients', 
-            key: 'id',
+            model: Client,  
         },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
     },
+   
     branchEmail: {
         type: DataTypes.STRING,
         allowNull: false,
