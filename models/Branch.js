@@ -1,5 +1,5 @@
 const Users = require('../models/User'); 
-const Client = require('../models/Client');
+const Client = require('../models/Client');  // Ensure this is correctly referenced
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
@@ -8,7 +8,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const Branch = sequelize.define('branch', {
+const Branch = sequelize.define('Branch', {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -23,12 +23,12 @@ const Branch = sequelize.define('branch', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Client,  
+            model: Client,   
+            key: 'id',      
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },
-   
     branchEmail: {
         type: DataTypes.STRING,
         allowNull: false,
