@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const Branch = sequelize.define('Branch', {
+const Branch = sequelize.define('branch', {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
