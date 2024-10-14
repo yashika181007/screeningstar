@@ -57,7 +57,9 @@ exports.login = async (req, res) => {
             email: user.email,
             role: user.role
         };
-
+        req.session.isLoggedIn = true;
+        req.session.email = user.email;
+     
         res.status(200).json({ message: 'Login successful', user: userData, token: token });
 
     } catch (err) {
@@ -215,14 +217,15 @@ exports.logout = (req, res) => {
         const token = req.headers['authorization']?.split(' ')[1]; 
 
         if (token) {
-            addTokenToBlacklist(token); // Assuming this is defined elsewhere
+            addTokenToBlacklist(token); 
         }
-        req.session.destroy((err) => {
+        req.session.destroy(err => {
             if (err) {
-                console.error('Error destroying session:', err); 
-                return res.status(500).json({ message: 'Error while logging out.', error: err.message });
+                console.error('Error destroying session:', err);
+                res.status(500).send('Internal Server Error');
+            } else {
+                res.status(200).json({ message: 'Logout successful.' });
             }
-            res.status(200).json({ message: 'Logout successful.' });
         });
     } catch (err) {
         console.error('Error during logout:', err);
