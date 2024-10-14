@@ -57,7 +57,8 @@ exports.createClient = async (req, res) => {
             standardProcess,
             loginRequired,
             role,
-            status = 'Active'
+            status = 'Active',
+            branches // Expecting this to be an array of branch objects
         } = req.body;
 
         const plainPassword = generatePassword();
@@ -66,6 +67,8 @@ exports.createClient = async (req, res) => {
         if (existingClient) {
             return res.status(400).json({ message: 'Email already in use' });
         }
+
+        // Create the new client
         const newClient = await Client.create({
             user_id,
             clientLogo,
@@ -90,8 +93,31 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
-            password: hashedPassword
+            password: hashedPassword,
+            totalBranches: (branches ? branches.length : 0) + 1 // Include the initial head branch
         });
+
+        // Create the head branch entry
+        await Branch.create({
+            clientId: newClient.clientId, // Link the branch to the client
+            branchEmail: email, // Use client email
+            branchName: organizationName, // Use organization name
+            isHeadBranch: true // Mark as head branch
+        });
+
+        // If branches are provided, create additional branch records
+        if (branches && branches.length > 0) {
+            const branchPromises = branches.map(async (branch) => {
+                const { branchEmail, branchName } = branch; // Destructure branch object
+                return await Branch.create({
+                    clientId: newClient.clientId, // Link the branch to the client
+                    branchEmail,
+                    branchName,
+                    isHeadBranch: false // Mark additional branches as not head branches
+                });
+            });
+            await Promise.all(branchPromises); // Wait for all branch records to be created
+        }
 
         req.session.clientId = newClient.clientId;
 
@@ -105,6 +131,7 @@ exports.createClient = async (req, res) => {
         return res.status(500).json({ message: 'Error creating client', error: error.message });
     }
 };
+
 exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
