@@ -39,21 +39,17 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
         
-        // If user not found, return error
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Compare hashed password with the one stored in DB
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Generate JWT token
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
 
-        // Set session variables
         req.session.token = token;
         req.session.userRole = user.role;
         req.session.isLoggedIn = true;
@@ -105,6 +101,7 @@ exports.veriflogin = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid token' });
         }
         if (err.name === 'TokenExpiredError') {
+            alert('Token expired');
             return res.status(401).json({ success: false, message: 'Token expired' });
         }
 
