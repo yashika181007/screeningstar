@@ -108,8 +108,8 @@ exports.createClient = async (req, res) => {
 exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
-        const { email } = req.body;
-
+        const { email } = req.body; 
+    
         if (!email || !clientId) {
             return res.status(400).json({ message: 'Email and Client ID are required' });
         }
@@ -124,8 +124,9 @@ exports.fetchPassword = async (req, res) => {
 
         res.status(200).json({ 
             message: 'Client found', 
-            password: client.password  
+            password: client.password 
         });
+        
     } catch (error) {
         console.error('Error fetching client password:', error);
         res.status(500).json({ message: 'Error fetching client password', error: error.message });
