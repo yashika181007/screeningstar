@@ -22,7 +22,7 @@ const Branch = sequelize.define('branch', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Clients', // Reference the Clients model (ensure it's singular)
+            model: 'clients', 
             key: 'id',
         },
     },
