@@ -46,7 +46,7 @@ exports.createClient = async (req, res) => {
         role,
         status = 'Active'
     } = req.body;
-    console.log('req.body', req.body);
+    // console.log('req.body', req.body);
 
     try {
         const newClient = await Client.create({
@@ -76,7 +76,7 @@ exports.createClient = async (req, res) => {
         });
         req.session.clientId = newClient.clientId;
         res.status(201).json({ message: 'Client created successfully', client: newClient });
-        console.log('newClient', newClient);
+        // console.log('newClient', newClient);
 
     } catch (error) {
         console.error('Database Error:', error);

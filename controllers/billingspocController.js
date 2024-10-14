@@ -6,8 +6,9 @@ const config = require('../config');
 
 exports.createBillingSpoc = async (req, res) => {
   try {
+    const client_id = req.session.clientId;
     const token = req.headers['authorization'];
-    console.log('token', req.headers['authorization']);
+    // console.log('token', req.headers['authorization']);
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
     }
@@ -27,9 +28,10 @@ exports.createBillingSpoc = async (req, res) => {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
       const { spocName, designation, contactNumber, emailId} = req.body;
-      console.log('req.body', req.body);
+    //   console.log('req.body', req.body);
       const newBillingSpoc = await BillingSpoc.create({
           user_id,
+          client_id ,
           spocName,
           designation,
           contactNumber,
@@ -38,7 +40,7 @@ exports.createBillingSpoc = async (req, res) => {
       });
 
       res.status(201).json({ message: 'Billing SPOC created successfully', BillingSpoc: newBillingSpoc });
-      console.log('newBillingSpoc', newBillingSpoc);
+    //   console.log('newBillingSpoc', newBillingSpoc);
   } catch (error) {
       console.error('Error creating BillingSpoc:', error);
       res.status(500).json({ message: 'Error creating Billing SPOC', error: error.message });

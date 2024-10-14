@@ -6,8 +6,9 @@ const config = require('../config');
 
 exports.createClientSpoc = async (req, res) => {
   try {
+    const client_id = req.session.clientId;
     const token = req.headers['authorization'];
-    console.log('token', req.headers['authorization']);
+    // console.log('token', req.headers['authorization']);
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
     }
@@ -27,9 +28,10 @@ exports.createClientSpoc = async (req, res) => {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
       const { spocName, designation, contactNumber, emailId, emailId1, emailId2, emailId3, emailId4 } = req.body;
-      console.log('req.body', req.body);
+    //   console.log('req.body', req.body);
       const newClientSpoc = await ClientSpoc.create({
           user_id,
+          client_id ,
           spocName,
           designation,
           contactNumber,
@@ -41,7 +43,7 @@ exports.createClientSpoc = async (req, res) => {
       });
 
       res.status(201).json({ message: 'ClientSpoc created successfully', ClientSpoc: newClientSpoc });
-      console.log('newClientSpoc', newClientSpoc);
+    //   console.log('newClientSpoc', newClientSpoc);
   } catch (error) {
       console.error('Error creating ClientSpoc:', error);
       res.status(500).json({ message: 'Error creating ClientSpoc', error: error.message });
@@ -100,7 +102,6 @@ exports.updateClientSpoc = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
-
 
 exports.deleteClientSpoc = async (req, res) => {
     try {

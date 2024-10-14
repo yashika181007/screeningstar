@@ -6,8 +6,9 @@ const config = require('../config');
 
 exports.createBillingEscalation = async (req, res) => {
   try {
+    const client_id = req.session.clientId;
     const token = req.headers['authorization'];
-    console.log('token', req.headers['authorization']);
+    // console.log('token', req.headers['authorization']);
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
     }
@@ -27,9 +28,10 @@ exports.createBillingEscalation = async (req, res) => {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
       const { spocName, designation, contactNumber, emailId} = req.body;
-      console.log('req.body', req.body);
+    //   console.log('req.body', req.body);
       const newBillingEscalation = await BillingEscalation.create({
           user_id,
+          client_id ,
           spocName,
           designation,
           contactNumber,
@@ -38,7 +40,7 @@ exports.createBillingEscalation = async (req, res) => {
       });
 
       res.status(201).json({ message: 'Billing Escalation created successfully', BillingEscalation: newBillingEscalation });
-      console.log('newBillingEscalation', newBillingEscalation);
+    //   console.log('newBillingEscalation', newBillingEscalation);
   } catch (error) {
       console.error('Error creating BillingEscalation:', error);
       res.status(500).json({ message: 'Error creating Billing Escalation', error: error.message });

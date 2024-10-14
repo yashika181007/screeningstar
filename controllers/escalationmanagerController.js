@@ -6,8 +6,9 @@ const config = require('../config');
 
 exports.createescalationmanager = async (req, res) => {
   try {
+    const client_id = req.session.clientId;
     const token = req.headers['authorization'];
-    console.log('token', req.headers['authorization']);
+    // console.log('token', req.headers['authorization']);
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
     }
@@ -27,9 +28,10 @@ exports.createescalationmanager = async (req, res) => {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
       const { escalationName, designation, contactNumber, emailId} = req.body;
-      console.log('req.body', req.body);
+    //   console.log('req.body', req.body);
       const newEscalationManager = await EscalationManager.create({
           user_id,
+          client_id ,
           escalationName,
           designation,
           contactNumber,
@@ -38,7 +40,7 @@ exports.createescalationmanager = async (req, res) => {
       });
 
       res.status(201).json({ message: 'Escalation Manager created successfully', EscalationManager: newEscalationManager });
-      console.log('newEscalationManager', newEscalationManager);
+    //   console.log('newEscalationManager', newEscalationManager);
   } catch (error) {
       console.error('Error creating EscalationManager:', error);
       res.status(500).json({ message: 'Error creating Escalation Manager', error: error.message });
