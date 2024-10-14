@@ -45,7 +45,7 @@ const Branch = sequelize.define('branch', {
     timestamps: true,
 });
 
-1sequelize.sync()
+sequelize.sync()
     .then(() => console.log('Branch table created successfully.'))
     .catch(error => console.error('Error creating Branch table:', error));
 
