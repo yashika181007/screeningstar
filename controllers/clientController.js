@@ -198,15 +198,10 @@ exports.loginClient = async (req, res) => {
 
         let isMatch = false;
 
-        // Check if branch.password exactly matches the hardcoded hash
-        if (branch.password === "$2b$10$a6YZcoowkni3QX15LGI.eOeCw9mLE21j/y7PAN4Fa4CMsrZgcGjca") {
-            console.log("Direct match with hardcoded password hash.");
             isMatch = password === branch.password; 
-        } else if(branch.password === "gRAQQ4s^FRjC") {
-            console.log("Using bcrypt for comparison...");
+    
             isMatch = await bcrypt.compare(password, branch.password);
-        }
-
+        
         console.log("Password match result:", isMatch);
 
         if (!isMatch) {
