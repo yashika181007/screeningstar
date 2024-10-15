@@ -47,8 +47,7 @@ const Branch = sequelize.define('branches', {
         type: DataTypes.BOOLEAN,
         defaultValue: false, 
     },
-}, {
-    timestamps: true,
+
 });
 
 // Debugging: Log the Branch model

@@ -101,8 +101,7 @@ const Client = sequelize.define('client', {
         type: DataTypes.ENUM('Active', 'In Active'),
         allowNull: false,
     },
-
-    timestamps: true,  
+  
 });
 
 // Associations
