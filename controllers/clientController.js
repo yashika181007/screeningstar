@@ -193,27 +193,18 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        console.log(`Input Password: ${password}`);
-
-        const isHashed = branch.password.length === 60; 
-        console.log(`Branch Email: ${branchEmail}`);
-        console.log(`Stored Password (hashed): ${branch.password}`);
-        console.log(`Is Hashed: ${isHashed}`);
-
         let isMatch;
-
-        if (isHashed) {
-
+        
+        // If the password is hashed, use bcrypt for comparison
+        if (branch.password.startsWith('$2b$')) { // Assumes bcrypt hashes start with "$2b$"
             isMatch = await bcrypt.compare(password, branch.password);
-            console.log(`Comparing with hashed password. Is Match: ${isMatch}`);
         } else {
+            // Directly compare if not hashed
             isMatch = password === branch.password;
-            console.log(`Comparing with plain password. Is Match: ${isMatch}`);
         }
 
         if (!isMatch) {
-            console.log('Login failed: Invalid  password');
-            return res.status(400).json({ message: 'Invalid  password' });
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
 
         const token = jwt.sign(
