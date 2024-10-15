@@ -51,52 +51,45 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
 
         req.session.token = token;
+        req.session.userid = user.id;
         req.session.userRole = user.role;
         req.session.isLoggedIn = true;
         req.session.email = user.email;
 
-        // Prepare user data to send in the response
         const userData = {
             id: user.id,
             name: user.employeeName,
             email: user.email,
             role: user.role
         };
-     
-        // Send success response with token
+
         res.status(200).json({ message: 'Login successful', user: userData, token });
 
     } catch (err) {
-        // Handle errors and send appropriate response
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };
 
 exports.veriflogin = async (req, res) => {
     try {
-        // Get token from Authorization header
         const token = req.headers['authorization']?.split(' ')[1];
 
         if (!token) {
             return res.status(400).json({ success: false, message: 'No token provided' });
         }
 
-        // Verify token
         const decoded = jwt.verify(token, config.jwtSecret);
         const userId = decoded.id;
 
-        // Fetch user by ID
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // If valid, return user information
         res.status(200).json({ success: true, message: 'Login verified', user: { id: user.id, email: user.email, role: user.role } });
     } catch (err) {
         console.error(err);
 
-        // Handle JWT errors (invalid or expired tokens)
         if (err.name === 'JsonWebTokenError') {
             return res.status(401).json({ success: false, message: 'Invalid token' });
         }
@@ -105,7 +98,6 @@ exports.veriflogin = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Token expired' });
         }
 
-        // Handle other errors
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };

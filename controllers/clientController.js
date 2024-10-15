@@ -147,6 +147,7 @@ exports.createClient = async (req, res) => {
 exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
+        console.log('clientId',clientId)
         const { branchEmail } = req.body;
 
         if (!branchEmail || !clientId) {
@@ -227,7 +228,6 @@ exports.verifyLogin = async (req, res) => {
         const decoded = jwt.verify(token, process.env.jwtSecret);
         const branchId = decoded.id;
 
-        // Find the branch using the client ID (decoded from the JWT)
         const branch = await Branch.findByPk(branchId);
         if (!branch) {
             return res.status(404).json({ success: false, message: 'Branch not found' });
@@ -399,7 +399,7 @@ exports.updateClient = async (req, res) => {
     } = req.body;
 
     try {
-        const client = await Client.findByPk(req.params.id);  // Marking the function as async makes 'await' valid
+        const client = await Client.findByPk(req.params.id); 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
