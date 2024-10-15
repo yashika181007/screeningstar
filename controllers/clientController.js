@@ -64,7 +64,10 @@ exports.createClient = async (req, res) => {
             branches
         } = req.body;
 
-        const hashedPassword = await bcrypt.hash(generatePassword(), 10); // Hash a generated password for the client
+        // Generate a non-hashed password for the client
+        const plainPassword = generatePassword();
+        const hashedPassword = await bcrypt.hash(plainPassword, 10); // Hash the password for storage
+
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) {
             return res.status(400).json({ message: 'Email already in use' });
@@ -109,12 +112,17 @@ exports.createClient = async (req, res) => {
             password: hashedPassword // Store the hashed password for the head branch
         });
 
+        // Store generated branch passwords
+        const branchPasswords = {};
+
         // Create additional branches if provided
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword(); // Generate a new password for each branch
                 const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); // Hash the branch password
+                branchPasswords[branchEmail] = branchPassword; // Store the plain password
+
                 return await Branch.create({
                     clientId: newClient.clientId,
                     user_id,
@@ -129,7 +137,6 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
-        // Return relevant information after client creation
         res.status(201).json({
             message: 'Client created successfully',
             client: {
@@ -137,7 +144,11 @@ exports.createClient = async (req, res) => {
                 organizationName: newClient.organizationName,
                 email: newClient.email,
                 status: newClient.status,
-                branches: branches || [] // Include branch information if provided
+                password: plainPassword, 
+                branches: Object.keys(branchPasswords).map(branchEmail => ({
+                    branchEmail,
+                    password: branchPasswords[branchEmail] 
+                }))
             }
         });
     } catch (error) {
