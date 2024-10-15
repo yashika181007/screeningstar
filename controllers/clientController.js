@@ -109,19 +109,17 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: hashedPassword // Store the hashed password for the head branch
+            password: hashedPassword 
         });
 
-        // Store generated branch passwords
         const branchPasswords = {};
 
-        // Create additional branches if provided
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
-                const branchPassword = generatePassword(); // Generate a new password for each branch
-                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); // Hash the branch password
-                branchPasswords[branchEmail] = branchPassword; // Store the plain password
+                const branchPassword = generatePassword(); 
+                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); 
+                branchPasswords[branchEmail] = branchPassword; 
 
                 return await Branch.create({
                     clientId: newClient.clientId,
@@ -129,7 +127,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: hashedBranchPassword // Store the hashed password for the branch
+                    password: hashedBranchPassword 
                 });
             });
             await Promise.all(branchPromises);
@@ -159,37 +157,30 @@ exports.createClient = async (req, res) => {
 
 exports.fetchPassword = async (req, res) => {
     try {
-        // const clientId = req.session.clientId;
-        // console.log('clientId',clientId);
         const { branchEmail } = req.body;
 
-        if (!branchEmail ) {
+        if (!branchEmail) {
             return res.status(400).json({ message: 'Email is required' });
         }
-     
-        const client = await Branch.findOne({
+
+        const branch = await Branch.findOne({
             where: { branchEmail }
         });
 
-        // if (!client) {
-        //     return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
-        // }
-
-        // const plainPassword = branchPasswords[branchEmail];
-
-        // if (!plainPassword) {
-        //     return res.status(404).json({ message: 'Password not found for the provided branch email' });
-        // }
+        if (!branch) {
+            return res.status(404).json({ message: 'Branch not found with the provided email' });
+        }
 
         res.status(200).json({
             message: 'Branch found',
-            email: client.branchEmail,
-            Password:client.password
+            email: branch.branchEmail,
+          
+            password: branch.password 
         });
 
     } catch (error) {
-        console.error('Error fetching client password:', error);
-        res.status(500).json({ message: 'Error fetching client password', error: error.message });
+        console.error('Error fetching branch password:', error);
+        res.status(500).json({ message: 'Error fetching branch password', error: error.message });
     }
 };
 
