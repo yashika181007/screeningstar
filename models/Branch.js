@@ -53,9 +53,16 @@ const Branch = sequelize.define('branches', {
 
 // Debugging: Log the Branch model
 console.log('Branch model:', Branch);
-
 sequelize.sync()
-    .then(() => console.log('Branch table created successfully.'))
-    .catch(error => console.error('Error creating Branch table:', error));
+    .then(() => console.log('Client table created successfully.'))
+    .catch(error => {
+        console.error('Error creating Client table:');
+        console.error('Error Code:', error.code);
+        console.error('Error Errno:', error.errno);
+        console.error('Error SQLState:', error.sqlState);
+        console.error('Error SQLMessage:', error.sqlMessage);
+        console.error('Error SQL:', error.sql);
+        console.error('Error Stack:', error.stack);
+    })
 
 module.exports = Branch;

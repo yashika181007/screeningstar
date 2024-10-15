@@ -123,6 +123,13 @@ console.log('Client model:', Client);
 
 sequelize.sync()
     .then(() => console.log('Client table created successfully.'))
-    .catch(error => console.error('Error creating Client table:', error));
-
+    .catch(error => {
+        console.error('Error creating Client table:');
+        console.error('Error Code:', error.code);
+        console.error('Error Errno:', error.errno);
+        console.error('Error SQLState:', error.sqlState);
+        console.error('Error SQLMessage:', error.sqlMessage);
+        console.error('Error SQL:', error.sql);
+        console.error('Error Stack:', error.stack);
+    })
 module.exports = Client;
