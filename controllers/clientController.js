@@ -147,7 +147,7 @@ exports.createClient = async (req, res) => {
 exports.fetchPassword = async (req, res) => {
     try {
         const clientId = req.session.clientId;
-        console.log('clientId',clientId)
+        console.log('clientId',clientId);
         const { branchEmail } = req.body;
 
         if (!branchEmail || !clientId) {
