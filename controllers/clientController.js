@@ -194,10 +194,10 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // const isMatch = await bcrypt.compare(password, client.password);
-        // if (!isMatch) {
-        //     return res.status(400).json({ message: 'Invalid email or password' });
-        // }
+        const isMatch = await bcrypt.compare(password, client.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
 
         const token = jwt.sign(
             { id: client.id, email: client.branchEmail, role: client.role },
