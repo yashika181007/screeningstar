@@ -99,7 +99,6 @@ exports.createClient = async (req, res) => {
             totalBranches: (branches ? branches.length : 0) + 1
         });
 
-        branchPasswords[email] = plainPassword;
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
@@ -113,7 +112,6 @@ exports.createClient = async (req, res) => {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword();
-                branchPasswords[branchEmail] = branchPassword;
                 const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
                 return await Branch.create({
                     clientId: newClient.clientId,
@@ -162,7 +160,7 @@ exports.fetchPassword = async (req, res) => {
             return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
         }
 
-        const plainPassword = branchPasswords[branchEmail];
+        // const plainPassword = branchPasswords[branchEmail];
 
         if (!plainPassword) {
             return res.status(404).json({ message: 'Password not found for the provided branch email' });
@@ -171,7 +169,7 @@ exports.fetchPassword = async (req, res) => {
         res.status(200).json({
             message: 'Branch found',
             email: client.branchEmail,
-            plainPassword
+            Password:client.password
         });
 
     } catch (error) {
