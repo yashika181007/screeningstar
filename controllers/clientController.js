@@ -147,15 +147,15 @@ exports.fetchPassword = async (req, res) => {
         const clientId = req.session.clientId;
         console.log('clientId', clientId);
 
-        const { email } = req.body; 
+        const { branchEmail } = req.body; 
         console.log('req.body', req.body);
 
-        if (!email || !clientId) {
+        if (!branchEmail || !clientId) {
             return res.status(400).json({ message: 'Email and Client ID are required' });
         }
 
         const client = await Branch.findOne({
-            where: { email, clientId }
+            where: { branchEmail, clientId }
         });
 
         console.log('client', client);
@@ -166,7 +166,7 @@ exports.fetchPassword = async (req, res) => {
         
         res.status(200).json({
             message: 'Client found',
-            email: client.email,
+            email: client.branchEmail,
             password: client.password 
         });
 
@@ -178,9 +178,9 @@ exports.fetchPassword = async (req, res) => {
 
 exports.loginClient = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { branchEmail, password } = req.body;
 
-        const client = await Client.findOne({ where: { email } });
+        const client = await Branch.findOne({ where: { branchEmail } });
         if (!client) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
@@ -191,7 +191,7 @@ exports.loginClient = async (req, res) => {
         // }
 
         const token = jwt.sign(
-            { id: client.id, email: client.email, role: client.role },
+            { id: client.id, email: client.branchEmail, role: client.role },
             process.env.jwtSecret,
             { expiresIn: '6h' }
         );
