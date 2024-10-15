@@ -104,7 +104,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email, // Use client email
             branchName: organizationName, // Use organization name
             isHeadBranch: true, // Mark as head branch
-            password: hashedPassword // Head branch password
+            password: plainPassword // Head branch password
         });
 
         // If branches are provided, create additional branch records with unique passwords
@@ -120,7 +120,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: hashedBranchPassword 
+                    password: plainPassword 
                 });
             });
             await Promise.all(branchPromises); // Wait for all branch records to be created
@@ -131,7 +131,7 @@ exports.createClient = async (req, res) => {
         res.status(201).json({
             message: 'Client created successfully',
             client: newClient,
-            plainPassword 
+            branches: createdBranches 
         });
     } catch (error) {
         console.error('Error creating client:', error);
