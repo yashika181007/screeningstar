@@ -25,6 +25,7 @@ exports.createClientSpoc = async (req, res) => {
     }
 
     const user_id = decodedToken.id;
+    console.log('client_id',req.session.user_id);
     if (!user_id) {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
