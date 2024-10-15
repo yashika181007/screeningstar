@@ -193,20 +193,20 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        let isMatch = false;
-        
+        console.log("Received password:", password);
         console.log("Stored password format:", branch.password);
+
+        let isMatch = false;
+
+        // Check if branch.password exactly matches the hardcoded hash
         if (branch.password === "$2b$10$a6YZcoowkni3QX15LGI.eOeCw9mLE21j/y7PAN4Fa4CMsrZgcGjca") {
-            isMatch = password === branch.password;
-            console.log("Using direct comparison...");
-           
+            console.log("Direct match with hardcoded password hash.");
+            isMatch = password === branch.password;  // Note: This will be `false` unless `password` is the hashed value itself
         } else {
             console.log("Using bcrypt for comparison...");
             isMatch = await bcrypt.compare(password, branch.password);
-            
         }
 
-        // Log the result of the comparison
         console.log("Password match result:", isMatch);
 
         if (!isMatch) {
