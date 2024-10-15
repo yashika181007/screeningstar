@@ -116,6 +116,9 @@ Client.hasMany(Branch, {
     as: 'branches',
 });
 
+// Debugging: Log the Client model
+console.log('Client model:', Client);
+
 sequelize.sync()
     .then(() => console.log('Client table created successfully.'))
     .catch(error => console.error('Error creating Client table:', error));

@@ -31,8 +31,8 @@ const Branch = sequelize.define('branches', {
             model: Client, // Reference the Client model
             key: 'id',
         },
-        onDelete: 'CASCADE', // Optional: Adjust cascading behavior
-        onUpdate: 'CASCADE', // Optional: Adjust cascading behavior
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
     },
     branchEmail: {
         type: DataTypes.STRING,
@@ -49,6 +49,9 @@ const Branch = sequelize.define('branches', {
 }, {
     timestamps: true,
 });
+
+// Debugging: Log the Branch model
+console.log('Branch model:', Branch);
 
 sequelize.sync()
     .then(() => console.log('Branch table created successfully.'))
