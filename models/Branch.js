@@ -26,7 +26,7 @@ const Branch = sequelize.define('branches', {
     },
     clientId: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        // allowNull: true,
         references: {
             model: Client, // Reference the Client model
             key: 'id',
