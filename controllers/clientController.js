@@ -167,7 +167,7 @@ exports.fetchPassword = async (req, res) => {
         res.status(200).json({
             message: 'Client found',
             email: client.branchEmail,
-            password: client.password 
+            password: plainPassword 
         });
 
     } catch (error) {
