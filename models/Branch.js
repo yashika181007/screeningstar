@@ -25,11 +25,12 @@ const Branch = sequelize.define('branches', {
         onUpdate: 'CASCADE',
     },
     clientId: {
-        type: DataTypes.INTEGER,
-        // allowNull: true,
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
         references: {
             model: Client, // Reference the Client model
-            key: 'id',
+            key: 'clientId',
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
