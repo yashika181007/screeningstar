@@ -193,24 +193,26 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const isHashed = branch.password.length === 60; // bcrypt hashed passwords are typically 60 characters long
+        console.log(`Input Password: ${password}`);
+
+        const isHashed = branch.password.length === 60; /
         console.log(`Branch Email: ${branchEmail}`);
-        console.log(`Stored Password: ${branch.password}`);
+        console.log(`Stored Password (hashed): ${branch.password}`);
         console.log(`Is Hashed: ${isHashed}`);
 
         let isMatch;
 
         if (isHashed) {
-            console.log(`Comparinghashed passwords: ${password} === ${branch.password}`);
+
             isMatch = await bcrypt.compare(password, branch.password);
             console.log(`Comparing with hashed password. Is Match: ${isMatch}`);
         } else {
-            console.log(`Comparing plain text passwords: ${password} === ${branch.password}`);
             isMatch = password === branch.password;
             console.log(`Comparing with plain password. Is Match: ${isMatch}`);
         }
 
         if (!isMatch) {
+            console.log('Login failed: Invalid email or password');
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
@@ -226,7 +228,7 @@ exports.loginClient = async (req, res) => {
             branch: {
                 id: branch.id,
                 branchEmail: branch.branchEmail,
-                organizationName: branch.organizationName, // Include any additional details if needed
+                organizationName: branch.organizationName,
                 role: branch.role,
                 status: branch.status
             }
