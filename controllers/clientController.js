@@ -193,15 +193,21 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Check if the stored password is hashed or plain text
         const isHashed = branch.password.length === 60; // bcrypt hashed passwords are typically 60 characters long
+        console.log(`Branch Email: ${branchEmail}`);
+        console.log(`Stored Password: ${branch.password}`);
+        console.log(`Is Hashed: ${isHashed}`);
+
         let isMatch;
 
         if (isHashed) {
+            // Compare using bcrypt if the password is hashed
             isMatch = await bcrypt.compare(password, branch.password);
+            console.log(`Comparing with hashed password. Is Match: ${isMatch}`);
         } else {
-
+            // Directly compare if the password is plain text
             isMatch = password === branch.password;
+            console.log(`Comparing with plain password. Is Match: ${isMatch}`);
         }
 
         if (!isMatch) {
