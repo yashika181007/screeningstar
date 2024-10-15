@@ -6,7 +6,7 @@ const config = require('../config');
 
 exports.createBillingSpoc = async (req, res) => {
   try {
-    const client_id = req.session.clientId;
+    // const client_id = req.session.clientId;
     const token = req.headers['authorization'];
     // console.log('token', req.headers['authorization']);
     if (!token) {
@@ -31,7 +31,7 @@ exports.createBillingSpoc = async (req, res) => {
     //   console.log('req.body', req.body);
       const newBillingSpoc = await BillingSpoc.create({
           user_id,
-          client_id ,
+        //   client_id ,
           spocName,
           designation,
           contactNumber,

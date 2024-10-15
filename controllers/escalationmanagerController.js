@@ -6,7 +6,7 @@ const config = require('../config');
 
 exports.createescalationmanager = async (req, res) => {
   try {
-    const client_id = req.session.clientId;
+    // const client_id = req.session.clientId;
     const token = req.headers['authorization'];
     // console.log('token', req.headers['authorization']);
     if (!token) {
@@ -31,7 +31,7 @@ exports.createescalationmanager = async (req, res) => {
     //   console.log('req.body', req.body);
       const newEscalationManager = await EscalationManager.create({
           user_id,
-          client_id ,
+        //   client_id ,
           escalationName,
           designation,
           contactNumber,

@@ -7,7 +7,7 @@ const config = require('../config');
 exports.createClientSpoc = async (req, res) => {
   try {
     const client_id = req.session.clientId;
-    console.log('client_id',req.session.clientId);
+    // console.log('client_id',req.session.clientId);
     const token = req.headers['authorization'];
     // console.log('token', req.headers['authorization']);
     if (!token) {
@@ -33,7 +33,7 @@ exports.createClientSpoc = async (req, res) => {
     //   console.log('req.body', req.body);
       const newClientSpoc = await ClientSpoc.create({
           user_id,
-          client_id ,
+        //   client_id ,
           spocName,
           designation,
           contactNumber,

@@ -61,7 +61,12 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status = 'Active',
-            branches
+            branches,
+            clientSpoc,
+            escalationManager,
+            billingSpoc,
+           billingEscalation,
+             authorizedPerson
         } = req.body;
 
         // Generate a non-hashed password for the client
@@ -99,7 +104,13 @@ exports.createClient = async (req, res) => {
             role,
             status,
             password: hashedPassword,
-            totalBranches: (branches ? branches.length : 0) + 1
+            totalBranches: (branches ? branches.length : 0) + 1,
+            branches,
+            clientSpoc,
+            escalationManager,
+            billingSpoc,
+           billingEscalation,
+             authorizedPerson
         });
 
         // Create the head branch for the client

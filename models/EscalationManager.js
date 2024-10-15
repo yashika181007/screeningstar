@@ -23,14 +23,14 @@ const EscalationManager = sequelize.define('escalationmanager', {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },
-    client_id : {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        references: {
-            model: Client,  
-        },
-    },
+    // client_id : {
+    //     type: DataTypes.STRING,
+    //     unique: true,
+    //     allowNull: false,
+    //     references: {
+    //         model: Client,  
+    //     },
+    // },
     escalationName: {
         type: DataTypes.STRING,
         allowNull: false,

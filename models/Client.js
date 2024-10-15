@@ -97,6 +97,21 @@ const Client = sequelize.define('client', {
         type: DataTypes.ENUM('Active', 'In Active'),
         allowNull: false,
     },
+    clientSpoc: {
+        type: DataTypes.STRING,
+    },
+    escalationManager: {
+        type: DataTypes.STRING,
+    },
+    billingSpoc: {
+        type: DataTypes.STRING,
+    },
+    billingEscalation: {
+        type: DataTypes.STRING,
+    },
+    authorizedPerson: {
+        type: DataTypes.STRING,
+    },
 }, {
     timestamps: true, 
     paranoid: false,  
