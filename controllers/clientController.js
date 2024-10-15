@@ -195,11 +195,11 @@ exports.loginClient = async (req, res) => {
 
         let isMatch;
         
-        // If the password is hashed, use bcrypt for comparison
+        // Check if the password appears to be hashed
         if (branch.password.startsWith('$2b$')) { // Assumes bcrypt hashes start with "$2b$"
             isMatch = await bcrypt.compare(password, branch.password);
         } else {
-            // Directly compare if not hashed
+            // Direct comparison for un-hashed passwords
             isMatch = password === branch.password;
         }
 
