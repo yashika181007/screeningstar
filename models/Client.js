@@ -1,13 +1,3 @@
-const Users = require('../models/User');
-const { Sequelize, DataTypes } = require('sequelize');
-const config = require('../config');
-const Branch = require('../models/Branch');
-
-const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
-    host: config.database.host,
-    dialect: 'mysql',
-});
-
 const Client = sequelize.define('client', {
     id: {
         type: DataTypes.INTEGER,
@@ -101,10 +91,11 @@ const Client = sequelize.define('client', {
         type: DataTypes.ENUM('Active', 'In Active'),
         allowNull: false,
     },
-  
+}, {
+    timestamps: true, 
+    paranoid: false,  
 });
 
-// Associations
 Client.belongsTo(Users, {
     foreignKey: 'user_id',
     as: 'User',
@@ -117,18 +108,12 @@ Client.hasMany(Branch, {
     as: 'branches',
 });
 
-// Debugging: Log the Client model
 console.log('Client model:', Client);
 
 sequelize.sync()
     .then(() => console.log('Client table created successfully.'))
     .catch(error => {
-        console.error('Error creating Client table:');
-        console.error('Error Code:', error.code);
-        console.error('Error Errno:', error.errno);
-        console.error('Error SQLState:', error.sqlState);
-        console.error('Error SQLMessage:', error.sqlMessage);
-        console.error('Error SQL:', error.sql);
-        console.error('Error Stack:', error.stack);
-    })
+        console.error('Error creating Client table:', error);
+    });
+
 module.exports = Client;
