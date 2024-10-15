@@ -6,7 +6,7 @@ const clientController = require('../controllers/clientController');
 router.post('/clients',verifyToken, clientController.createClient);
 router.post('/fetchPassword',verifyToken, clientController.fetchPassword);
 router.post('/loginClient',verifyToken, clientController.loginClient);
-router.post('/verif-login', verifyToken, clientController.verifyLogin);
+router.post('/clients/verif-login', verifyToken, clientController.verifyLogin);
 router.post('/logoutClient',verifyToken, clientController.logout);
 
 router.get('/clients',verifyToken, clientController.getClients);
