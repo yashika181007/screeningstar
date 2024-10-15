@@ -1,7 +1,7 @@
 const Users = require('../models/User');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
-const Client = require('../models/Client')
+const Client = require('../models/Client');
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
@@ -27,7 +27,12 @@ const Branch = sequelize.define('branches', {
     clientId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-       
+        references: {
+            model: Client, // Reference the Client model
+            key: 'id',
+        },
+        onDelete: 'CASCADE', // Optional: Adjust cascading behavior
+        onUpdate: 'CASCADE', // Optional: Adjust cascading behavior
     },
     branchEmail: {
         type: DataTypes.STRING,
