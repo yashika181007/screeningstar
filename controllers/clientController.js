@@ -197,12 +197,12 @@ exports.loginClient = async (req, res) => {
         
         console.log("Stored password format:", branch.password);
         if (branch.password === "$2b$10$a6YZcoowkni3QX15LGI.eOeCw9mLE21j/y7PAN4Fa4CMsrZgcGjca") {
+            isMatch = password === branch.password;
+            console.log("Using direct comparison...");
+           
+        } else {
             console.log("Using bcrypt for comparison...");
             isMatch = await bcrypt.compare(password, branch.password);
-            
-        } else {
-          isMatch = password === branch.password;
-            console.log("Using direct comparison...");
             
         }
 
