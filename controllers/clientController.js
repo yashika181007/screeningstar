@@ -154,7 +154,7 @@ exports.fetchPassword = async (req, res) => {
             return res.status(400).json({ message: 'Email and Client ID are required' });
         }
 
-        const client = await Client.findOne({
+        const client = await Branch.findOne({
             where: { email, clientId }
         });
 
