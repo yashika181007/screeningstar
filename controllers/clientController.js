@@ -195,15 +195,15 @@ exports.loginClient = async (req, res) => {
 
         let isMatch = false;
         
-        // Check if the password is hashed and log it for debugging
         console.log("Stored password format:", branch.password);
-        if (branch.password.startsWith('$2b$')) { // bcrypt hashes typically start with "$2b$"
+        if (branch.password === "$2b$10$a6YZcoowkni3QX15LGI.eOeCw9mLE21j/y7PAN4Fa4CMsrZgcGjca") {
             console.log("Using bcrypt for comparison...");
             isMatch = await bcrypt.compare(password, branch.password);
+            
         } else {
-            // Direct comparison for un-hashed passwords
+          isMatch = password === branch.password;
             console.log("Using direct comparison...");
-            isMatch = password === branch.password;
+            
         }
 
         // Log the result of the comparison
