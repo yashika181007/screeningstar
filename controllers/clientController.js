@@ -201,11 +201,11 @@ exports.loginClient = async (req, res) => {
         let isMatch;
 
         if (isHashed) {
-            console.log(`Comparing plain text passwords: ${password} === ${branch.password}`);
-            isMatch = password === branch.password;
-            console.log(`Comparing with plain password. Is Match: ${isMatch}`);
+            // Compare using bcrypt if the password is hashed
+            isMatch = await bcrypt.compare(password, branch.password);
+            console.log(`Comparing with hashed password. Is Match: ${isMatch}`);
         } else {
-
+            console.log(`Comparing plain text passwords: ${password} === ${branch.password}`);
             isMatch = password === branch.password;
             console.log(`Comparing with plain password. Is Match: ${isMatch}`);
         }
