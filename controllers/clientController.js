@@ -94,7 +94,6 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
-            password: hashedPassword,
             totalBranches: (branches ? branches.length : 0) + 1 // Include the initial head branch
         });
 
@@ -104,19 +103,24 @@ exports.createClient = async (req, res) => {
             user_id,
             branchEmail: email, // Use client email
             branchName: organizationName, // Use organization name
-            isHeadBranch: true // Mark as head branch
+            isHeadBranch: true, // Mark as head branch
+            password: hashedPassword // Head branch password
         });
 
-        // If branches are provided, create additional branch records
+        // If branches are provided, create additional branch records with unique passwords
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch; // Destructure branch object
+                const branchPassword = generatePassword(); // Generate password for each branch
+                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); // Hash the branch password
+
                 return await Branch.create({
                     clientId: newClient.clientId, // Link the branch to the client
                     user_id,
                     branchEmail,
                     branchName,
-                    isHeadBranch: false // Mark additional branches as not head branches
+                    isHeadBranch: false,
+                    password: hashedBranchPassword 
                 });
             });
             await Promise.all(branchPromises); // Wait for all branch records to be created
@@ -127,7 +131,7 @@ exports.createClient = async (req, res) => {
         res.status(201).json({
             message: 'Client created successfully',
             client: newClient,
-            plainPassword
+            plainPassword 
         });
     } catch (error) {
         console.error('Error creating client:', error);
