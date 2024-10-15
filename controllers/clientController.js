@@ -198,10 +198,11 @@ exports.loginClient = async (req, res) => {
 
         let isMatch = false;
 
-            isMatch = password === branch.password; 
-    
+        if (password === branch.password) {
+            isMatch = true;
+        } else {
             isMatch = await bcrypt.compare(password, branch.password);
-        
+        }
         console.log("Password match result:", isMatch);
 
         if (!isMatch) {
