@@ -146,18 +146,16 @@ exports.createClient = async (req, res) => {
 
 exports.fetchPassword = async (req, res) => {
     try {
-        const clientId = req.session.clientId;
+        // const clientId = req.session.clientId;
         console.log('clientId',clientId);
         const { branchEmail } = req.body;
 
         if (!branchEmail ) {
             return res.status(400).json({ message: 'Email is required' });
         }
-        if ( !clientId) {
-            return res.status(400).json({ message: 'Client ID is required' });
-        }
+     
         const client = await Branch.findOne({
-            where: { branchEmail, clientId }
+            where: { branchEmail }
         });
 
         if (!client) {
