@@ -39,10 +39,7 @@ const Client = sequelize.define('client', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    password: {
-        type: DataTypes.STRING,  
-        allowNull: false,
-    },
+    
     registeredAddress: {
         type: DataTypes.STRING,
     },
