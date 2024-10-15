@@ -225,10 +225,10 @@ exports.verifyLogin = async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.jwtSecret);
-        const clientId = decoded.id;
+        const branchId = decoded.id;
 
         // Find the branch using the client ID (decoded from the JWT)
-        const branch = await Branch.findByPk(clientId);
+        const branch = await Branch.findByPk(branchId);
         if (!branch) {
             return res.status(404).json({ success: false, message: 'Branch not found' });
         }
