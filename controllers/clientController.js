@@ -183,18 +183,18 @@ exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
 
-        const client = await Branch.findOne({ where: { branchEmail } });
-        if (!client) {
+        const branch = await Branch.findOne({ where: { branchEmail } });
+        if (!branch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const isMatch = await bcrypt.compare(password, client.password);
+        const isMatch = await bcrypt.compare(password, branch.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
         const token = jwt.sign(
-            { id: client.id, email: client.branchEmail, role: client.role },
+            { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
             process.env.jwtSecret,
             { expiresIn: '6h' }
         );
@@ -202,12 +202,12 @@ exports.loginClient = async (req, res) => {
         return res.status(200).json({
             message: 'Login successful',
             token,
-            client: {
-                id: client.id,
-                email: client.email,
-                organizationName: client.organizationName,
-                role: client.role,
-                status: client.status
+            branch: {
+                id: branch.id,
+                branchEmail: branch.branchEmail,
+                organizationName: branch.organizationName, // Include any additional details if needed
+                role: branch.role,
+                status: branch.status
             }
         });
     } catch (error) {
@@ -218,7 +218,6 @@ exports.loginClient = async (req, res) => {
 
 exports.verifyLogin = async (req, res) => {
     try {
-
         const token = req.headers['authorization']?.split(' ')[1];
 
         if (!token) {
@@ -228,15 +227,22 @@ exports.verifyLogin = async (req, res) => {
         const decoded = jwt.verify(token, process.env.jwtSecret);
         const clientId = decoded.id;
 
-        const client = await Branch.findByPk(clientId);
-        if (!client) {
-            return res.status(404).json({ success: false, message: 'Client not found' });
+        // Find the branch using the client ID (decoded from the JWT)
+        const branch = await Branch.findByPk(clientId);
+        if (!branch) {
+            return res.status(404).json({ success: false, message: 'Branch not found' });
         }
 
         res.status(200).json({
             success: true,
             message: 'Login verified',
-            client: { id: client.id, email: client.email, role: client.role }
+            branch: {
+                id: branch.id,
+                user_id: branch.user_id,
+                clientId: branch.clientId,
+                branchEmail: branch.branchEmail
+
+            }
         });
     } catch (err) {
         console.error(err);
@@ -251,12 +257,13 @@ exports.verifyLogin = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
+
 exports.logout = (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; 
+        const token = req.headers['authorization']?.split(' ')[1];
 
         if (token) {
-            addTokenToBlacklist(token); 
+            addTokenToBlacklist(token);
         }
 
         req.session.destroy((err) => {
