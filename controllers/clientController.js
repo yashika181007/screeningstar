@@ -150,10 +150,12 @@ exports.fetchPassword = async (req, res) => {
         console.log('clientId',clientId);
         const { branchEmail } = req.body;
 
-        if (!branchEmail || !clientId) {
-            return res.status(400).json({ message: 'Email and Client ID are required' });
+        if (!branchEmail ) {
+            return res.status(400).json({ message: 'Email is required' });
         }
-
+        if ( !clientId) {
+            return res.status(400).json({ message: 'Client ID is required' });
+        }
         const client = await Branch.findOne({
             where: { branchEmail, clientId }
         });
