@@ -47,6 +47,10 @@ const Branch = sequelize.define('branches', {
         type: DataTypes.BOOLEAN,
         defaultValue: false, 
     },
+    password: {
+        type: DataTypes.STRING,  
+        allowNull: false,
+    },
 }, {
     timestamps: true,  
     paranoid: false,   
