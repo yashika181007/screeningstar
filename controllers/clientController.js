@@ -64,13 +64,13 @@ exports.createClient = async (req, res) => {
             branches
         } = req.body;
 
-        const plainPassword = generatePassword();
-        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const hashedPassword = await bcrypt.hash(generatePassword(), 10); // Hash a generated password for the client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) {
             return res.status(400).json({ message: 'Email already in use' });
         }
 
+        // Create the client
         const newClient = await Client.create({
             user_id,
             clientLogo,
@@ -99,27 +99,29 @@ exports.createClient = async (req, res) => {
             totalBranches: (branches ? branches.length : 0) + 1
         });
 
+        // Create the head branch for the client
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: hashedPassword
+            password: hashedPassword // Store the hashed password for the head branch
         });
 
+        // Create additional branches if provided
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
-                const branchPassword = generatePassword();
-                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
+                const branchPassword = generatePassword(); // Generate a new password for each branch
+                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); // Hash the branch password
                 return await Branch.create({
                     clientId: newClient.clientId,
                     user_id,
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: hashedBranchPassword
+                    password: hashedBranchPassword // Store the hashed password for the branch
                 });
             });
             await Promise.all(branchPromises);
@@ -127,14 +129,16 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
+        // Return relevant information after client creation
         res.status(201).json({
             message: 'Client created successfully',
-            client: newClient,
-            plainPassword,
-            branches: Object.keys(branchPasswords).map(email => ({
-                branchEmail: email,
-                password: branchPasswords[email]
-            }))
+            client: {
+                id: newClient.id,
+                organizationName: newClient.organizationName,
+                email: newClient.email,
+                status: newClient.status,
+                branches: branches || [] // Include branch information if provided
+            }
         });
     } catch (error) {
         console.error('Error creating client:', error);
