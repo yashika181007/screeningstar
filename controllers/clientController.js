@@ -156,15 +156,15 @@ exports.fetchPassword = async (req, res) => {
             where: { branchEmail }
         });
 
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
-        }
+        // if (!client) {
+        //     return res.status(404).json({ message: 'Client not found with the provided email and client ID' });
+        // }
 
         // const plainPassword = branchPasswords[branchEmail];
 
-        if (!plainPassword) {
-            return res.status(404).json({ message: 'Password not found for the provided branch email' });
-        }
+        // if (!plainPassword) {
+        //     return res.status(404).json({ message: 'Password not found for the provided branch email' });
+        // }
 
         res.status(200).json({
             message: 'Branch found',
