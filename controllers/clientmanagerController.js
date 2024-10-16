@@ -7,11 +7,11 @@ exports.createClientManager = async (req, res) => {
     try {
         const token = req.headers['authorization'];
         console.log('Token:', token);
-        
+
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
-        
+
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
 
@@ -22,11 +22,11 @@ exports.createClientManager = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const user_id = decodedToken.user_id; 
-        const clientId = decodedToken.clientId; 
+        const user_id = decodedToken.user_id;
+        const clientId = decodedToken.clientId;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
-        
+
         if (!user_id || !clientId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
@@ -37,6 +37,8 @@ exports.createClientManager = async (req, res) => {
             clientId,
         });
 
+        console.log('req.body', req.body);
+        console.log('newCase', newCase);
         return res.status(201).json({
             message: 'Case uploaded successfully',
             data: newCase,
@@ -110,7 +112,7 @@ exports.updateClientManager = async (req, res) => {
 exports.deleteClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const deleteClientManager = await ClientManager.findByPk(id);  
+        const deleteClientManager = await ClientManager.findByPk(id);
         if (!deleteClientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
