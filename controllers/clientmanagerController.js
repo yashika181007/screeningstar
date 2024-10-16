@@ -1,5 +1,4 @@
-const ClientManager = require('../models/ClientManager');  // Import the ClientManager model
-
+const ClientManager = require('../models/ClientManager');
 exports.createClientManager = async (req, res) => {
     try {
         const newCase = await ClientManager.create(req.body);
