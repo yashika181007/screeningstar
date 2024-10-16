@@ -304,6 +304,17 @@ exports.logout = (req, res) => {
         res.status(400).json({ message: 'Error signing out', error: err.message });
     }
 };
+exports.getBranchs = async (req, res) => {
+    try {
+        const Branchs = await Branch.findAll();
+        res.status(200).json(Branchs);
+
+    } catch (err) {
+        console.error('Error fetching Branchs:', err);
+        res.status(500).json({ message: 'Error fetching Branchs', error: err.message });
+
+    }
+};
 exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
