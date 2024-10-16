@@ -350,7 +350,9 @@ exports.getBranchs = async (req, res) => {
 };
 exports.getBranchbyclient = async (req, res) => {
     try {
-        const getbranch = await Branch.findByPk(req.params.clientId);
+        const getbranch = await Branch.findOne({
+            where: { clientId: req.params.clientId }
+        });
 
         if (!getbranch) {
             return res.status(404).json({ message: 'Branch not found' });
