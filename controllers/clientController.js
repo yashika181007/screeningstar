@@ -13,6 +13,7 @@ const generatePassword = (length = 12) => {
     }
     return password;
 };
+
 exports.createClient = async (req, res) => {
     try {
         // Extract token from the Authorization header
@@ -67,7 +68,7 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status = 'Active',
-            branches,
+            branches,  // Branches array from body
             clientSpoc,
             escalationManager,
             billingSpoc,
@@ -75,6 +76,10 @@ exports.createClient = async (req, res) => {
             authorizedPerson
         } = req.body;
 
+        // Log the branch data from request body
+        console.log('Received branches data from body:', branches);
+
+        // Generate a password for the client
         const plainPassword = generatePassword();
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
         console.log('Generated plain password:', plainPassword);
@@ -120,6 +125,7 @@ exports.createClient = async (req, res) => {
 
         console.log('New Client Created:', newClient);
 
+        // Create the head branch for the client
         try {
             const headBranchData = {
                 clientId: newClient.clientId,
@@ -130,7 +136,7 @@ exports.createClient = async (req, res) => {
                 password: hashedPassword
             };
             console.log('Head branch data:', headBranchData);
-            
+
             await Branch.create(headBranchData);
             console.log('Head branch created for client:', newClient.clientId);
         } catch (error) {
@@ -139,21 +145,22 @@ exports.createClient = async (req, res) => {
 
         const branchPasswords = {};
 
+        // Create additional branches if any
         if (branches && branches.length > 0) {
             try {
                 const branchPromises = branches.map(async (branch) => {
                     const { branchEmail, branchName } = branch;
 
-                    const branchPassword = generatePassword(); 
-                    const hashedBranchPassword = await bcrypt.hash(branchPassword, 10); 
-                    
+                    const branchPassword = generatePassword();
+                    const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
+
                     const branchData = {
                         clientId: newClient.clientId,
                         user_id,
                         branchEmail,
                         branchName,
                         isHeadBranch: false,
-                        password: hashedBranchPassword 
+                        password: hashedBranchPassword
                     };
                     console.log('Branch data:', branchData);
 
@@ -178,10 +185,10 @@ exports.createClient = async (req, res) => {
                 organizationName: newClient.organizationName,
                 email: newClient.email,
                 status: newClient.status,
-                password: plainPassword, 
+                password: plainPassword,
                 branches: Object.keys(branchPasswords).map(branchEmail => ({
                     branchEmail,
-                    password: branchPasswords[branchEmail] 
+                    password: branchPasswords[branchEmail]
                 }))
             }
         });
