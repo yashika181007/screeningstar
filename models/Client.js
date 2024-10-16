@@ -77,7 +77,7 @@ const Client = sequelize.define('client', {
         type: DataTypes.TEXT,
     },
     scopeOfServices: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
     },
     pricingPackages: {
         type: DataTypes.TEXT,

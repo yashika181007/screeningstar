@@ -15,7 +15,15 @@
     "customTemplate": "Standard Template",
     "accountManagement": "John Doe",
     "packageOptions": "Premium Package",
-    "scopeOfServices": "Full background verification, Employee onboarding assistance",
+    "scopeOfServices"{
+      "service1": {
+          "name": "Consulting",
+          "duration": "6 months"
+      },
+      "service2": {
+          "name": "Support",
+          "duration": "1 year"
+      },
     "pricingPackages": "Annual subscription - $5000",
     "standardProcess": "Following the company’s set processes for employee onboarding",
     "loginRequired": "yes",
