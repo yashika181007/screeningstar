@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
-const Users = require('../models/User'); 
-const Client = require('../models/Client'); 
+const Users = require('../models/User');
+const Client = require('../models/Client');
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
@@ -18,7 +18,7 @@ const ClientManager = sequelize.define('clientmanager', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Users, 
+            model: Users,
             key: 'id',
         },
         onDelete: 'CASCADE',
@@ -38,9 +38,13 @@ const ClientManager = sequelize.define('clientmanager', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    applicantName: {
+    fullName: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    photo: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     employeeId: {
         type: DataTypes.STRING,
@@ -50,53 +54,26 @@ const ClientManager = sequelize.define('clientmanager', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    spocClientManagered: {
+    spocUploaded: {
         type: DataTypes.STRING,
-        allowNull: true, 
+        allowNull: true,
     },
     groupManager: {
         type: DataTypes.STRING,
-        allowNull: true, 
-    },
-
-    educationPG: {
-        type: DataTypes.JSON, 
         allowNull: true,
     },
-    educationUG: {
-        type: DataTypes.JSON, 
+    packageselection: {
+        type: DataTypes.STRING,
         allowNull: true,
     },
-    education12th: {
+    services: {
         type: DataTypes.JSON,
         allowNull: true,
     },
-    education10th: {
-        type: DataTypes.JSON, 
-        allowNull: true,
-    },
-    educationDiploma: {
-        type: DataTypes.JSON, 
-        allowNull: true,
-    },
 
-    employmentDocuments: {
-        type: DataTypes.JSON, 
-        allowNull: true,
-    },
-
-    idProofs: {
-        type: DataTypes.JSON, 
-        allowNull: true,
-    },
-
-    addressProofs: {
-        type: DataTypes.JSON, 
-        allowNull: true,
-    },
 }, {
-    timestamps: true, 
-    paranoid: false,  
+    timestamps: true,
+    paranoid: false,
 });
 
 sequelize.sync()
