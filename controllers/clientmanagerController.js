@@ -1,6 +1,5 @@
 const ClientManager = require('../models/ClientManager');  // Import the ClientManager model
 
-// Create a new case upload
 exports.createClientManager = async (req, res) => {
     try {
         const newCase = await ClientManager.create(req.body);
@@ -16,12 +15,11 @@ exports.createClientManager = async (req, res) => {
     }
 };
 
-// Get all case uploads
 exports.getAllClientManagers = async (req, res) => {
     try {
         const cases = await ClientManager.findAll();
         return res.status(200).json({
-            message: 'All cases retrieved successfully',
+            message: 'All Client Managers retrieved successfully',
             data: cases,
         });
     } catch (error) {
@@ -32,68 +30,65 @@ exports.getAllClientManagers = async (req, res) => {
     }
 };
 
-// Get a single case upload by ID
 exports.getClientManagerById = async (req, res) => {
     const { id } = req.params;
     try {
-        const ClientManager = await ClientManager.findByPk(id);
-        if (!ClientManager) {
+        const clientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        if (!clientManager) {
             return res.status(404).json({
-                message: 'Case upload not found',
+                message: 'Client Manager not found',
             });
         }
         return res.status(200).json({
-            message: 'Case retrieved successfully',
-            data: ClientManager,
+            message: 'Client Manager retrieved successfully',
+            data: clientManager,
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error retrieving case upload',
+            message: 'Error retrieving Client Manager',
             error: error.message,
         });
     }
 };
 
-// Update a case upload by ID
 exports.updateClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const ClientManager = await ClientManager.findByPk(id);
-        if (!ClientManager) {
+        const clientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        if (!clientManager) {
             return res.status(404).json({
-                message: 'Case upload not found',
+                message: 'Client Manager not found',
             });
         }
-        await ClientManager.update(req.body);
+        await clientManager.update(req.body);
         return res.status(200).json({
-            message: 'Case updated successfully',
-            data: ClientManager,
+            message: 'Client Manager updated successfully',
+            data: clientManager,
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error updating case upload',
+            message: 'Error updating Client Manager',
             error: error.message,
         });
     }
 };
 
-// Delete a case upload by ID
 exports.deleteClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const ClientManager = await ClientManager.findByPk(id);
-        if (!ClientManager) {
+        const clientManager = await ClientManager.findByPk(id);  
+        if (!clientManager) {
             return res.status(404).json({
-                message: 'Case upload not found',
+                message: 'Client Manager not found',
             });
         }
-        await ClientManager.destroy();
+        await clientManager.destroy();
         return res.status(200).json({
-            message: 'Case deleted successfully',
+            message: 'Client Manager deleted successfully',
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error deleting case upload',
+            message: 'Error deleting Client Manager',
             error: error.message,
         });
     }
