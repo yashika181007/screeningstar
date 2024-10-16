@@ -68,7 +68,7 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status = 'Active',
-            branches,  // Branches array from body
+            Branches,  // Branches array from body
             clientSpoc,
             escalationManager,
             billingSpoc,
@@ -77,7 +77,7 @@ exports.createClient = async (req, res) => {
         } = req.body;
 
         // Log the branch data from request body
-        console.log('Received branches data from body:', branches);
+        console.log('Received Branches data from body:', Branches);
 
         // Generate a password for the client
         const plainPassword = generatePassword();
@@ -114,9 +114,9 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
-            branches,
+            Branches,
             password: hashedPassword,
-            totalBranches: (branches ? branches.length : 0) + 1,
+            totalBranches: (Branches ? Branches.length : 0) + 1,
             clientSpoc,
             escalationManager,
             billingSpoc,
@@ -146,10 +146,10 @@ exports.createClient = async (req, res) => {
 
         const branchPasswords = {};
 
-        // Create additional branches if any
-        if (branches && branches.length > 0) {
+        // Create additional Branches if any
+        if (Branches && Branches.length > 0) {
             try {
-                const branchPromises = branches.map(async (branch) => {
+                const branchPromises = Branches.map(async (branch) => {
                     const { branchEmail, branchName } = branch;
                     console.log('branch:', branch);
                     const branchPassword = generatePassword();
@@ -171,9 +171,9 @@ exports.createClient = async (req, res) => {
                 });
 
                 await Promise.all(branchPromises);
-                console.log('All branches created for client:', newClient.clientId);
+                console.log('All Branches created for client:', newClient.clientId);
             } catch (error) {
-                console.error('Error creating additional branches:', error);
+                console.error('Error creating additional Branches:', error);
             }
         }
 
@@ -187,7 +187,7 @@ exports.createClient = async (req, res) => {
                 email: newClient.email,
                 status: newClient.status,
                 password: plainPassword,
-                branches: Object.keys(branchPasswords).map(branchEmail => ({
+                Branches: Object.keys(branchPasswords).map(branchEmail => ({
                     branchEmail,
                     password: branchPasswords[branchEmail]
                 }))
