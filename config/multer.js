@@ -85,7 +85,7 @@ const uploaduserphoto = (req, res, next) => {
         try {
             await uploadToRemote(req.file.buffer, remotePath);
             req.file.uploadedFileName = uniqueFileName;
-            next(); // Proceed to the next middleware
+            next();
         } catch (uploadErr) {
             return res.status(500).json({ message: 'File upload failed', error: uploadErr });
         }
