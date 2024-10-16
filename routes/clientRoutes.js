@@ -11,6 +11,7 @@ router.post('/logoutClient',verifyToken, clientController.logout);
 
 router.get('/clients',verifyToken, clientController.getClients);
 router.get('/Branchs',verifyToken, clientController.getBranchs);
+router.get('/Branchs/:id',verifyToken, clientController.getBranchbyclient);
 
 router.get('/clients/active',verifyToken, clientController.getActiveClients);
 

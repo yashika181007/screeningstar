@@ -348,6 +348,20 @@ exports.getBranchs = async (req, res) => {
 
     }
 };
+exports.getBranchbyclient = async (req, res) => {
+    try {
+        const getbranch = await Branch.findByPk(req.params.clientId);
+
+        if (!getbranch) {
+            return res.status(404).json({ message: 'Branch not found' });
+        }
+        res.status(200).json(getbranch);
+
+    } catch (err) {
+        console.error('Error fetching client:', err);
+        res.status(500).json({ message: 'Error fetching client', error: err.message });
+    }
+};
 exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
