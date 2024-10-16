@@ -1,6 +1,31 @@
 const ClientManager = require('../models/ClientManager');
 exports.createClientManager = async (req, res) => {
     try {
+        const token = req.headers['authorization'];
+        console.log('token', req.headers['authorization']);
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
+        
+        const tokenParts = token.split(' ');
+        const jwtToken = tokenParts[1];
+    
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
+    
+        const user_id = decodedToken.id;
+        console.log('user_id',decodedToken.user_id);
+        const clientId = decodedToken.clientId;
+        console.log('clientId',decodedToken.clientId);
+        const branchid = decodedToken.clientId;
+        console.log('branchid',decodedToken.id);
+        if (!user_id) {
+            return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+        }
         const newCase = await ClientManager.create(req.body);
         return res.status(201).json({
             message: 'Case uploaded successfully',
