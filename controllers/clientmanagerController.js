@@ -1,4 +1,7 @@
 const ClientManager = require('../models/ClientManager');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 exports.createClientManager = async (req, res) => {
     try {
         const token = req.headers['authorization'];
