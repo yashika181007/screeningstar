@@ -1,3 +1,4 @@
+// candidatemanagerController.js
 const CandidateManager = require('../models/CandidateManager');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
