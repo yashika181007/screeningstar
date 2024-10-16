@@ -18,7 +18,7 @@ const escalationmanagerRoutes = require('./routes/escalationmanagerRoutes');
 const billingspocRoutes = require('./routes/billingspocRoutes');
 const billingescalationRoutes = require('./routes/billingescalationRoutes');
 const authorizeddetailsRoutes = require('./routes/authorizeddetailsRoutes');
-
+const clientmanagerRoutes = require('./routes/clientmanagerRoutes');
 const app = express();
 
 app.use(cors());
@@ -88,6 +88,7 @@ app.use('/Screeningstar', escalationmanagerRoutes);
 app.use('/Screeningstar', billingspocRoutes);
 app.use('/Screeningstar', billingescalationRoutes);
 app.use('/Screeningstar', authorizeddetailsRoutes);
+app.use('/Screeningstar', clientmanagerRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
