@@ -114,6 +114,7 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
+            branches,
             password: hashedPassword,
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc,
