@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../config/verifyToken');
-const candidatemannagerController = require('../controllers/candidatemannagerController');
+const candidatemanagerController = require('../controllers/candidatemanagerController');
 
-router.post('/candidatemanager', verifyToken ,candidatemannagerController.createcandidatemanager);       
-router.get('/candidatemanager',verifyToken , candidatemannagerController.getAllcandidatemanagers);        
-router.get('/candidatemanager/:id',verifyToken , candidatemannagerController.getcandidatemanagerById);     
-router.put('/candidatemanager/:id',verifyToken , candidatemannagerController.updatecandidatemanager);      
-router.delete('/candidatemanager/:id',verifyToken , candidatemannagerController.deletecandidatemanager);   
+router.post('/candidatemanager', verifyToken ,candidatemanagerController.createcandidatemanager);       
+router.get('/candidatemanager',verifyToken , candidatemanagerController.getAllcandidatemanagers);        
+router.get('/candidatemanager/:id',verifyToken , candidatemanagerController.getcandidatemanagerById);     
+router.put('/candidatemanager/:id',verifyToken , candidatemanagerController.updatecandidatemanager);      
+router.delete('/candidatemanager/:id',verifyToken , candidatemanagerController.deletecandidatemanager);   
 
 module.exports = router;
