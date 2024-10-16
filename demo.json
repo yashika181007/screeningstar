@@ -1,0 +1,88 @@
+{
+    "clientLogo": "https://example.com/logos/client-logo.png",
+    "organizationName": "Tech Innovators Inc.",
+    "clientId": "Z67Za890",
+    "mobileNumber": "1234567890",
+    "email": "clienaaZthDA@gmail.com",
+    "registeredAddress": "123 Innovation Street, Silicon Valley, CA",
+    "state": "California",
+    "stateCode": "CA",
+    "gstNumber": "GSTIN1234567890",
+    "tat": "48 hours",
+    "serviceAgreementDate": "2024-10-10",
+    "clientProcedure": "Standard onboarding procedure",
+    "agreementPeriod": "2 years",
+    "customTemplate": "Standard Template",
+    "accountManagement": "John Doe",
+    "packageOptions": "Premium Package",
+    "scopeOfServices": "Full background verification, Employee onboarding assistance",
+    "pricingPackages": "Annual subscription - $5000",
+    "standardProcess": "Following the company’s set processes for employee onboarding",
+    "loginRequired": "yes",
+    "role": "Client",
+    "status": "Active",
+    "Branches": 
+    [
+        {
+            "branchEmail": "branch1@example.com",
+            "branchName": "Branch 1"
+        },
+        {
+            "branchEmail": "branch2@example.com",
+            "branchName": "Branch 2"
+        }
+    ]
+}
+
+{
+    "user_id": 1,
+    "clientId": "C12345",
+    "organizationName": "ABC Corporation",
+    "applicantName": "John Doe",
+    "employeeId": "EMP56789",
+    "location": "New York",
+    "spocCaseUploaded": "uploads/cases/spoc_case_12345.pdf",  // Optional, can be a file path or URL
+    "groupManager": "Jane Smith",  // Optional
+    "educationPG": {
+      "marksheets": "uploads/education/pg_marksheet.pdf",
+      "convocation": "uploads/education/pg_convocation.pdf",
+      "provisionalCertificate": "uploads/education/pg_provisional_certificate.pdf"
+    },
+    "educationUG": {
+      "marksheets": "uploads/education/ug_marksheet.pdf",
+      "convocation": "uploads/education/ug_convocation.pdf",
+      "provisionalCertificate": "uploads/education/ug_provisional_certificate.pdf"
+    },
+    "education12th": {
+      "marksheet": "uploads/education/12th_marksheet.pdf"
+    },
+    "education10th": {
+      "marksheet": "uploads/education/10th_marksheet.pdf"
+    },
+    "educationDiploma": {
+      "marksheets": "uploads/education/diploma_marksheet.pdf",
+      "provisionalCertificate": "uploads/education/diploma_provisional_certificate.pdf"
+    },
+    "employmentDocuments": {
+      "relievingLetter": "uploads/employment/relieving_letter.pdf",
+      "experienceLetter": "uploads/employment/experience_letter.pdf",
+      "resignationAcceptance": "uploads/employment/resignation_acceptance.pdf",
+      "offerLetter": "uploads/employment/offer_letter.pdf",
+      "salarySlip": "uploads/employment/salary_slip.pdf",
+      "resume": "uploads/employment/resume.pdf"
+    },
+    "idProofs": {
+      "panCard": "uploads/id_proof/pan_card.pdf",
+      "aadhaar": "uploads/id_proof/aadhaar.pdf",
+      "drivingLicense": "uploads/id_proof/driving_license.pdf",
+      "passport": "uploads/id_proof/passport.pdf",
+      "voterId": "uploads/id_proof/voter_id.pdf",
+      "ssn": "uploads/id_proof/ssn.pdf"
+    },
+    "addressProofs": {
+      "bankPassbook": "uploads/address_proof/bank_passbook.pdf",
+      "gasBill": "uploads/address_proof/gas_bill.pdf",
+      "rentalAgreement": "uploads/address_proof/rental_agreement.pdf"
+    }
+  }
+  
