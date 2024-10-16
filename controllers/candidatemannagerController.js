@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
-exports.candidatemanager = async (req, res) => {
+exports.createcandidatemanager = async (req, res) => {
     try {
         const token = req.headers['authorization'];
         console.log('Token:', token);
@@ -51,7 +51,7 @@ exports.candidatemanager = async (req, res) => {
     }
 };
 
-exports.getAllcandidatemanagers = async (req, res) => {
+exports.getAllCandidateManagers = async (req, res) => {
     try {
         const cases = await CandidateManager.findAll();
         return res.status(200).json({
@@ -66,7 +66,7 @@ exports.getAllcandidatemanagers = async (req, res) => {
     }
 };
 
-exports.getcandidatemanagerById = async (req, res) => {
+exports.getCandidateManagerById = async (req, res) => {
     const { id } = req.params;
     try {
         const getCandidateManager = await CandidateManager.findByPk(id);  
@@ -87,7 +87,7 @@ exports.getcandidatemanagerById = async (req, res) => {
     }
 };
 
-exports.updatecandidatemanager = async (req, res) => {
+exports.updateCandidateManager = async (req, res) => {
     const { id } = req.params;
     try {
         const updateCandidateManager = await CandidateManager.findByPk(id); 
@@ -109,7 +109,7 @@ exports.updatecandidatemanager = async (req, res) => {
     }
 };
 
-exports.deletecandidatemanager = async (req, res) => {
+exports.deleteCandidateManager = async (req, res) => {
     const { id } = req.params;
     try {
         const deleteCandidateManager = await CandidateManager.findByPk(id);
