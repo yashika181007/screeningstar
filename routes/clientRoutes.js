@@ -13,7 +13,7 @@ router.get('/clients',verifyToken, clientController.getClients);
 router.get('/Branchs',verifyToken, clientController.getBranchs);
 router.get('/Branchs/:id',verifyToken, clientController.getBranchbyclient);
 router.put('/Branchs/:id',verifyToken, clientController.updateBranch);
-
+router.delete('/Branchs/:id',verifyToken, clientController.deleteBranch);
 router.get('/clients/active',verifyToken, clientController.getActiveClients);
 
 router.get('/clients/inactive',verifyToken, clientController.getInactiveClients);

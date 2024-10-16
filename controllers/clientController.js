@@ -385,6 +385,20 @@ exports.updateBranch = async (req, res) => {
         });
     }
 };
+exports.deleteBranch = async (req, res) => {
+    try {
+        const deleteBranch = await Branch.findByPk(req.params.id);
+        if (!deleteBranch) {
+            return res.status(404).json({ message: 'Branch not found.' });
+        }
+        await deleteBranch.destroy();
+        res.status(200).json({ message: 'Branch deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting Branch:', error);
+        res.status(500).json({ message: 'Error deleting Branch.', error: error.message });
+    }
+};
+
 exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
