@@ -364,6 +364,27 @@ exports.getBranchbyclient = async (req, res) => {
         res.status(500).json({ message: 'Error fetching client', error: err.message });
     }
 };
+exports.updateBranch = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updateBranch = await Branch.findByPk(id);  
+        if (!updateBranch) {
+            return res.status(404).json({
+                message: 'Branch not found',
+            });
+        }
+        await updateBranch.update(req.body);
+        return res.status(200).json({
+            message: 'Branch updated successfully',
+            data: updateBranch,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error updating Branch',
+            error: error.message,
+        });
+    }
+};
 exports.getClients = async (req, res) => {
     try {
         const clients = await Client.findAll();

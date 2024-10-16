@@ -12,6 +12,7 @@ router.post('/logoutClient',verifyToken, clientController.logout);
 router.get('/clients',verifyToken, clientController.getClients);
 router.get('/Branchs',verifyToken, clientController.getBranchs);
 router.get('/Branchs/:clientId',verifyToken, clientController.getBranchbyclient);
+router.put('/Branchs/:id',verifyToken, clientController.updateBranch);
 
 router.get('/clients/active',verifyToken, clientController.getActiveClients);
 
