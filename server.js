@@ -19,6 +19,7 @@ const billingspocRoutes = require('./routes/billingspocRoutes');
 const billingescalationRoutes = require('./routes/billingescalationRoutes');
 const authorizeddetailsRoutes = require('./routes/authorizeddetailsRoutes');
 const clientmanagerRoutes = require('./routes/clientmanagerRoutes');
+const candidatemanagerRoutes = require('./routes/candidatemanagerRoutes');
 const app = express();
 
 app.use(cors());
@@ -89,7 +90,7 @@ app.use('/Screeningstar', billingspocRoutes);
 app.use('/Screeningstar', billingescalationRoutes);
 app.use('/Screeningstar', authorizeddetailsRoutes);
 app.use('/Screeningstar', clientmanagerRoutes);
-
+app.use('/Screeningstar', candidatemanagerRoutes);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
