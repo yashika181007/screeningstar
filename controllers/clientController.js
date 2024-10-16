@@ -151,7 +151,7 @@ exports.createClient = async (req, res) => {
             try {
                 const branchPromises = branches.map(async (branch) => {
                     const { branchEmail, branchName } = branch;
-
+                    console.log('branch:', branch);
                     const branchPassword = generatePassword();
                     const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
 
