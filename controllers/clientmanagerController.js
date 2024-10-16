@@ -33,15 +33,15 @@ exports.getAllClientManagers = async (req, res) => {
 exports.getClientManagerById = async (req, res) => {
     const { id } = req.params;
     try {
-        const clientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
-        if (!clientManager) {
+        const getclientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        if (!getclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
             });
         }
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
-            data: clientManager,
+            data: getclientManager,
         });
     } catch (error) {
         return res.status(500).json({
@@ -54,16 +54,16 @@ exports.getClientManagerById = async (req, res) => {
 exports.updateClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const clientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
-        if (!clientManager) {
+        const updateclientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        if (!updateclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
             });
         }
-        await clientManager.update(req.body);
+        await updateclientManager.update(req.body);
         return res.status(200).json({
             message: 'Client Manager updated successfully',
-            data: clientManager,
+            data: updateclientManager,
         });
     } catch (error) {
         return res.status(500).json({
@@ -76,13 +76,13 @@ exports.updateClientManager = async (req, res) => {
 exports.deleteClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const clientManager = await ClientManager.findByPk(id);  
-        if (!clientManager) {
+        const deleteClientManager = await ClientManager.findByPk(id);  
+        if (!deleteClientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
             });
         }
-        await clientManager.destroy();
+        await deleteClientManager.destroy();
         return res.status(200).json({
             message: 'Client Manager deleted successfully',
         });
