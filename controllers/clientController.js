@@ -351,7 +351,7 @@ exports.getBranchs = async (req, res) => {
 exports.getBranchbyclient = async (req, res) => {
     try {
         const getbranch = await Branch.findAll({
-            where: { clientId: req.params.clientId }
+            where: { id: req.params.id }
         });
 
         if (!getbranch) {
