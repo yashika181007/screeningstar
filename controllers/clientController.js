@@ -276,18 +276,26 @@ exports.verifyLogin = async (req, res) => {
                 clientId: branch.clientId,
                 branchEmail: branch.branchEmail
             },
-            tokenExpiry: expiryTime.toISOString() // Return expiration time as ISO string
+            tokenExpiry: expiryTime.toISOString()
         });
     } catch (err) {
         console.error(err);
 
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ success: false, message: 'Invalid token' });
+            return res.status(401).json({ 
+                success: false, 
+                alert: 'Invalid token', 
+                type: 'error'
+            });
         }
         if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ success: false, message: 'Token expired' });
+            return res.status(401).json({ 
+                success: false, 
+                alert: 'Token expired', 
+                type: 'warning'
+            });
         }
-
+        
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
