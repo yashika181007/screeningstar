@@ -206,7 +206,7 @@ exports.fetchPassword = async (req, res) => {
         console.log('Request Body:', req.body);
         
         const { email } = req.body;
-        console.log('email:', email);
+        console.log('email:', branchEmail);
 
         if (!email) {
             console.log('No email provided');
