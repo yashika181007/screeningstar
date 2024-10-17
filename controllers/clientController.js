@@ -1,9 +1,26 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const config = require('../config');
+const crypto = require('crypto');
+
+const encryptionKey = crypto.randomBytes(32); // 32 bytes for AES-256
+const iv = crypto.randomBytes(16);  // IV should be 16 bytes
+
+function encrypt(text) {
+    const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return `${iv.toString('hex')}:${encrypted}`; // Store IV with encrypted text
+}
+
+function decrypt(encryptedText) {
+    const [iv, encrypted] = encryptedText.split(':');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
 
 const generatePassword = (length = 12) => {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
@@ -45,8 +62,9 @@ exports.createClient = async (req, res) => {
             billingEscalation, authorizedPerson
         } = req.body;
 
+        // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
 
         // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
@@ -58,7 +76,7 @@ exports.createClient = async (req, res) => {
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired, role, status, branches, password: hashedPassword,
+            loginRequired, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
@@ -69,7 +87,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: hashedPassword
+            password: encryptedPassword // Save encrypted password for head branch
         });
 
         const branchPasswords = {};
@@ -78,7 +96,7 @@ exports.createClient = async (req, res) => {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword();
-                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
+                const encryptedBranchPassword = encrypt(branchPassword); // Encrypt branch password
 
                 branchPasswords[branchEmail] = branchPassword;
                 return await Branch.create({
@@ -87,7 +105,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: hashedBranchPassword
+                    password: encryptedBranchPassword // Save encrypted branch password
                 });
             });
             await Promise.all(branchPromises);
@@ -95,16 +113,17 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
+        // Email Setup
         const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com', // Use quotes around the host
+            host: 'smtp.gmail.com',
             port: 465,
-            secure: true, // Use true instead of 1 for boolean
+            secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'   
+                pass: 'tnudhsdgcwkknraw'  // App-specific password
             },
         });
-        
+
         // Email to main client
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
@@ -160,34 +179,27 @@ exports.createClient = async (req, res) => {
     }
 };
 
+// Fetch password (Decrypted) function
 exports.fetchPassword = async (req, res) => {
     try {
-        console.log('Request Body:', req.body);
-        
-        const { branchEmail } = req.body; // Destructure branchEmail from request body
-        console.log('branchEmail:', branchEmail); // Log the branchEmail
+        const { branchEmail } = req.body;
 
         if (!branchEmail) {
-            console.log('No branch email provided');
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        console.log('Looking for branch with email:', branchEmail);
         const branch = await Branch.findOne({
-            where: { branchEmail } // Use branchEmail in the query
+            where: { branchEmail }
         });
 
         if (!branch) {
-            console.log('Branch not found with the provided email');
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        console.log('Branch found:', branch);
-
         res.status(200).json({
             message: 'Branch found',
-            branchEmail: branch.branchEmail, // Use branchEmail here as well
-            password: branch.password
+            branchEmail: branch.branchEmail,
+            password: decrypt(branch.password) 
         });
 
     } catch (error) {
@@ -196,6 +208,7 @@ exports.fetchPassword = async (req, res) => {
     }
 };
 
+// Login client function
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
@@ -205,19 +218,10 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        console.log("Received password:", password);
-        console.log("Stored password format:", branch.password);
+        // Decrypt the stored password
+        const decryptedPassword = decrypt(branch.password); 
 
-        let isMatch = false;
-
-        if (password === branch.password) {
-            isMatch = true;
-        } else {
-            isMatch = await bcrypt.compare(password, branch.password);
-        }
-        console.log("Password match result:", isMatch);
-
-        if (!isMatch) {
+        if (password !== decryptedPassword) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
