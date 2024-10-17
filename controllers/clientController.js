@@ -75,7 +75,7 @@ exports.createClient = async (req, res) => {
 
         // Generate and encrypt the password
         const plainPassword = generatePassword();
-       
+        const encryptedPassword = encrypt(plainPassword); /
         // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
@@ -91,7 +91,7 @@ exports.createClient = async (req, res) => {
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
 
-        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
+        / Encrypt the password
         // Save encrypted password and iv separately
         await Branch.create({
             clientId: newClient.clientId,
