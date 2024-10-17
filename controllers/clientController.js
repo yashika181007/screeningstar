@@ -201,21 +201,19 @@ exports.createClient = async (req, res) => {
 
 exports.fetchPassword = async (req, res) => {
     try {
-        // console.log('Request received');
-        // console.log('Request Headers:', req.headers);
         console.log('Request Body:', req.body);
         
-        const { email } = req.body;
-        console.log('email:', branchEmail);
+        const { branchEmail } = req.body; // Destructure branchEmail from request body
+        console.log('branchEmail:', branchEmail); // Log the branchEmail
 
-        if (!email) {
-            console.log('No email provided');
-            return res.status(400).json({ message: 'Email is required' });
+        if (!branchEmail) {
+            console.log('No branch email provided');
+            return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        console.log('Looking for branch with email:', email);
+        console.log('Looking for branch with email:', branchEmail);
         const branch = await Branch.findOne({
-            where: { branchEmail: email }
+            where: { branchEmail } // Use branchEmail in the query
         });
 
         if (!branch) {
@@ -227,7 +225,7 @@ exports.fetchPassword = async (req, res) => {
 
         res.status(200).json({
             message: 'Branch found',
-            email: branch.branchEmail,
+            branchEmail: branch.branchEmail, // Use branchEmail here as well
             password: branch.password
         });
 
