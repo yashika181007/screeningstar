@@ -101,7 +101,7 @@ exports.createClient = async (req, res) => {
             secure: true, // Use true instead of 1 for boolean
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'Yashika@123456'   
+                pass: 'tnudhsdgcwkknraw'   
             },
         });
         
