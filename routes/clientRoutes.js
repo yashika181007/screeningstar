@@ -10,7 +10,7 @@ router.post('/clients/verif-login', verifyToken, clientController.verifyLogin);
 router.post('/logoutClient',verifyToken, clientController.logout);
 
 router.get('/clients',verifyToken, clientController.getClients);
-router.get('/Branches',verifyToken, clientController.getBranches);
+
 router.get('/getheadBranches', verifyToken, clientController.getheadbranch);
 router.get('/getnonheadBranches/:clientId', verifyToken, clientController.getNonHeadBranches);
 router.get('/Branches/:id',verifyToken, clientController.getBranchbyclient);
