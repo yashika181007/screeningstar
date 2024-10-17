@@ -2,6 +2,7 @@ const Client = require('../models/Client');
 const Branch = require('../models/Branch');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const config = require('../config');
 
 const generatePassword = (length = 12) => {
@@ -16,171 +17,130 @@ const generatePassword = (length = 12) => {
 
 exports.createClient = async (req, res) => {
     try {
-        // Extract token from the Authorization header
+        // Token extraction and validation
         const token = req.headers['authorization'];
-        console.log('Authorization header:', token);
-
-        if (!token) {
-            return res.status(401).json({ message: 'No token provided. Please log in.' });
-        }
+        if (!token) return res.status(401).json({ message: 'No token provided. Please log in.' });
 
         const tokenParts = token.split(' ');
-        if (tokenParts.length !== 2) {
-            return res.status(401).json({ message: 'Token format incorrect. Please log in.' });
-        }
+        if (tokenParts.length !== 2) return res.status(401).json({ message: 'Token format incorrect. Please log in.' });
 
         const jwtToken = tokenParts[1];
         let decodedToken;
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
-            console.log('Decoded Token:', decodedToken);
         } catch (err) {
-            console.error('JWT verification error:', err);
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
         const user_id = decodedToken.id;
-        if (!user_id) {
-            return res.status(401).json({ message: 'User not authenticated. Please log in.' });
-        }
+        if (!user_id) return res.status(401).json({ message: 'User not authenticated. Please log in.' });
 
         // Destructure request body
         const {
-            clientLogo,
-            organizationName,
-            clientId,
-            mobileNumber,
-            email,
-            registeredAddress,
-            state,
-            stateCode,
-            gstNumber,
-            tat,
-            serviceAgreementDate,
-            clientProcedure,
-            agreementPeriod,
-            customTemplate,
-            accountManagement,
-            packageOptions,
-            scopeOfServices,
-            pricingPackages,
-            standardProcess,
-            loginRequired,
-            role,
-            status = 'Active',
-            branches,  // Change from Branches to branches
-            clientSpoc,
-            escalationManager,
-            billingSpoc,
-            billingEscalation,
-            authorizedPerson
+            clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
+            state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
+            agreementPeriod, customTemplate, accountManagement, packageOptions,
+            scopeOfServices, pricingPackages, standardProcess, loginRequired, role,
+            status = 'Active', branches, clientSpoc, escalationManager, billingSpoc,
+            billingEscalation, authorizedPerson
         } = req.body;
 
-        // Log the branch data from request body
-        console.log('Received branches data from body:', branches);
-
-        // Generate a password for the client
         const plainPassword = generatePassword();
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
-        console.log('Generated plain password:', plainPassword);
-        console.log('Hashed password:', hashedPassword);
 
+        // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
-        if (existingClient) {
-            return res.status(400).json({ message: 'Email already in use' });
-        }
+        if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
+        // Create client and head branch
         const newClient = await Client.create({
-            user_id,
-            clientLogo,
-            organizationName,
-            clientId,
-            mobileNumber,
-            email,
-            registeredAddress,
-            state,
-            stateCode,
-            gstNumber,
-            tat,
-            serviceAgreementDate,
-            clientProcedure,
-            agreementPeriod,
-            customTemplate,
-            accountManagement,
-            packageOptions,
-            scopeOfServices,
-            pricingPackages,
-            standardProcess,
-            loginRequired,
-            role,
-            status,
-            branches,  // Change from Branches to branches
-            password: hashedPassword,
+            user_id, clientLogo, organizationName, clientId, mobileNumber, email,
+            registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
+            clientProcedure, agreementPeriod, customTemplate, accountManagement,
+            packageOptions, scopeOfServices, pricingPackages, standardProcess,
+            loginRequired, role, status, branches, password: hashedPassword,
             totalBranches: (branches ? branches.length : 0) + 1,
-            clientSpoc,
-            escalationManager,
-            billingSpoc,
-            billingEscalation,
-            authorizedPerson
+            clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
 
-        console.log('New Client Created:', newClient);
-
-        // Create the head branch for the client
-        try {
-            const headBranchData = {
-                clientId: newClient.clientId,
-                user_id,
-                branchEmail: email,
-                branchName: organizationName,
-                isHeadBranch: true,
-                password: hashedPassword
-            };
-            console.log('Head branch data:', headBranchData);
-
-            await Branch.create(headBranchData);
-            console.log('Head branch created for client:', newClient.clientId);
-        } catch (error) {
-            console.error('Error creating head branch:', error);
-        }
+        await Branch.create({
+            clientId: newClient.clientId,
+            user_id,
+            branchEmail: email,
+            branchName: organizationName,
+            isHeadBranch: true,
+            password: hashedPassword
+        });
 
         const branchPasswords = {};
 
-        // Create additional Branches if any
         if (branches && branches.length > 0) {
-            try {
-                const branchPromises = branches.map(async (branch) => {
-                    const { branchEmail, branchName } = branch;
-                    console.log('branch:', branch);
-                    const branchPassword = generatePassword();
-                    const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
+            const branchPromises = branches.map(async (branch) => {
+                const { branchEmail, branchName } = branch;
+                const branchPassword = generatePassword();
+                const hashedBranchPassword = await bcrypt.hash(branchPassword, 10);
 
-                    const branchData = {
-                        clientId: newClient.clientId,
-                        user_id,
-                        branchEmail,
-                        branchName,
-                        isHeadBranch: false,
-                        password: hashedBranchPassword
-                    };
-                    console.log('Branch data:', branchData);
-
-                    branchPasswords[branchEmail] = branchPassword;
-
-                    return await Branch.create(branchData);
+                branchPasswords[branchEmail] = branchPassword;
+                return await Branch.create({
+                    clientId: newClient.clientId,
+                    user_id,
+                    branchEmail,
+                    branchName,
+                    isHeadBranch: false,
+                    password: hashedBranchPassword
                 });
-
-                await Promise.all(branchPromises);
-                console.log('All branches created for client:', newClient.clientId);
-            } catch (error) {
-                console.error('Error creating additional branches:', error);
-            }
+            });
+            await Promise.all(branchPromises);
         }
 
         req.session.clientId = newClient.clientId;
 
+        // Email Setup
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'yashikawebstep@gmail.com',  // Replace with your actual email
+                pass: 'Yashika@123456'      // Replace with your actual password or app-specific password
+            }
+        });;
+
+        // Email to main client
+        const clientMailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: email,
+            subject: `Welcome to Our Service, ${organizationName}`,
+            text: `Hello ${organizationName},\n\nYour account has been successfully created.\n\nMain Login Password: ${plainPassword}\n\nBest regards,\nYour Company Team`
+        };
+
+        transporter.sendMail(clientMailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email to client:', error);
+            } else {
+                console.log('Client email sent: ' + info.response);
+            }
+        });
+
+        // Email each branch with its specific login details
+        for (const branchEmail in branchPasswords) {
+            const branchMailOptions = {
+                from: 'your-email@example.com',
+                to: branchEmail,
+                subject: `Branch Account Created for ${organizationName}`,
+                text: `Hello,\n\nYour branch account for ${organizationName} has been created.\n\nBranch Login Password: ${branchPasswords[branchEmail]}\n\nBest regards,\nYour Company Team`
+            };
+
+            transporter.sendMail(branchMailOptions, (error, info) => {
+                if (error) {
+                    console.error(`Error sending email to branch ${branchEmail}:`, error);
+                } else {
+                    console.log(`Branch email sent to ${branchEmail}: ` + info.response);
+                }
+            });
+        }
+
+        // Response to the client
         res.status(201).json({
-            message: 'Client created successfully',
+            message: 'Client and branches created successfully',
             client: {
                 id: newClient.id,
                 organizationName: newClient.organizationName,
