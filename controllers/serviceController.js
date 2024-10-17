@@ -2,10 +2,13 @@ const Service = require('../models/Service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const jwt = require('jsonwebtoken');
+o
 exports.createService = async (req, res) => {
     try {
-        const {  group,servicecode,serviceName, sub_serviceName } = req.body;
+        const { group, servicecode, serviceName, sub_serviceName } = req.body;
 
+        // Check if token is provided
         const token = req.headers['authorization'];
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -16,21 +19,25 @@ exports.createService = async (req, res) => {
 
         let decodedToken;
         try {
-            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret); // Decoding token
         } catch (err) {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
+
         const user_id = decodedToken.id;
         const role = decodedToken.role;
-      
+
+        // Check if user ID exists in decoded token
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
+        // Check for required fields
         if (!serviceName || !sub_serviceName) {
-            return res.status(400).json({ message: 'Service name and description are required.' });
+            return res.status(400).json({ message: 'Service name and sub-service name are required.' });
         }
 
+        // Create new service record
         const newService = await Service.create({
             user_id,
             group,
