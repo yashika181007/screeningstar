@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 exports.createService = async (req, res) => {
     try {
-        const {  group,servicecode,serviceName, serviceDescription } = req.body;
+        const {  group,servicecode,serviceName, sub_serviceName } = req.body;
 
         const token = req.headers['authorization'];
         if (!token) {
@@ -27,7 +27,7 @@ exports.createService = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
-        if (!serviceName || !serviceDescription) {
+        if (!serviceName || !sub_serviceName) {
             return res.status(400).json({ message: 'Service name and description are required.' });
         }
 
@@ -36,7 +36,7 @@ exports.createService = async (req, res) => {
             group,
             servicecode,
             serviceName,
-            serviceDescription
+            sub_serviceName
         });
 
         res.status(201).json({ message: 'Service created successfully', service: newService });
@@ -72,7 +72,7 @@ exports.getServiceById = async (req, res) => {
 };
 
 exports.updateService = async (req, res) => {
-    const { group,servicecode, serviceName, serviceDescription } = req.body;
+    const { group,servicecode, serviceName, sub_serviceName } = req.body;
 
     try {
         const service = await Service.findByPk(req.params.id);
@@ -80,7 +80,7 @@ exports.updateService = async (req, res) => {
             return res.status(404).json({ message: 'Service not found' });
         }
         service.serviceName = serviceName || service.serviceName;
-        service.serviceDescription = serviceDescription || service.serviceDescription;
+        service.sub_serviceName = sub_serviceName || service.sub_serviceName;
 
         await service.save();
         res.status(200).json({ message: 'Service updated successfully', service });

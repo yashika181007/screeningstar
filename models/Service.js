@@ -35,9 +35,9 @@ const Service = sequelize.define('service', {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    serviceDescription: {
-        type: DataTypes.TEXT,
-        allowNull: true
+    sub_serviceName: {
+        type: DataTypes.STRING(255),
+        allowNull: false
     },
     createdAt: {
         type: DataTypes.DATE,
