@@ -75,8 +75,7 @@ exports.createClient = async (req, res) => {
 
         // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
-
+       
         // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
@@ -92,13 +91,16 @@ exports.createClient = async (req, res) => {
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
 
+        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
+        // Save encrypted password and iv separately
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword // Save encrypted password for head branch
+            password: encryptedPassword.encryptedData, // Save encrypted password
+            iv: encryptedPassword.iv // Save the IV as well
         });
 
         const branchPasswords = {};
@@ -204,8 +206,8 @@ exports.fetchPassword = async (req, res) => {
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        // Decrypt the stored password
-        const decryptedPassword = decrypt(branch.encryptedPassword, branch.iv); // Make sure branch.iv is stored when encrypting the password
+        // Decrypt the stored password using both encryptedData and iv
+        const decryptedPassword = decrypt(branch.password, branch.iv); // Make sure to access branch.iv correctly
 
         res.status(200).json({
             message: 'Branch found',
@@ -229,8 +231,8 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Decrypt the stored password
-        const decryptedPassword = decrypt(branch.password); 
+        // Decrypt the stored password using both encryptedData and iv
+        const decryptedPassword = decrypt(branch.password, branch.iv); // Access branch.iv
 
         if (password !== decryptedPassword) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -293,20 +295,20 @@ exports.verifyLogin = async (req, res) => {
         console.error(err);
 
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ 
-                success: false, 
-                alert: 'Invalid token', 
+            return res.status(401).json({
+                success: false,
+                alert: 'Invalid token',
                 type: 'error'
             });
         }
         if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ 
-                success: false, 
-                alert: 'Token expired', 
+            return res.status(401).json({
+                success: false,
+                alert: 'Token expired',
                 type: 'warning'
             });
         }
-        
+
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
@@ -361,12 +363,12 @@ exports.getheadbranch = async (req, res) => {
 };
 exports.getNonHeadBranches = async (req, res) => {
     try {
-        const clientId = req.params.clientId; 
+        const clientId = req.params.clientId;
 
         const nonHeadBranches = await Branch.findAll({
-            where: { 
-                clientId,       
-                isHeadBranch: false  
+            where: {
+                clientId,
+                isHeadBranch: false
             }
         });
 
@@ -401,7 +403,7 @@ exports.getBranchbyclient = async (req, res) => {
 exports.updateBranch = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateBranch = await Branch.findByPk(id);  
+        const updateBranch = await Branch.findByPk(id);
         if (!updateBranch) {
             return res.status(404).json({
                 message: 'Branch not found',
