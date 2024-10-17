@@ -187,7 +187,7 @@ exports.createClient = async (req, res) => {
                 email: newClient.email,
                 status: newClient.status,
                 password: plainPassword,
-                Branches: Object.keys(branchPasswords).map(branchEmail => ({
+                branches: Object.keys(branchPasswords).map(branchEmail => ({
                     branchEmail,
                     password: branchPasswords[branchEmail]
                 }))
