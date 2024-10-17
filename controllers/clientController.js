@@ -4,25 +4,34 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const ENCRYPTION_KEY = '01234567890123456789012345678901'; // Example key (must be 32 characters long)
-const IV_LENGTH = 16; // For AES, the IV length is always 16 bytes
+const ENCRYPTION_KEY = '01234567890123456789012345678901'; // 32 bytes key
+const IV_LENGTH = 16; // For AES
 
 function encrypt(text) {
-    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, IV);
+    const iv = crypto.randomBytes(IV_LENGTH); // Generate a random IV
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     return {
-        iv: IV.toString('hex'), 
+        iv: iv.toString('hex'), // Return the IV as a hex string
         encryptedData: encrypted
     };
 }
 
 function decrypt(encryptedData, iv) {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, Buffer.from(iv, 'hex'));
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), Buffer.from(iv, 'hex'));
     let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
 }
+
+// Example usage
+const originalText = "Hello, World!";
+const encrypted = encrypt(originalText);
+console.log("Encrypted:", encrypted);
+
+const decrypted = decrypt(encrypted.encryptedData, encrypted.iv);
+console.log("Decrypted:", decrypted);
 
 const generatePassword = (length = 12) => {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
@@ -181,7 +190,7 @@ exports.createClient = async (req, res) => {
     }
 };
 
-// Fetch password (Decrypted) function
+// Add your fetchPassword function implementation here
 exports.fetchPassword = async (req, res) => {
     try {
         const { branchEmail } = req.body;
@@ -190,18 +199,18 @@ exports.fetchPassword = async (req, res) => {
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        const branch = await Branch.findOne({
-            where: { branchEmail }
-        });
-
+        const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
+        // Decrypt the stored password
+        const decryptedPassword = decrypt(branch.encryptedPassword, branch.iv); // Make sure branch.iv is stored when encrypting the password
+
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decrypt(branch.password) 
+            password: decryptedPassword // Send the decrypted password
         });
 
     } catch (error) {
