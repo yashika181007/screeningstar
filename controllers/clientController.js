@@ -4,20 +4,22 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const encryptionKey = crypto.randomBytes(32); // 32 bytes for AES-256
-const iv = crypto.randomBytes(16);  // IV should be 16 bytes
+const ENCRYPTION_KEY = '01234567890123456789012345678901'; // Example key (must be 32 characters long)
+const IV_LENGTH = 16; // For AES, the IV length is always 16 bytes
 
 function encrypt(text) {
-    const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
+    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, IV);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return `${iv.toString('hex')}:${encrypted}`; // Store IV with encrypted text
+    return {
+        iv: IV.toString('hex'), 
+        encryptedData: encrypted
+    };
 }
 
-function decrypt(encryptedText) {
-    const [iv, encrypted] = encryptedText.split(':');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, Buffer.from(iv, 'hex'));
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+function decrypt(encryptedData, iv) {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
 }
