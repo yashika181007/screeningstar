@@ -11,8 +11,8 @@ router.post('/logoutClient',verifyToken, clientController.logout);
 
 router.get('/clients',verifyToken, clientController.getClients);
 router.get('/Branches',verifyToken, clientController.getBranches);
-router.get('/getheadBranches',verifyToken, clientController.getheadbranch);
-router.get('/getnonheadBranches/:clientId',verifyToken, clientController.getNonHeadBranches);
+router.get('/getheadBranches', verifyToken, clientController.getheadbranch);
+router.get('/getnonheadBranches/:clientId', verifyToken, clientController.getNonHeadBranches);
 router.get('/Branches/:id',verifyToken, clientController.getBranchbyclient);
 router.put('/Branches/:id',verifyToken, clientController.updateBranch);
 router.delete('/Branches/:id',verifyToken, clientController.deleteBranch);
