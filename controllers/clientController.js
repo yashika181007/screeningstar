@@ -200,8 +200,8 @@ exports.createClient = async (req, res) => {
 };
 exports.fetchPassword = async (req, res) => {
     try {
-        console.log('Request received');
-        console.log('Request Headers:', req.headers);
+        // console.log('Request received');
+        // console.log('Request Headers:', req.headers);
         console.log('Request Body:', req.body);
         
         const { email } = req.body;
