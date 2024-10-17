@@ -68,7 +68,7 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status = 'Active',
-            Branches:branches,  // Branches array from body
+            Branches,  // Branches array from body
             clientSpoc,
             escalationManager,
             billingSpoc,
@@ -114,7 +114,7 @@ exports.createClient = async (req, res) => {
             loginRequired,
             role,
             status,
-            Branches:branches,
+            Branches,
             password: hashedPassword,
             totalBranches: (Branches ? Branches.length : 0) + 1,
             clientSpoc,
