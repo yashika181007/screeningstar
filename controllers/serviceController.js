@@ -31,10 +31,6 @@ exports.createService = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
-        if (!serviceName || !sub_serviceName) {
-            return res.status(400).json({ message: 'Service name and sub-service name are required.' });
-        }
-
         const newService = await Service.create({
             user_id,
             group,
