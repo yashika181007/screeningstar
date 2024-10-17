@@ -59,7 +59,7 @@ exports.createClient = async (req, res) => {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
             agreementPeriod, customTemplate, accountManagement, packageOptions,
-            scopeOfServices, pricingPackages, standardProcess, loginRequired, role,
+            scopeOfServices, pricingPackages, standardProcess, loginRequired,username2, role,
             status = 'Active', branches, clientSpoc, escalationManager, billingSpoc,
             billingEscalation, authorizedPerson
         } = req.body;
@@ -78,7 +78,7 @@ exports.createClient = async (req, res) => {
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired, role, status, branches, password: encryptedPassword, // Save encrypted password
+            loginRequired,username2, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
@@ -544,6 +544,7 @@ exports.updateClient = async (req, res) => {
         pricingPackages,
         standardProcess,
         loginRequired,
+        username2,
         role,
         status
     } = req.body;
@@ -574,6 +575,7 @@ exports.updateClient = async (req, res) => {
             pricingPackages,
             standardProcess,
             loginRequired,
+            username2,
             role,
             status
         });

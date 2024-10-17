@@ -90,6 +90,9 @@ const Client = sequelize.define('client', {
     loginRequired: {
         type: DataTypes.ENUM('yes', 'no'),
     },
+    username2: {
+        type: DataTypes.STRING,
+    },
     role: {
         type: DataTypes.TEXT,
         allowNull: false,
