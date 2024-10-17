@@ -10,10 +10,11 @@ router.post('/clients/verif-login', verifyToken, clientController.verifyLogin);
 router.post('/logoutClient',verifyToken, clientController.logout);
 
 router.get('/clients',verifyToken, clientController.getClients);
-router.get('/Branchs',verifyToken, clientController.getBranchs);
-router.get('/Branchs/:id',verifyToken, clientController.getBranchbyclient);
-router.put('/Branchs/:id',verifyToken, clientController.updateBranch);
-router.delete('/Branchs/:id',verifyToken, clientController.deleteBranch);
+router.get('/Branches',verifyToken, clientController.getBranches);
+router.get('/getheadBranches',verifyToken, clientController.getheadbranch);
+router.get('/Branches/:id',verifyToken, clientController.getBranchbyclient);
+router.put('/Branches/:id',verifyToken, clientController.updateBranch);
+router.delete('/Branches/:id',verifyToken, clientController.deleteBranch);
 router.get('/clients/active',verifyToken, clientController.getActiveClients);
 
 router.get('/clients/inactive',verifyToken, clientController.getInactiveClients);

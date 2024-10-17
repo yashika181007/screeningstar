@@ -357,6 +357,24 @@ exports.getBranchs = async (req, res) => {
 
     }
 };
+exports.getheadbranch = async (req, res) => {
+    try {
+        const headBranches = await Branch.findAll({
+            where: { isHeadBranch: true }
+        });
+
+        if (!headBranches || headBranches.length === 0) {
+            return res.status(404).json({ message: 'No head branches found' });
+        }
+
+        res.status(200).json(headBranches);
+
+    } catch (err) {
+        console.error('Error fetching head branches:', err);
+        res.status(500).json({ message: 'Error fetching head branches', error: err.message });
+    }
+};
+
 exports.getBranchbyclient = async (req, res) => {
     try {
         const getbranch = await Branch.findAll({
@@ -373,6 +391,7 @@ exports.getBranchbyclient = async (req, res) => {
         res.status(500).json({ message: 'Error fetching client', error: err.message });
     }
 };
+
 exports.updateBranch = async (req, res) => {
     const { id } = req.params;
     try {
