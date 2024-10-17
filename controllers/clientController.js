@@ -95,15 +95,16 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
-        // Email Setup
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com', // Use quotes around the host
+            port: 465,
+            secure: true, // Use true instead of 1 for boolean
             auth: {
-                user: 'yashikawebstep@gmail.com',  // Replace with your actual email
-                pass: 'Yashika@123456'      // Replace with your actual password or app-specific password
-            }
-        });;
-
+                user: 'yashikawebstep@gmail.com',
+                pass: 'Yashika@123456'   
+            },
+        });
+        
         // Email to main client
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
