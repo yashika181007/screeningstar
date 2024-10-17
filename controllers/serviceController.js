@@ -2,12 +2,10 @@ const Service = require('../models/Service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-
 exports.createService = async (req, res) => {
     try {
-        const { group, servicecode, serviceName, sub_serviceName } = req.body;
+        const {  group,servicecode,serviceName, sub_serviceName } = req.body;
 
-        // Check if token is provided
         const token = req.headers['authorization'];
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -18,32 +16,21 @@ exports.createService = async (req, res) => {
 
         let decodedToken;
         try {
-            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret); // Decoding token
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
         } catch (err) {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
-
         const user_id = decodedToken.id;
         const role = decodedToken.role;
-
-        // Check if user ID exists in decoded token
+      
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
-        // Check for required fields
-        if (!serviceName || !Array.isArray(sub_serviceName) || sub_serviceName.length === 0) {
-            return res.status(400).json({ message: 'Service name and at least one sub-service name with service code are required.' });
+        if (!serviceName || !sub_serviceName) {
+            return res.status(400).json({ message: 'Service name and description are required.' });
         }
 
-        // Check if each sub-service has a service code and name
-        for (const sub of sub_serviceName) {
-            if (!sub.servicecode || !sub.name) {
-                return res.status(400).json({ message: 'Each sub-service must have both a service code and name.' });
-            }
-        }
-
-        // Create new service record
         const newService = await Service.create({
             user_id,
             group,
