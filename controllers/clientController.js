@@ -184,21 +184,35 @@ exports.createClient = async (req, res) => {
 // Fetch password (Decrypted) function
 exports.fetchPassword = async (req, res) => {
     try {
+        // Log the incoming request body
+        console.log('Incoming request body:', req.body);
+
         const { branchEmail } = req.body;
 
+        // Log the extracted branchEmail
+        console.log('Extracted branchEmail:', branchEmail);
+
         if (!branchEmail) {
+            console.log('Validation failed: Branch email is required');
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
+        // Log before querying the database
+        console.log('Querying the database for branch with email:', branchEmail);
         const branch = await Branch.findOne({
             where: { branchEmail }
         });
 
+        // Log the result of the database query
+        console.log('Database query result:', branch);
+
         if (!branch) {
+            console.log('Branch not found with the provided email');
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        // Decrypt the stored password before sending
+        // Log before sending the response
+        console.log('Branch found, preparing to send response...');
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
