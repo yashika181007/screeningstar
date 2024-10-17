@@ -23,6 +23,14 @@ const Service = sequelize.define('service', {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
     },
+    group: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    servicecode: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
     serviceName: {
         type: DataTypes.STRING(255),
         allowNull: false

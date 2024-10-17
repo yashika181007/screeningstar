@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 exports.createService = async (req, res) => {
     try {
-        const { serviceName, serviceDescription } = req.body;
+        const {  group,servicecode,serviceName, serviceDescription } = req.body;
 
         const token = req.headers['authorization'];
         if (!token) {
@@ -33,6 +33,8 @@ exports.createService = async (req, res) => {
 
         const newService = await Service.create({
             user_id,
+            group,
+            servicecode,
             serviceName,
             serviceDescription
         });
@@ -70,7 +72,7 @@ exports.getServiceById = async (req, res) => {
 };
 
 exports.updateService = async (req, res) => {
-    const { serviceName, serviceDescription } = req.body;
+    const { group,servicecode, serviceName, serviceDescription } = req.body;
 
     try {
         const service = await Service.findByPk(req.params.id);
