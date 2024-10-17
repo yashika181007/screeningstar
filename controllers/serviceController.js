@@ -2,9 +2,10 @@ const Service = require('../models/Service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+
 exports.createService = async (req, res) => {
     try {
-        const {  group,servicecode,serviceName, sub_serviceName } = req.body;
+        const { group, servicecode, serviceName, sub_serviceName } = req.body;
 
         const token = req.headers['authorization'];
         if (!token) {
@@ -13,6 +14,9 @@ exports.createService = async (req, res) => {
 
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
+        if (!jwtToken) {
+            return res.status(401).json({ message: 'Invalid authorization header format.' });
+        }
 
         let decodedToken;
         try {
@@ -20,23 +24,22 @@ exports.createService = async (req, res) => {
         } catch (err) {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
+
         const user_id = decodedToken.id;
-        const role = decodedToken.role;
-      
         if (!user_id) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
         if (!serviceName || !sub_serviceName) {
-            return res.status(400).json({ message: 'Service name and description are required.' });
+            return res.status(400).json({ message: 'Service name and sub-service name are required.' });
         }
 
         const newService = await Service.create({
             user_id,
             group,
             servicecode,
-            serviceName,
-            sub_serviceName
+            serviceName: serviceName.toUpperCase(),  // Ensures uppercase storage
+            sub_serviceName: sub_serviceName.toUpperCase()
         });
 
         res.status(201).json({ message: 'Service created successfully', service: newService });
