@@ -198,27 +198,35 @@ exports.createClient = async (req, res) => {
         return res.status(500).json({ message: 'Error creating client', error: error.message });
     }
 };
-
 exports.fetchPassword = async (req, res) => {
     try {
+        console.log('Request received');
+        console.log('Request Headers:', req.headers);
+        console.log('Request Body:', req.body);
+        
         const { branchEmail } = req.body;
+        console.log('branchEmail:', branchEmail);
 
         if (!branchEmail) {
+            console.log('No email provided');
             return res.status(400).json({ message: 'Email is required' });
         }
 
+        console.log('Looking for branch with email:', branchEmail);
         const branch = await Branch.findOne({
             where: { branchEmail }
         });
 
         if (!branch) {
+            console.log('Branch not found with the provided email');
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
+
+        console.log('Branch found:', branch);
 
         res.status(200).json({
             message: 'Branch found',
             email: branch.branchEmail,
-
             password: branch.password
         });
 
