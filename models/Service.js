@@ -24,19 +24,19 @@ const Service = sequelize.define('service', {
         onUpdate: 'CASCADE'
     },
     group: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.JSON,
         allowNull: false
     },
     servicecode: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.JSON,
         allowNull: false
     },
     serviceName: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.JSON,
         allowNull: false
     },
     sub_serviceName: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.JSON,
         allowNull: false
     },
     createdAt: {
