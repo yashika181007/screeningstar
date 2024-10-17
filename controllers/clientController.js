@@ -73,35 +73,38 @@ exports.createClient = async (req, res) => {
             billingEscalation, authorizedPerson
         } = req.body;
 
-        // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); 
+        const encryptedPassword = encrypt(plainPassword);
         // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
-        // Create client and head branch
         const newClient = await Client.create({
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired, role, status, branches, password: encryptedPassword, // Save encrypted password
+            loginRequired, role, status, branches,
+            password: encryptedPassword.encryptedData, // Ensure this is a string
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
 
-        // Save encrypted password and iv separately
+        // Ensure to log the value being saved
+        console.log("New client created:", newClient);
+
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword.encryptedData, // Save encrypted password
-            iv: encryptedPassword.iv // Save the IV as well
+            password: encryptedPassword.encryptedData, // Store encrypted password correctly as a string
+            iv: encryptedPassword.iv // Store the IV if necessary
         });
-
+        console.log("Encrypted Password Data:", encryptedPassword);
+        console.log("Encrypted Password String:", encryptedPassword.encryptedData);
+        
         const branchPasswords = {};
 
         if (branches && branches.length > 0) {
