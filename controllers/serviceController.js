@@ -6,6 +6,7 @@ const config = require('../config');
 exports.createService = async (req, res) => {
     try {
         const { group, servicecode, serviceName, sub_serviceName } = req.body;
+        console.log('req.body',req.body);
 
         const token = req.headers['authorization'];
         if (!token) {
