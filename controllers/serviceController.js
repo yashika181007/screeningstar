@@ -2,7 +2,7 @@ const Service = require('../models/Service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-9
+
 exports.createService = async (req, res) => {
     try {
         const { group, servicecode, serviceName, sub_serviceName } = req.body;
@@ -32,8 +32,15 @@ exports.createService = async (req, res) => {
         }
 
         // Check for required fields
-        if (!serviceName || !sub_serviceName) {
-            return res.status(400).json({ message: 'Service name and sub-service name are required.' });
+        if (!serviceName || !Array.isArray(sub_serviceName) || sub_serviceName.length === 0) {
+            return res.status(400).json({ message: 'Service name and at least one sub-service name with service code are required.' });
+        }
+
+        // Check if each sub-service has a service code and name
+        for (const sub of sub_serviceName) {
+            if (!sub.servicecode || !sub.name) {
+                return res.status(400).json({ message: 'Each sub-service must have both a service code and name.' });
+            }
         }
 
         // Create new service record
