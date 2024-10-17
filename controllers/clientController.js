@@ -264,6 +264,9 @@ exports.verifyLogin = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Branch not found' });
         }
 
+        // Convert expiration time from Unix timestamp to a readable date
+        const expiryTime = new Date(decoded.exp * 1000);
+
         res.status(200).json({
             success: true,
             message: 'Login verified',
@@ -272,8 +275,8 @@ exports.verifyLogin = async (req, res) => {
                 user_id: branch.user_id,
                 clientId: branch.clientId,
                 branchEmail: branch.branchEmail
-
-            }
+            },
+            tokenExpiry: expiryTime.toISOString() // Return expiration time as ISO string
         });
     } catch (err) {
         console.error(err);
