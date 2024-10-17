@@ -123,8 +123,8 @@ exports.createClient = async (req, res) => {
         // Email each branch with its specific login details
         for (const branchEmail in branchPasswords) {
             const branchMailOptions = {
-                from: 'your-email@example.com',
-                to: branchEmail,
+                from: 'yashikawebstep@gmail.com',
+                to: 'ychanalia@gmail.com',
                 subject: `Branch Account Created for ${organizationName}`,
                 text: `Hello,\n\nYour branch account for ${organizationName} has been created.\n\nBranch Login Password: ${branchPasswords[branchEmail]}\n\nBest regards,\nYour Company Team`
             };
