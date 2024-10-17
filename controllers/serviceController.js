@@ -2,8 +2,7 @@ const Service = require('../models/Service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const jwt = require('jsonwebtoken');
-o
+9
 exports.createService = async (req, res) => {
     try {
         const { group, servicecode, serviceName, sub_serviceName } = req.body;
