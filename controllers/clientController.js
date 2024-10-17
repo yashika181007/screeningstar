@@ -4,15 +4,15 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// AES Encryption/Decryption utilities
-const encryptionKey = crypto.randomBytes(32); // 32 bytes for AES-256
-const iv = crypto.randomBytes(16);  // IV should be 16 bytes
+// Use fixed encryption key and IV (move these to environment variables for security in production)
+const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); // e.g., "your_fixed_64_char_hex_string"
+const iv = Buffer.from(process.env.IV, 'hex'); // e.g., "your_fixed_32_char_hex_string"
 
 function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return `${iv.toString('hex')}:${encrypted}`; // Store IV with encrypted text
+    return `${iv.toString('hex')}:${encrypted}`;
 }
 
 function decrypt(encryptedText) {
