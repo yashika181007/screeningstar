@@ -4,35 +4,26 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const ENCRYPTION_KEY = '01234567890123456789012345678901'; // 32 bytes key
-const IV_LENGTH = 16; // For AES
+// AES Encryption/Decryption utilities
+const encryptionKey = crypto.randomBytes(32); // 32 bytes for AES-256
+const iv = crypto.randomBytes(16);  // IV should be 16 bytes
 
 function encrypt(text) {
-    const iv = crypto.randomBytes(IV_LENGTH); // Generate a random IV
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return {
-        iv: iv.toString('hex'), // Return the IV as a hex string
-        encryptedData: encrypted
-    };
+    return `${iv.toString('hex')}:${encrypted}`; // Store IV with encrypted text
 }
 
-function decrypt(encryptedData, iv) {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), Buffer.from(iv, 'hex'));
-    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+function decrypt(encryptedText) {
+    const [iv, encrypted] = encryptedText.split(':');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
 }
 
-// Example usage
-const originalText = "Hello, World!";
-const encrypted = encrypt(originalText);
-console.log("Encrypted:", encrypted);
-
-const decrypted = decrypt(encrypted.encryptedData, encrypted.iv);
-console.log("Decrypted:", decrypted);
-
+// Generate a random password
 const generatePassword = (length = 12) => {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
     let password = '';
@@ -73,25 +64,24 @@ exports.createClient = async (req, res) => {
             billingEscalation, authorizedPerson
         } = req.body;
 
+        // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword);
+        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
+
         // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
+        // Create client and head branch
         const newClient = await Client.create({
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired, role, status, branches,
-            password: encryptedPassword.encryptedData, // Ensure this is a string
+            loginRequired, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
-
-        // Ensure to log the value being saved
-        console.log("New client created:", newClient);
 
         await Branch.create({
             clientId: newClient.clientId,
@@ -99,12 +89,9 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword.encryptedData, // Store encrypted password correctly as a string
-            iv: encryptedPassword.iv // Store the IV if necessary
+            password: encryptedPassword // Save encrypted password for head branch
         });
-        console.log("Encrypted Password Data:", encryptedPassword);
-        console.log("Encrypted Password String:", encryptedPassword.encryptedData);
-        
+
         const branchPasswords = {};
 
         if (branches && branches.length > 0) {
@@ -194,7 +181,7 @@ exports.createClient = async (req, res) => {
     }
 };
 
-// Add your fetchPassword function implementation here
+// Fetch password (Decrypted) function
 exports.fetchPassword = async (req, res) => {
     try {
         const { branchEmail } = req.body;
@@ -203,18 +190,19 @@ exports.fetchPassword = async (req, res) => {
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        const branch = await Branch.findOne({ where: { branchEmail } });
+        const branch = await Branch.findOne({
+            where: { branchEmail }
+        });
+
         if (!branch) {
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        // Decrypt the stored password using both encryptedData and iv
-        const decryptedPassword = decrypt(branch.password, branch.iv); // Make sure to access branch.iv correctly
-
+        // Decrypt the stored password before sending
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decryptedPassword // Send the decrypted password
+            password: decrypt(branch.password) // Decrypt password
         });
 
     } catch (error) {
@@ -233,8 +221,8 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Decrypt the stored password using both encryptedData and iv
-        const decryptedPassword = decrypt(branch.password, branch.iv); // Access branch.iv
+        // Decrypt the stored password
+        const decryptedPassword = decrypt(branch.password); 
 
         if (password !== decryptedPassword) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -279,9 +267,6 @@ exports.verifyLogin = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Branch not found' });
         }
 
-        // Convert expiration time from Unix timestamp to a readable date
-        const expiryTime = new Date(decoded.exp * 1000);
-
         res.status(200).json({
             success: true,
             message: 'Login verified',
@@ -290,25 +275,17 @@ exports.verifyLogin = async (req, res) => {
                 user_id: branch.user_id,
                 clientId: branch.clientId,
                 branchEmail: branch.branchEmail
-            },
-            tokenExpiry: expiryTime.toISOString()
+
+            }
         });
     } catch (err) {
         console.error(err);
 
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({
-                success: false,
-                alert: 'Invalid token',
-                type: 'error'
-            });
+            return res.status(401).json({ success: false, message: 'Invalid token' });
         }
         if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({
-                success: false,
-                alert: 'Token expired',
-                type: 'warning'
-            });
+            return res.status(401).json({ success: false, message: 'Token expired' });
         }
 
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
@@ -365,12 +342,12 @@ exports.getheadbranch = async (req, res) => {
 };
 exports.getNonHeadBranches = async (req, res) => {
     try {
-        const clientId = req.params.clientId;
+        const clientId = req.params.clientId; 
 
         const nonHeadBranches = await Branch.findAll({
-            where: {
-                clientId,
-                isHeadBranch: false
+            where: { 
+                clientId,       
+                isHeadBranch: false  
             }
         });
 
@@ -405,7 +382,7 @@ exports.getBranchbyclient = async (req, res) => {
 exports.updateBranch = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateBranch = await Branch.findByPk(id);
+        const updateBranch = await Branch.findByPk(id);  
         if (!updateBranch) {
             return res.status(404).json({
                 message: 'Branch not found',
