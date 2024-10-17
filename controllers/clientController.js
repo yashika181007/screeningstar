@@ -204,17 +204,17 @@ exports.fetchPassword = async (req, res) => {
         console.log('Request Headers:', req.headers);
         console.log('Request Body:', req.body);
         
-        const { branchEmail } = req.body;
-        console.log('branchEmail:', branchEmail);
+        const { email } = req.body;
+        console.log('email:', email);
 
-        if (!branchEmail) {
+        if (!email) {
             console.log('No email provided');
             return res.status(400).json({ message: 'Email is required' });
         }
 
-        console.log('Looking for branch with email:', branchEmail);
+        console.log('Looking for branch with email:', email);
         const branch = await Branch.findOne({
-            where: { branchEmail }
+            where: { branchEmail: email }
         });
 
         if (!branch) {
