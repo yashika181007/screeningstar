@@ -35,8 +35,8 @@ exports.createService = async (req, res) => {
             user_id,
             group,
             servicecode,
-            serviceName: serviceName, newService
-            sub_serviceName: sub_serviceName
+            serviceName: serviceName, 
+            sub_serviceName: sub_serviceName.toUpperCase()
         });
          console.log('newService',newService);
         res.status(201).json({ message: 'Service created successfully', service: newService });
