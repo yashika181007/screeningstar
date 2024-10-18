@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
 
 router.post('/login',  authController.login);
-router.post('/clients/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', authController.forgotPassword);
 router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', authController.createuser);
 
