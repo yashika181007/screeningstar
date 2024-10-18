@@ -24,10 +24,11 @@ exports.createClientManager = async (req, res) => {
 
         const user_id = decodedToken.user_id;
         const clientId = decodedToken.clientId;
+        const branchId  = decodedToken.id;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
-
-        if (!user_id || !clientId) {
+        console.log('branchId:', branchId);
+        if (!user_id || !clientId ||!branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
@@ -35,6 +36,7 @@ exports.createClientManager = async (req, res) => {
             ...req.body,
             user_id,
             clientId,
+            branchId,
         });
 
         console.log('req.body', req.body);
@@ -69,7 +71,7 @@ exports.getAllClientManagers = async (req, res) => {
 exports.getClientManagerById = async (req, res) => {
     const { id } = req.params;
     try {
-        const getclientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        const getclientManager = await ClientManager.findByPk(id);  
         if (!getclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',

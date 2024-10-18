@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 const Users = require('../models/User');
 const Client = require('../models/Client');
+const Branch = require('../models/Branch');
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
@@ -30,6 +31,16 @@ const CandidateManager = sequelize.define('candidatemanager', {
         references: {
             model: Client,
             key: 'clientId',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    },
+    branchId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Branch,
+            key: 'id',
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',

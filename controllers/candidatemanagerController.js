@@ -1,4 +1,3 @@
-// candidatemanagerController.js
 const CandidateManager = require('../models/CandidateManager');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -25,10 +24,12 @@ exports.createcandidatemanager = async (req, res) => {
 
         const user_id = decodedToken.user_id;
         const clientId = decodedToken.clientId;
+        const branchId  = decodedToken.id;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
+        console.log('branchId:', branchId);;
 
-        if (!user_id || !clientId) {
+        if (!user_id || !clientId ||!branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
@@ -36,6 +37,7 @@ exports.createcandidatemanager = async (req, res) => {
             ...req.body,
             user_id,
             clientId,
+            branchId,
         });
 
         console.log('req.body', req.body);
