@@ -17,7 +17,7 @@ router.get('/Branches/:id',verifyToken, clientController.getBranchbyclient);
 router.put('/Branches/:id',verifyToken, clientController.updateBranch);
 router.delete('/Branches/:id',verifyToken, clientController.deleteBranch);
 router.get('/clients/active',verifyToken, clientController.getActiveClients);
-router.post('clients/forgot-password',verifyToken, clientController.forgotPassword);
+router.post('/clients/forgot-password',verifyToken, clientController.forgotPassword);
 router.get('/clients/inactive',verifyToken, clientController.getInactiveClients);
 
 router.get('/clients/:id',verifyToken, clientController.getClientById);
