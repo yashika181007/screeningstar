@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const AdminLoginLog = require('../models/AdminLoginLog'); 
 const nodemailer = require('nodemailer');
+const ExcelJS = require('exceljs');
+const path = require('path');
+const fs = require('fs');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -341,5 +344,57 @@ exports.logout = (req, res) => {
     } catch (err) {
         console.error('Error during logout:', err);
         res.status(400).json({ message: 'Error signing out', error: err.message });
+    }
+};
+ 
+exports.downloadAdminLoginLogExcel = async (req, res) => {
+    try {
+
+        const logs = await AdminLoginLog.findAll();
+
+        if (!logs || logs.length === 0) {
+            return res.status(404).json({ message: 'No logs found' });
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('AdminLoginLogs');
+
+        worksheet.columns = [
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Status', key: 'status', width: 15 },
+            { header: 'Message', key: 'message', width: 30 },
+            { header: 'IP Address', key: 'ipAddress', width: 20 },
+            { header: 'Timestamp', key: 'timestamp', width: 25 }
+        ];
+
+        logs.forEach(log => {
+            worksheet.addRow({
+                email: log.email,
+                status: log.status,
+                message: log.message,
+                ipAddress: log.ipAddress,
+                timestamp: log.timestamp
+            });
+        });
+
+        const filePath = path.join(__dirname, '../exports', 'AdminLoginLogs.xlsx');
+        await workbook.xlsx.writeFile(filePath);
+
+        res.download(filePath, 'AdminLoginLogs.xlsx', (err) => {
+            if (err) {
+                console.error('Error downloading the file:', err);
+                return res.status(500).json({ message: 'Error downloading the file' });
+            }
+
+            fs.unlink(filePath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error('Error deleting the file:', unlinkErr);
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error('Error fetching logs or creating Excel file:', err);
+        res.status(500).json({ message: 'Error fetching logs or creating Excel file', error: err.message });
     }
 };
