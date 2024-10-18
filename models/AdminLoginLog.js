@@ -12,12 +12,12 @@ const AdminLoginLog = sequelize.define('AdminLoginLog', {
         allowNull: false,
     },
     status: {
-        type: DataTypes.STRING, // 'Success' or 'Failed'
+        type: DataTypes.STRING, 
         allowNull: false,
     },
     message: {
         type: DataTypes.STRING,
-        allowNull: true, // e.g., 'Invalid email or password'
+        allowNull: true, 
     },
     ipAddress: {
         type: DataTypes.STRING,

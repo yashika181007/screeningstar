@@ -212,7 +212,7 @@ exports.fetchPassword = async (req, res) => {
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
-
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
             console.log('Branch not found, logging failed attempt.');
@@ -221,6 +221,7 @@ exports.loginClient = async (req, res) => {
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid email',
+                ipAddress,
             });
             console.log('Log entry created for failed email.');
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -233,6 +234,7 @@ exports.loginClient = async (req, res) => {
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid password',
+                ipAddress,
             });
             console.log('Log entry created for failed password.');
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -249,6 +251,7 @@ exports.loginClient = async (req, res) => {
             branchEmail,
             status: 'Success',
             message: 'Login successful',
+            ipAddress,
         });
         console.log('Log entry created for successful login.');
 
@@ -270,6 +273,7 @@ exports.loginClient = async (req, res) => {
             branchEmail: req.body.branchEmail || 'Unknown',
             status: 'Failed',
             message: `Error: ${error.message}`,
+            ipAddress,
         });
         console.log('Log entry created for error.');
         return res.status(500).json({ message: 'Error during login', error: error.message });

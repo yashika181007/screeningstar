@@ -6,6 +6,16 @@ const AdminLoginLog = require('../models/AdminLoginLog');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
+const generatePassword = (length = 12) => {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+    return password;
+};
+
 exports.createuser = async (req, res) => { 
     try {
         const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
@@ -123,6 +133,53 @@ exports.veriflogin = async (req, res) => {
         }
 
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
+    }
+};
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const client = await User.findOne({ where: { email } });
+        if (!client) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        const newPassword = generatePassword();
+        const encryptedPassword = await bcrypt.hash(password, 10);
+
+        await client.update({ password: encryptedPassword });
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw'         
+            },
+        });
+
+        const mailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: email,
+            subject: 'Password Reset Request',
+            text: `Dear ${email},\n\nGreetings of the day!!!\n\nWe welcome you to Screening Star Tracker.\n\nYour new password is: ${newPassword}\n\nThanks and Best Regards,\nScreening Star Management`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                return res.status(500).json({ message: 'Error sending email', error: error.message });
+            } else {
+                console.log('Email sent: ' + info.response);
+                return res.status(200).json({ message: 'New password sent to email' });
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in forgotPassword:', error);
+        return res.status(500).json({ message: 'Error in processing request', error: error.message });
     }
 };
 

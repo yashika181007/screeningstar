@@ -6,7 +6,7 @@ const verifyToken = require('../config/verifyToken');
 router.post('/login',  authController.login);
 router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', authController.createuser);
-
+router.post('/forgot-password', authController.forgotPassword);
 router.get('/users', verifyToken, authController.getAllUsers);
 router.get('/users/active', verifyToken, authController.getActiveUsers);
 router.get('/users/inactive', verifyToken, authController.getInactiveUsers);

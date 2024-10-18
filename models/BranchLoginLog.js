@@ -19,6 +19,10 @@ const BranchLoginLog = sequelize.define('BranchLoginLog', {
         type: DataTypes.STRING,
         allowNull: true, 
     },
+    ipAddress: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     timestamp: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
