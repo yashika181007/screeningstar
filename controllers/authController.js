@@ -146,7 +146,7 @@ exports.forgotPassword = async (req, res) => {
         }
 
         const newPassword = generatePassword();
-        const encryptedPassword = await bcrypt.hash(password, 10);
+        const encryptedPassword = await bcrypt.hash(newPassword, 10);
 
         await client.update({ password: encryptedPassword });
 
