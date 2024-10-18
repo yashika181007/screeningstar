@@ -7,7 +7,6 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
-const { saveImage } = require('../config/imageSave'); // Adjust path as needed
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -43,43 +42,19 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => {
+exports.createuser = async (req, res) => { 
     try {
-        // Log request body and files
-        console.log('Request Body:', req.body);
-        console.log('Request Files:', req.files);
+        const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
 
-        const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        let employeePhoto; // Declare employeePhoto
-
-        // Check if an image file is present in the request
-        if (req.files?.image && req.files.image.length > 0) {
-            const targetDir = path.join(__dirname, '..', 'uploads'); // Define the upload directory
-            employeePhoto = await saveImage(req.files.image[0], targetDir); // Save the image and get the path
-            console.log('Image Saved at Path:', employeePhoto);
-        } else {
-            console.log('No image provided.'); // Log if no image
-        }
-
-        // Check if the email is provided
-        if (!email) {
-            return res.status(400).json({ message: 'Email is required' });
-        }
-
-        // Check if the email is already in use
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already in use' });
         }
 
-        // Hash the password
-        console.log('Hashing the password...');
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Password hashed successfully.');
 
-        // Create a new user, including employeePhoto only if it's defined
         const newUser = await User.create({
-            ...(employeePhoto && { employeePhoto }), // Only include employeePhoto if it has a value
+            employeePhoto,
             employeeName,
             employeeMobile,
             email,
@@ -89,11 +64,8 @@ exports.createuser = async (req, res) => {
             status,
         });
 
-        // Log user creation success
-        console.log('Employee registered successfully:', newUser);
         return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
     } catch (error) {
-        // Log any errors
         console.error('Error registering employee:', error);
         return res.status(500).json({ message: 'Error registering employee', error: error.message });
     }
