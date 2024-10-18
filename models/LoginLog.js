@@ -28,5 +28,12 @@ const LoginLog = sequelize.define('LoginLog', {
 }, {
     timestamps: false,
 });
+LoginLog.sync({ alter: true })
+    .then(() => {
+        console.log('LoginLog table created or updated.');
+    })
+    .catch((err) => {
+        console.error('Error creating or updating LoginLog table:', err);
+    });
 
 module.exports = LoginLog;

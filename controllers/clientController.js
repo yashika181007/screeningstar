@@ -226,32 +226,32 @@ exports.fetchPassword = async (req, res) => {
         res.status(500).json({ message: 'Error fetching branch password', error: error.message });
     }
 };
-
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
 
         const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
+            console.log('Branch not found, logging failed attempt.');
             // Log failed login attempt
             await LoginLog.create({
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid email',
             });
+            console.log('Log entry created for failed email.');
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Decrypt the stored password
         const decryptedPassword = decrypt(branch.password); 
-
         if (password !== decryptedPassword) {
-            // Log failed login attempt
+            console.log('Password mismatch, logging failed attempt.');
             await LoginLog.create({
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid password',
             });
+            console.log('Log entry created for failed password.');
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
@@ -261,12 +261,14 @@ exports.loginClient = async (req, res) => {
             { expiresIn: '6h' }
         );
 
+        console.log('Login successful, logging successful login.');
         // Log successful login
         await LoginLog.create({
             branchEmail,
             status: 'Success',
             message: 'Login successful',
         });
+        console.log('Log entry created for successful login.');
 
         return res.status(200).json({
             message: 'Login successful',
@@ -281,11 +283,13 @@ exports.loginClient = async (req, res) => {
         });
     } catch (error) {
         console.error('Error during login:', error);
+        console.log('Logging error attempt.');
         await LoginLog.create({
             branchEmail: req.body.branchEmail || 'Unknown',
             status: 'Failed',
             message: `Error: ${error.message}`,
         });
+        console.log('Log entry created for error.');
         return res.status(500).json({ message: 'Error during login', error: error.message });
     }
 };
