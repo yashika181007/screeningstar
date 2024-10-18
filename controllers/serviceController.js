@@ -35,10 +35,10 @@ exports.createService = async (req, res) => {
             user_id,
             group,
             servicecode,
-            serviceName: serviceName.toUpperCase(),  // Ensures uppercase storage
+            serviceName: serviceName.toUpperCase(), 
             sub_serviceName: sub_serviceName.toUpperCase()
         });
-
+console.log('newService',newService);
         res.status(201).json({ message: 'Service created successfully', service: newService });
     } catch (error) {
         console.error('Error creating service:', error);
