@@ -38,6 +38,7 @@ exports.createuser = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('req.body',req.body);
         const user = await User.findOne({ where: { email } });
 
         const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -77,6 +78,7 @@ exports.login = async (req, res) => {
             email: user.email,
             role: user.role
         };
+        console.log('userData',userData);
         await AdminLoginLog.create({
             email,
             status: 'Success',
