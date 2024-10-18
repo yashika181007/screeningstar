@@ -1,13 +1,13 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
-const BranchLoginLog = require('../models/BranchLoginLog'); 
+const BranchLoginLog = require('../models/BranchLoginLog');
 
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); 
-const iv = Buffer.from(process.env.IV, 'hex'); 
+const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
+const iv = Buffer.from(process.env.IV, 'hex');
 
 function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
@@ -32,7 +32,7 @@ const generatePassword = (length = 8) => {
     const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
     const numericChars = '0123456789';
-    const specialChars = '@#_'; 
+    const specialChars = '@#_';
 
     const passwordArray = [
         uppercaseChars[Math.floor(Math.random() * uppercaseChars.length)] // First character must be uppercase
@@ -55,7 +55,6 @@ const generatePassword = (length = 8) => {
 
     return passwordArray.join('');
 };
-
 
 exports.createClient = async (req, res) => {
     try {
@@ -80,13 +79,13 @@ exports.createClient = async (req, res) => {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
             agreementPeriod, customTemplate, accountManagement, packageOptions,
-            scopeOfServices, pricingPackages, standardProcess, loginRequired,username2, role,
+            scopeOfServices, pricingPackages, standardProcess, loginRequired, username2, role,
             status = 'Active', branches, clientSpoc, escalationManager, billingSpoc,
             billingEscalation, authorizedPerson
         } = req.body;
 
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); 
+        const encryptedPassword = encrypt(plainPassword);
 
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
@@ -96,7 +95,7 @@ exports.createClient = async (req, res) => {
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired,username2, role, status, branches, password: encryptedPassword, // Save encrypted password
+            loginRequired, username2, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
@@ -107,7 +106,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword 
+            password: encryptedPassword
         });
 
         const branchPasswords = {};
@@ -116,7 +115,7 @@ exports.createClient = async (req, res) => {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword();
-                const encryptedBranchPassword = encrypt(branchPassword); 
+                const encryptedBranchPassword = encrypt(branchPassword);
 
                 branchPasswords[branchEmail] = branchPassword;
                 return await Branch.create({
@@ -125,7 +124,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: encryptedBranchPassword 
+                    password: encryptedBranchPassword
                 });
             });
             await Promise.all(branchPromises);
@@ -139,7 +138,7 @@ exports.createClient = async (req, res) => {
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw' 
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 
@@ -224,7 +223,7 @@ exports.fetchPassword = async (req, res) => {
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decrypt(branch.password) 
+            password: decrypt(branch.password)
         });
 
     } catch (error) {
@@ -235,8 +234,50 @@ exports.fetchPassword = async (req, res) => {
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
+
+        const branch = await Branch.findOne({ where: { branchEmail } });
+        if (!branch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Decrypt the stored password
+        const decryptedPassword = decrypt(branch.password);
+
+        if (password !== decryptedPassword) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign(
+            { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
+            process.env.jwtSecret,
+            { expiresIn: '6h' }
+        );
+
+        return res.status(200).json({
+            message: 'Login successful',
+            token,
+            branch: {
+                id: branch.id,
+                branchEmail: branch.branchEmail,
+                organizationName: branch.organizationName,
+                role: branch.role,
+                status: branch.status
+            }
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+        return res.status(500).json({ message: 'Error during login', error: error.message });
+    }
+};
+
+exports.loginClient = async (req, res) => {
+    try {
+        const { branchEmail, password } = req.body;
+
+        console.log('req.body', req.body);
         const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         const branch = await Branch.findOne({ where: { branchEmail } });
+
         if (!branch) {
             console.log('Branch not found, logging failed attempt.');
 
@@ -250,7 +291,8 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const decryptedPassword = decrypt(branch.password); 
+        const decryptedPassword = decrypt(branch.password);
+
         if (password !== decryptedPassword) {
             console.log('Password mismatch, logging failed attempt.');
             await BranchLoginLog.create({
@@ -364,7 +406,7 @@ exports.forgotPassword = async (req, res) => {
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'         
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 
@@ -441,12 +483,12 @@ exports.getheadbranch = async (req, res) => {
 };
 exports.getNonHeadBranches = async (req, res) => {
     try {
-        const clientId = req.params.clientId; 
+        const clientId = req.params.clientId;
 
         const nonHeadBranches = await Branch.findAll({
-            where: { 
-                clientId,       
-                isHeadBranch: false  
+            where: {
+                clientId,
+                isHeadBranch: false
             }
         });
 
@@ -481,7 +523,7 @@ exports.getBranchbyclient = async (req, res) => {
 exports.updateBranch = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateBranch = await Branch.findByPk(id);  
+        const updateBranch = await Branch.findByPk(id);
         if (!updateBranch) {
             return res.status(404).json({
                 message: 'Branch not found',
@@ -564,30 +606,30 @@ exports.getInactiveClients = async (req, res) => {
 };
 exports.changeClientStatus = async (req, res) => {
     try {
-        console.log('Request ID:', req.params.id); 
+        console.log('Request ID:', req.params.id);
         const client = await Client.findByPk(req.params.id);
-        console.log('Client:', client);  
+        console.log('Client:', client);
 
         if (!client) {
-            console.log('Client not found'); 
+            console.log('Client not found');
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        console.log('Current Status:', client.status);  
+        console.log('Current Status:', client.status);
 
         if (client.status === 'Active') {
             client.status = 'Inactive';
-            console.log('Changing status to Inactive'); 
+            console.log('Changing status to Inactive');
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
-            console.log('Changing status to Active'); 
+            console.log('Changing status to Active');
         }
 
         await client.save();
-        console.log('Client status saved:', client.status); 
+        console.log('Client status saved:', client.status);
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
-        console.log('Error:', err.message);  
+        console.log('Error:', err.message);
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
