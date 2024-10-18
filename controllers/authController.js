@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const AdminLoginLog = require('../models/AdminLoginLog'); 
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -38,13 +39,27 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
-        
+
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
         if (!user) {
+            await AdminLoginLog.create({
+                email,
+                status: 'Failed',
+                message: 'Invalid email',
+                ipAddress,
+            });
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            await AdminLoginLog.create({
+                email,
+                status: 'Failed',
+                message: 'Invalid password',
+                ipAddress,
+            });
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
@@ -62,10 +77,17 @@ exports.login = async (req, res) => {
             email: user.email,
             role: user.role
         };
+        await AdminLoginLog.create({
+            email,
+            status: 'Success',
+            message: 'Login successful',
+            ipAddress,
+        });
 
         res.status(200).json({ message: 'Login successful', user: userData, token });
 
     } catch (err) {
+        console.error('Login error:', err);
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };

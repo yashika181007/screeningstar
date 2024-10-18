@@ -1,6 +1,6 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
-const LoginLog = require('../models/LoginLog'); 
+const BranchLoginLog = require('../models/BranchLoginLog'); 
 
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -217,7 +217,7 @@ exports.loginClient = async (req, res) => {
         if (!branch) {
             console.log('Branch not found, logging failed attempt.');
 
-            await LoginLog.create({
+            await BranchLoginLog.create({
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid email',
@@ -229,7 +229,7 @@ exports.loginClient = async (req, res) => {
         const decryptedPassword = decrypt(branch.password); 
         if (password !== decryptedPassword) {
             console.log('Password mismatch, logging failed attempt.');
-            await LoginLog.create({
+            await BranchLoginLog.create({
                 branchEmail,
                 status: 'Failed',
                 message: 'Invalid password',
@@ -245,7 +245,7 @@ exports.loginClient = async (req, res) => {
         );
 
         console.log('Login successful, logging successful login.');
-        await LoginLog.create({
+        await BranchLoginLog.create({
             branchEmail,
             status: 'Success',
             message: 'Login successful',
@@ -266,7 +266,7 @@ exports.loginClient = async (req, res) => {
     } catch (error) {
         console.error('Error during login:', error);
         console.log('Logging error attempt.');
-        await LoginLog.create({
+        await BranchLoginLog.create({
             branchEmail: req.body.branchEmail || 'Unknown',
             status: 'Failed',
             message: `Error: ${error.message}`,

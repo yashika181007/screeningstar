@@ -1,25 +1,27 @@
-const Users = require('../models/User');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
-const Client = require('../models/Client');
 
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
 });
 
-const LoginLog = sequelize.define('LoginLog', {
-    branchEmail: {
+const AdminLoginLog = sequelize.define('AdminLoginLog', {
+    email: {
         type: DataTypes.STRING,
         allowNull: false,
     },
     status: {
-        type: DataTypes.STRING, 
+        type: DataTypes.STRING, // 'Success' or 'Failed'
         allowNull: false,
     },
     message: {
         type: DataTypes.STRING,
-        allowNull: true, 
+        allowNull: true, // e.g., 'Invalid email or password'
+    },
+    ipAddress: {
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     timestamp: {
         type: DataTypes.DATE,
@@ -28,12 +30,5 @@ const LoginLog = sequelize.define('LoginLog', {
 }, {
     timestamps: false,
 });
-LoginLog.sync({ alter: true })
-    .then(() => {
-        console.log('LoginLog table created or updated.');
-    })
-    .catch((err) => {
-        console.error('Error creating or updating LoginLog table:', err);
-    });
 
-module.exports = LoginLog;
+module.exports = AdminLoginLog;
