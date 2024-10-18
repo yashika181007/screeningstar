@@ -306,6 +306,53 @@ exports.verifyLogin = async (req, res) => {
     }
 };
 
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { branchEmail } = req.body;
+
+        const client = await Branch.findOne({ where: { branchEmail } });
+        if (!client) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        const newPassword = generatePassword();
+        const encryptedPassword = encrypt(newPassword);
+
+        await client.update({ password: encryptedPassword });
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw'         
+            },
+        });
+
+        const mailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: branchEmail,
+            subject: 'Password Reset Request',
+            text: `Dear ${branchEmail},\n\nGreetings of the day!!!\n\nWe welcome you to Screening Star Tracker.\n\nYour new password is: ${newPassword}\n\nThanks and Best Regards,\nScreening Star Management`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                return res.status(500).json({ message: 'Error sending email', error: error.message });
+            } else {
+                console.log('Email sent: ' + info.response);
+                return res.status(200).json({ message: 'New password sent to email' });
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in forgotPassword:', error);
+        return res.status(500).json({ message: 'Error in processing request', error: error.message });
+    }
+};
+
 exports.logout = (req, res) => {
     try {
         const token = req.headers['authorization']?.split(' ')[1];
