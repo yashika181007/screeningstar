@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const AdminLoginLog = require('../models/AdminLoginLog'); 
+const nodemailer = require('nodemailer');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
