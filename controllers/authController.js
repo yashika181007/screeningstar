@@ -349,15 +349,19 @@ exports.logout = (req, res) => {
  
 exports.downloadAdminLoginLogExcel = async (req, res) => {
     try {
-
+        console.log('Fetching logs from AdminLoginLog...');
         const logs = await AdminLoginLog.findAll();
 
         if (!logs || logs.length === 0) {
+            console.log('No logs found.');
             return res.status(404).json({ message: 'No logs found' });
         }
 
+        console.log(`${logs.length} logs fetched successfully.`);
+
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('AdminLoginLogs');
+        console.log('Workbook and worksheet created.');
 
         worksheet.columns = [
             { header: 'Email', key: 'email', width: 30 },
@@ -367,7 +371,8 @@ exports.downloadAdminLoginLogExcel = async (req, res) => {
             { header: 'Timestamp', key: 'timestamp', width: 25 }
         ];
 
-        logs.forEach(log => {
+        logs.forEach((log, index) => {
+            console.log(`Adding row ${index + 1}: ${log.email}`);
             worksheet.addRow({
                 email: log.email,
                 status: log.status,
@@ -377,18 +382,34 @@ exports.downloadAdminLoginLogExcel = async (req, res) => {
             });
         });
 
-        const filePath = path.join(__dirname, '../exports', 'AdminLoginLogs.xlsx');
+        const exportDir = path.join(__dirname, '../exports');
+        console.log('Export directory:', exportDir);
+
+        if (!fs.existsSync(exportDir)) {
+            console.log('Export directory does not exist. Creating...');
+            fs.mkdirSync(exportDir, { recursive: true });
+        } else {
+            console.log('Export directory already exists.');
+        }
+
+        const filePath = path.join(exportDir, 'AdminLoginLogs.xlsx');
+        console.log('Saving Excel file to:', filePath);
+
         await workbook.xlsx.writeFile(filePath);
+        console.log('File saved successfully.');
 
         res.download(filePath, 'AdminLoginLogs.xlsx', (err) => {
             if (err) {
-                console.error('Error downloading the file:', err);
+                console.error('Error during file download:', err);
                 return res.status(500).json({ message: 'Error downloading the file' });
             }
+            console.log('File download initiated successfully.');
 
             fs.unlink(filePath, (unlinkErr) => {
                 if (unlinkErr) {
                     console.error('Error deleting the file:', unlinkErr);
+                } else {
+                    console.log('File deleted after download.');
                 }
             });
         });
