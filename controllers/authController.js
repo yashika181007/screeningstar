@@ -45,19 +45,42 @@ const generatePassword = (length = 8) => {
 
 exports.createuser = async (req, res) => {
     try {
+        // Log request body and files
+        console.log('Request Body:', req.body);
+        console.log('Request Files:', req.files);
+
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        const employeePhoto = req.files?.image ? req.files.image[0] : null; 
+        const employeePhoto = req.files?.image ? req.files.image[0] : null; // Assuming image field in the form
+
+        // Check if the email is already in use
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
+            console.log(`Email ${email} is already in use.`);
             return res.status(400).json({ message: 'Email already in use' });
         }
 
+        // Log password hashing
+        console.log('Hashing the password...');
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Password hashed successfully.');
 
         let savedImagePath = null;
         if (employeePhoto) {
+            // Log image details before saving
+            console.log('Received Image File:', employeePhoto);
+            
             const targetDir = path.join(__dirname, '..', 'uploads'); // Points to root/uploads
+            
+            // Log target directory
+            console.log('Target Directory for Image:', targetDir);
+            
+            // Save the uploaded employee photo
             savedImagePath = await saveImage(employeePhoto, targetDir);
+            
+            // Log the saved image path
+            console.log('Image Saved at Path:', savedImagePath);
+        } else {
+            console.log('No image provided.');
         }
 
         // Create a new user
@@ -72,8 +95,12 @@ exports.createuser = async (req, res) => {
             status,
         });
 
+        // Log user creation success
+        console.log('Employee registered successfully:', newUser);
+
         return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
     } catch (error) {
+        // Log any errors
         console.error('Error registering employee:', error);
         return res.status(500).json({ message: 'Error registering employee', error: error.message });
     }
