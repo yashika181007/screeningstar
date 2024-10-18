@@ -1,12 +1,12 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
+const BranchLoginLog = require('../models/BranchLoginLog');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// Use fixed encryption key and IV (move these to environment variables for security in production)
-const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); // e.g., "your_fixed_64_char_hex_string"
-const iv = Buffer.from(process.env.IV, 'hex'); // e.g., "your_fixed_32_char_hex_string"
+const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
+const iv = Buffer.from(process.env.IV, 'hex');
 
 function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
@@ -23,20 +23,41 @@ function decrypt(encryptedText) {
     return decrypted;
 }
 
-// Generate a random password
-const generatePassword = (length = 12) => {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
-    let password = '';
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length);
-        password += charset[randomIndex];
+const generatePassword = (length = 8) => {
+    if (length < 8) {
+        throw new Error('Password length should be at least 8 to meet the requirements.');
     }
-    return password;
+
+    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+    const numericChars = '0123456789';
+    const specialChars = '@#_';
+
+    const passwordArray = [
+        uppercaseChars[Math.floor(Math.random() * uppercaseChars.length)] // First character must be uppercase
+    ];
+
+    passwordArray.push(lowercaseChars[Math.floor(Math.random() * lowercaseChars.length)]);
+    passwordArray.push(numericChars[Math.floor(Math.random() * numericChars.length)]);
+    passwordArray.push(specialChars[Math.floor(Math.random() * specialChars.length)]);
+
+    const allChars = `${lowercaseChars}${uppercaseChars}${numericChars}${specialChars}`;
+    for (let i = passwordArray.length; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * allChars.length);
+        passwordArray.push(allChars[randomIndex]);
+    }
+
+    for (let i = passwordArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+    }
+
+    return passwordArray.join('');
 };
 
 exports.createClient = async (req, res) => {
     try {
-        // Token extraction and validation
+
         const token = req.headers['authorization'];
         if (!token) return res.status(401).json({ message: 'No token provided. Please log in.' });
 
@@ -54,7 +75,6 @@ exports.createClient = async (req, res) => {
         const user_id = decodedToken.id;
         if (!user_id) return res.status(401).json({ message: 'User not authenticated. Please log in.' });
 
-        // Destructure request body
         const {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
@@ -64,15 +84,12 @@ exports.createClient = async (req, res) => {
             billingEscalation, authorizedPerson
         } = req.body;
 
-        // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
+        const encryptedPassword = encrypt(plainPassword); 
 
-        // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
-        // Create client and head branch
         const newClient = await Client.create({
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
@@ -89,7 +106,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword // Save encrypted password for head branch
+            password: encryptedPassword 
         });
 
         const branchPasswords = {};
@@ -98,7 +115,7 @@ exports.createClient = async (req, res) => {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword();
-                const encryptedBranchPassword = encrypt(branchPassword); // Encrypt branch password
+                const encryptedBranchPassword = encrypt(branchPassword); 
 
                 branchPasswords[branchEmail] = branchPassword;
                 return await Branch.create({
@@ -107,7 +124,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: encryptedBranchPassword // Save encrypted branch password
+                    password: encryptedBranchPassword 
                 });
             });
             await Promise.all(branchPromises);
@@ -115,18 +132,16 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
-        // Email Setup
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'  // App-specific password
+                pass: 'tnudhsdgcwkknraw' 
             },
         });
 
-        // Email to main client
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
             to: email,
@@ -142,7 +157,6 @@ exports.createClient = async (req, res) => {
             }
         });
 
-        // Email each branch with its specific login details
         for (const branchEmail in branchPasswords) {
             const branchMailOptions = {
                 from: 'yashikawebstep@gmail.com',
@@ -160,7 +174,6 @@ exports.createClient = async (req, res) => {
             });
         }
 
-        // Response to the client
         res.status(201).json({
             message: 'Client and branches created successfully',
             client: {
@@ -181,15 +194,12 @@ exports.createClient = async (req, res) => {
     }
 };
 
-// Fetch password (Decrypted) function
 exports.fetchPassword = async (req, res) => {
     try {
-        // Log the incoming request body
         console.log('Incoming request body:', req.body);
 
         const { branchEmail } = req.body;
 
-        // Log the extracted branchEmail
         console.log('Extracted branchEmail:', branchEmail);
 
         if (!branchEmail) {
@@ -197,13 +207,11 @@ exports.fetchPassword = async (req, res) => {
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        // Log before querying the database
         console.log('Querying the database for branch with email:', branchEmail);
         const branch = await Branch.findOne({
             where: { branchEmail }
         });
 
-        // Log the result of the database query
         console.log('Database query result:', branch);
 
         if (!branch) {
@@ -211,12 +219,11 @@ exports.fetchPassword = async (req, res) => {
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        // Log before sending the response
         console.log('Branch found, preparing to send response...');
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decrypt(branch.password) // Decrypt password
+            password: decrypt(branch.password) 
         });
 
     } catch (error) {
@@ -225,29 +232,54 @@ exports.fetchPassword = async (req, res) => {
     }
 };
 
-// Login client function
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
+        console.log('req.body', req.body);
+
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
+            console.log('Branch not found, logging failed attempt.');
+
+            await BranchLoginLog.create({
+                branchEmail,
+                status: 'Failed',
+                message: 'Invalid email',
+                ipAddress,
+            });
+            console.log('Log entry created for failed email.');
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Decrypt the stored password
-        const decryptedPassword = decrypt(branch.password); 
+       const decryptedPassword = decrypt(branch.password);
 
-        if (password !== decryptedPassword) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
+       if (password !== decryptedPassword) {
+        console.log('Password mismatch, logging failed attempt.');
+            await BranchLoginLog.create({
+                branchEmail,
+                status: 'Failed',
+                message: 'Invalid password',
+                ipAddress,
+            });
+            console.log('Log entry created for failed password.');
+           return res.status(400).json({ message: 'Invalid email or password' });
+       }
 
-        const token = jwt.sign(
-            { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
-            process.env.jwtSecret,
-            { expiresIn: '6h' }
-        );
-
+       const token = jwt.sign(
+           { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
+           process.env.jwtSecret,
+           { expiresIn: '6h' }
+       );
+       console.log('Login successful, logging successful login.');
+       await BranchLoginLog.create({
+           branchEmail,
+           status: 'Success',
+           message: 'Login successful',
+           ipAddress,
+       });
+       console.log('Log entry created for successful login.');
         return res.status(200).json({
             message: 'Login successful',
             token,
@@ -259,8 +291,16 @@ exports.loginClient = async (req, res) => {
                 status: branch.status
             }
         });
-    } catch (error) {
+    }catch (error) {
         console.error('Error during login:', error);
+        console.log('Logging error attempt.');
+        await BranchLoginLog.create({
+            branchEmail: req.body.branchEmail || 'Unknown',
+            status: 'Failed',
+            message: `Error: ${error.message}`,
+            ipAddress,
+        });
+        console.log('Log entry created for error.');
         return res.status(500).json({ message: 'Error during login', error: error.message });
     }
 };
@@ -305,7 +345,52 @@ exports.verifyLogin = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error verifying login', error: err.message });
     }
 };
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { branchEmail } = req.body;
 
+        const client = await Branch.findOne({ where: { branchEmail } });
+        if (!client) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        const newPassword = generatePassword();
+        const encryptedPassword = encrypt(newPassword);
+
+        await client.update({ password: encryptedPassword });
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw'
+            },
+        });
+
+        const mailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: branchEmail,
+            subject: 'Password Reset Request',
+            text: `Dear ${branchEmail},\n\nGreetings of the day!!!\n\nWe welcome you to Screening Star Tracker.\n\nYour new password is: ${newPassword}\n\nThanks and Best Regards,\nScreening Star Management`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                return res.status(500).json({ message: 'Error sending email', error: error.message });
+            } else {
+                console.log('Email sent: ' + info.response);
+                return res.status(200).json({ message: 'New password sent to email' });
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in forgotPassword:', error);
+        return res.status(500).json({ message: 'Error in processing request', error: error.message });
+    }
+};
 exports.logout = (req, res) => {
     try {
         const token = req.headers['authorization']?.split(' ')[1];
