@@ -6,14 +6,36 @@ const AdminLoginLog = require('../models/AdminLoginLog');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
-const generatePassword = (length = 12) => {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let password = '';
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length);
-        password += charset[randomIndex];
+const generatePassword = (length = 8) => {
+    if (length < 8) {
+        throw new Error('Password length should be at least 8 to meet the requirements.');
     }
-    return password;
+
+    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+    const numericChars = '0123456789';
+    const specialChars = '@#_'; 
+
+    const passwordArray = [
+        uppercaseChars[Math.floor(Math.random() * uppercaseChars.length)] // First character must be uppercase
+    ];
+
+    passwordArray.push(lowercaseChars[Math.floor(Math.random() * lowercaseChars.length)]);
+    passwordArray.push(numericChars[Math.floor(Math.random() * numericChars.length)]);
+    passwordArray.push(specialChars[Math.floor(Math.random() * specialChars.length)]);
+
+    const allChars = `${lowercaseChars}${uppercaseChars}${numericChars}${specialChars}`;
+    for (let i = passwordArray.length; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * allChars.length);
+        passwordArray.push(allChars[randomIndex]);
+    }
+
+    for (let i = passwordArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+    }
+
+    return passwordArray.join('');
 };
 
 exports.createuser = async (req, res) => { 
