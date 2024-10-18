@@ -7,9 +7,9 @@ router.post('/login',  authController.login);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', authController.createuser);
-router.get('/users', verifyToken, authController.downloadAdminLoginLogExcel);
+router.get('/download-admin-login-log-excel', verifyToken, authController.downloadAdminLoginLogExcel);
 
-router.get('/download-admin-login-log-excel', verifyToken, authController.getAllUsers);
+router.get('/users', verifyToken, authController.getAllUsers);
 router.get('/users/active', verifyToken, authController.getActiveUsers);
 router.get('/users/inactive', verifyToken, authController.getInactiveUsers);
 router.get('/users/:id', verifyToken, authController.getUserById);
