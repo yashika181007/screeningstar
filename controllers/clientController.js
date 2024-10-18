@@ -1,5 +1,7 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
+const LoginLog = require('../models/LoginLog'); 
+
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -225,13 +227,18 @@ exports.fetchPassword = async (req, res) => {
     }
 };
 
-// Login client function
 exports.loginClient = async (req, res) => {
     try {
         const { branchEmail, password } = req.body;
 
         const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
+            // Log failed login attempt
+            await LoginLog.create({
+                branchEmail,
+                status: 'Failed',
+                message: 'Invalid email',
+            });
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
@@ -239,6 +246,12 @@ exports.loginClient = async (req, res) => {
         const decryptedPassword = decrypt(branch.password); 
 
         if (password !== decryptedPassword) {
+            // Log failed login attempt
+            await LoginLog.create({
+                branchEmail,
+                status: 'Failed',
+                message: 'Invalid password',
+            });
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
@@ -247,6 +260,13 @@ exports.loginClient = async (req, res) => {
             process.env.jwtSecret,
             { expiresIn: '6h' }
         );
+
+        // Log successful login
+        await LoginLog.create({
+            branchEmail,
+            status: 'Success',
+            message: 'Login successful',
+        });
 
         return res.status(200).json({
             message: 'Login successful',
@@ -261,6 +281,11 @@ exports.loginClient = async (req, res) => {
         });
     } catch (error) {
         console.error('Error during login:', error);
+        await LoginLog.create({
+            branchEmail: req.body.branchEmail || 'Unknown',
+            status: 'Failed',
+            message: `Error: ${error.message}`,
+        });
         return res.status(500).json({ message: 'Error during login', error: error.message });
     }
 };
