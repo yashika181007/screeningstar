@@ -50,7 +50,8 @@ exports.createuser = async (req, res) => {
         console.log('Request Files:', req.files);
 
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        const employeePhoto = req.files?.image ? req.files.image[0] : null; // Assuming image field in the form
+        const employeePhoto = req.files?.saveImage ? req.files.image[0] : null; // Assuming image field in the form
+        console.log('Received Image File:', employeePhoto);
 
         // Check if the email is already in use
         const existingUser = await User.findOne({ where: { email } });
