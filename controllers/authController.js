@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
+const { saveImage } = require('../config/imageSave'); // Adjust path as needed
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -42,10 +43,10 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => { 
+exports.createuser = async (req, res) => {
     try {
-        const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-
+        const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
+        const employeePhoto = req.files?.image ? req.files.image[0] : null; 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already in use' });
@@ -53,8 +54,15 @@ exports.createuser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        let savedImagePath = null;
+        if (employeePhoto) {
+            const targetDir = path.join(__dirname, '..', 'uploads'); // Points to root/uploads
+            savedImagePath = await saveImage(employeePhoto, targetDir);
+        }
+
+        // Create a new user
         const newUser = await User.create({
-            employeePhoto,
+            employeePhoto: savedImagePath, // Save the image path in the database
             employeeName,
             employeeMobile,
             email,
