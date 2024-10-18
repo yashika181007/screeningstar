@@ -45,15 +45,17 @@ const generatePassword = (length = 8) => {
 
 exports.createuser = async (req, res) => {
     try {
+        // Log request body and files
         console.log('Request Body:', req.body);
         console.log('Request Files:', req.files);
 
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        let employeePhoto; // Declare but don't initialize
+        let employeePhoto; // Declare employeePhoto
 
-        if (req.files?.image) {
-            const targetDir = path.join(__dirname, '..', 'uploads');
-            employeePhoto = await saveImage(req.files.image[0], targetDir);
+        // Check if an image file is present in the request
+        if (req.files?.image && req.files.image.length > 0) {
+            const targetDir = path.join(__dirname, '..', 'uploads'); // Define the upload directory
+            employeePhoto = await saveImage(req.files.image[0], targetDir); // Save the image and get the path
             console.log('Image Saved at Path:', employeePhoto);
         } else {
             console.log('No image provided.'); // Log if no image
@@ -77,7 +79,7 @@ exports.createuser = async (req, res) => {
 
         // Create a new user, including employeePhoto only if it's defined
         const newUser = await User.create({
-            ...(employeePhoto && { employeePhoto }), // Only include if employeePhoto is defined
+            ...(employeePhoto && { employeePhoto }), // Only include employeePhoto if it has a value
             employeeName,
             employeeMobile,
             email,
@@ -87,9 +89,11 @@ exports.createuser = async (req, res) => {
             status,
         });
 
+        // Log user creation success
         console.log('Employee registered successfully:', newUser);
         return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
     } catch (error) {
+        // Log any errors
         console.error('Error registering employee:', error);
         return res.status(500).json({ message: 'Error registering employee', error: error.message });
     }
