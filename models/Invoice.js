@@ -95,5 +95,5 @@ const Invoice = sequelize.define('invoice', {
 }, {
     timestamps: true // Enables `createdAt` and `updatedAt` columns
 });
-
+Invoice.sync();
 module.exports = Invoice;
