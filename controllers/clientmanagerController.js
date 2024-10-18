@@ -92,7 +92,7 @@ exports.getClientManagerById = async (req, res) => {
 exports.updateClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateclientManager = await ClientManager.findByPk(id);  // Changed variable name to `clientManager`
+        const updateclientManager = await ClientManager.findByPk(id);  
         if (!updateclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
