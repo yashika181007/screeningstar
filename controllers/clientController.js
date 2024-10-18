@@ -6,9 +6,8 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// Use fixed encryption key and IV (move these to environment variables for security in production)
-const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); // e.g., "your_fixed_64_char_hex_string"
-const iv = Buffer.from(process.env.IV, 'hex'); // e.g., "your_fixed_32_char_hex_string"
+const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); 
+const iv = Buffer.from(process.env.IV, 'hex'); 
 
 function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
@@ -25,7 +24,6 @@ function decrypt(encryptedText) {
     return decrypted;
 }
 
-// Generate a random password
 const generatePassword = (length = 12) => {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+<>?';
     let password = '';
@@ -38,7 +36,6 @@ const generatePassword = (length = 12) => {
 
 exports.createClient = async (req, res) => {
     try {
-        // Token extraction and validation
         const token = req.headers['authorization'];
         if (!token) return res.status(401).json({ message: 'No token provided. Please log in.' });
 
@@ -56,7 +53,6 @@ exports.createClient = async (req, res) => {
         const user_id = decodedToken.id;
         if (!user_id) return res.status(401).json({ message: 'User not authenticated. Please log in.' });
 
-        // Destructure request body
         const {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
@@ -66,15 +62,12 @@ exports.createClient = async (req, res) => {
             billingEscalation, authorizedPerson
         } = req.body;
 
-        // Generate and encrypt the password
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); // Encrypt the password
+        const encryptedPassword = encrypt(plainPassword); 
 
-        // Check for existing client
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
-        // Create client and head branch
         const newClient = await Client.create({
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
@@ -91,7 +84,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword // Save encrypted password for head branch
+            password: encryptedPassword 
         });
 
         const branchPasswords = {};
@@ -100,7 +93,7 @@ exports.createClient = async (req, res) => {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
                 const branchPassword = generatePassword();
-                const encryptedBranchPassword = encrypt(branchPassword); // Encrypt branch password
+                const encryptedBranchPassword = encrypt(branchPassword); 
 
                 branchPasswords[branchEmail] = branchPassword;
                 return await Branch.create({
@@ -109,7 +102,7 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: encryptedBranchPassword // Save encrypted branch password
+                    password: encryptedBranchPassword 
                 });
             });
             await Promise.all(branchPromises);
@@ -117,18 +110,16 @@ exports.createClient = async (req, res) => {
 
         req.session.clientId = newClient.clientId;
 
-        // Email Setup
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'  // App-specific password
+                pass: 'tnudhsdgcwkknraw' 
             },
         });
 
-        // Email to main client
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
             to: email,
@@ -144,7 +135,6 @@ exports.createClient = async (req, res) => {
             }
         });
 
-        // Email each branch with its specific login details
         for (const branchEmail in branchPasswords) {
             const branchMailOptions = {
                 from: 'yashikawebstep@gmail.com',
@@ -162,7 +152,6 @@ exports.createClient = async (req, res) => {
             });
         }
 
-        // Response to the client
         res.status(201).json({
             message: 'Client and branches created successfully',
             client: {
@@ -183,15 +172,12 @@ exports.createClient = async (req, res) => {
     }
 };
 
-// Fetch password (Decrypted) function
 exports.fetchPassword = async (req, res) => {
     try {
-        // Log the incoming request body
         console.log('Incoming request body:', req.body);
 
         const { branchEmail } = req.body;
 
-        // Log the extracted branchEmail
         console.log('Extracted branchEmail:', branchEmail);
 
         if (!branchEmail) {
@@ -199,13 +185,11 @@ exports.fetchPassword = async (req, res) => {
             return res.status(400).json({ message: 'Branch email is required' });
         }
 
-        // Log before querying the database
         console.log('Querying the database for branch with email:', branchEmail);
         const branch = await Branch.findOne({
             where: { branchEmail }
         });
 
-        // Log the result of the database query
         console.log('Database query result:', branch);
 
         if (!branch) {
@@ -213,12 +197,11 @@ exports.fetchPassword = async (req, res) => {
             return res.status(404).json({ message: 'Branch not found with the provided email' });
         }
 
-        // Log before sending the response
         console.log('Branch found, preparing to send response...');
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decrypt(branch.password) // Decrypt password
+            password: decrypt(branch.password) 
         });
 
     } catch (error) {
@@ -233,7 +216,7 @@ exports.loginClient = async (req, res) => {
         const branch = await Branch.findOne({ where: { branchEmail } });
         if (!branch) {
             console.log('Branch not found, logging failed attempt.');
-            // Log failed login attempt
+
             await LoginLog.create({
                 branchEmail,
                 status: 'Failed',
@@ -262,7 +245,6 @@ exports.loginClient = async (req, res) => {
         );
 
         console.log('Login successful, logging successful login.');
-        // Log successful login
         await LoginLog.create({
             branchEmail,
             status: 'Success',
@@ -555,31 +537,30 @@ exports.getInactiveClients = async (req, res) => {
 };
 exports.changeClientStatus = async (req, res) => {
     try {
-        console.log('Request ID:', req.params.id);  // Log the client ID from the request
+        console.log('Request ID:', req.params.id); 
         const client = await Client.findByPk(req.params.id);
-        console.log('Client:', client);  // Log the client object
+        console.log('Client:', client);  
 
         if (!client) {
-            console.log('Client not found');  // Log if the client is not found
+            console.log('Client not found'); 
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        console.log('Current Status:', client.status);  // Log the current status of the client
+        console.log('Current Status:', client.status);  
 
         if (client.status === 'Active') {
             client.status = 'Inactive';
-            console.log('Changing status to Inactive');  // Log status change to Inactive
+            console.log('Changing status to Inactive'); 
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
-            console.log('Changing status to Active');  // Log status change to Active
+            console.log('Changing status to Active'); 
         }
 
         await client.save();
-        console.log('Client status saved:', client.status);  // Log the saved status
-
+        console.log('Client status saved:', client.status); 
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
-        console.log('Error:', err.message);  // Log the error message
+        console.log('Error:', err.message);  
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
