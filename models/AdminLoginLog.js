@@ -30,5 +30,11 @@ const AdminLoginLog = sequelize.define('AdminLoginLog', {
 }, {
     timestamps: false,
 });
-
+AdminLoginLog.sync({ alter: true })
+    .then(() => {
+        console.log('AdminLoginLog table created or updated.');
+    })
+    .catch((err) => {
+        console.error('Error creating or updating AdminLoginLog table:', err);
+    });
 module.exports = AdminLoginLog;
