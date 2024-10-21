@@ -167,6 +167,33 @@ exports.deleteClientManager = async (req, res) => {
     }
 };
 
+// exports.getClientApplicationCounts = async (req, res) => {
+//     try {
+//         const applicationCounts = await ClientManager.findAll({
+//             where: {
+//                 ack_sent: '0' 
+//             },
+//             attributes: [
+//                 'clientId', 
+//                 'organizationName', 
+//                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+//                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  
+//             ],
+//             group: ['clientId', 'organizationName'],
+//             order: [['createdAt', 'ASC']] 
+//         });
+
+//         return res.status(200).json({
+//             message: 'Application counts retrieved successfully',
+//             data: applicationCounts,
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             message: 'Error retrieving application counts',
+//             error: error.message,
+//         });
+//     }
+// };
 exports.getClientApplicationCounts = async (req, res) => {
     try {
         const applicationCounts = await ClientManager.findAll({
@@ -175,13 +202,13 @@ exports.getClientApplicationCounts = async (req, res) => {
             },
             attributes: [
                 'clientId', 
-                'branchId',
                 'organizationName', 
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'], // Fetch all branchIds as a concatenated string
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Only get the date part of createdAt
             ],
-            group: ['clientId', 'organizationName'],
-            order: [['createdAt', 'ASC']] 
+            group: ['clientId', 'organizationName'],  // Group by clientId and organizationName only
+            order: [['createdAt', 'ASC']]  // Order the results by creation date
         });
 
         return res.status(200).json({
