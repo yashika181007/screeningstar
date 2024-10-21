@@ -42,7 +42,7 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createUser = async (req, res) => { 
+exports.createuser = async (req, res) => { 
     try {
         const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
 
