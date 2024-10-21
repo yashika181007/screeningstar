@@ -12,64 +12,63 @@ exports.createClientManager = async (req, res) => {
         }
 
         const tokenParts = token.split(' ');
+        if (tokenParts.length !== 2) {
+            return res.status(401).json({ message: 'Invalid token format. Please log in.' });
+        }
+
         const jwtToken = tokenParts[1];
         let decodedToken;
-
+        
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
         } catch (err) {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const user_id = decodedToken.user_id;
-        const clientId = decodedToken.clientId;
-        const branchId = decodedToken.id;
-
+        const { user_id, clientId, id: branchId } = decodedToken; // Destructuring
         if (!user_id || !clientId || !branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
         const { employeeId } = req.body;
+        if (!employeeId) {
+            return res.status(400).json({ message: 'Employee ID is required.' });
+        }
 
-        const existingCase = await ClientManager.findOne({
-            where: { employeeId: employeeId },
-        });
-
+        // Check if employee ID already exists
+        const existingCase = await ClientManager.findOne({ where: { employeeId } });
         if (existingCase) {
             return res.status(400).json({
                 message: `Employee ID '${employeeId}' already exists. Please use a unique Employee ID.`,
             });
         }
 
-        // Start generating unique application ID
-        let newApplicationId;
-        let isDuplicate;
+        // Generate new application ID
         let latestCase = await ClientManager.findOne({
-            where: { clientId: clientId },
+            where: { clientId },
             order: [['createdAt', 'DESC']],
         });
 
-        do {
-            if (latestCase) {
-                const latestApplicationId = latestCase.application_id;
-                const idParts = latestApplicationId.split('-');
-                const nextIdNumber = parseInt(idParts[1], 10) + 1;
-                newApplicationId = `${clientId}-${nextIdNumber}`;
-            } else {
-                newApplicationId = `${clientId}-1`;
-            }
+        let newApplicationId;
+        if (latestCase) {
+            const latestApplicationId = latestCase.application_id;
+            const idParts = latestApplicationId.split('-');
+            const nextIdNumber = parseInt(idParts[1], 10) + 1;
+            newApplicationId = `${clientId}-${nextIdNumber}`;
+        } else {
+            newApplicationId = `${clientId}-1`;
+        }
 
-            // Check for duplicate application ID
-            const duplicateApplication = await ClientManager.findOne({
-                where: { application_id: newApplicationId }
+        // Check for duplicate application ID
+        const duplicateApplication = await ClientManager.findOne({
+            where: { application_id: newApplicationId },
+        });
+
+        if (duplicateApplication) {
+            return res.status(400).json({
+                message: 'Duplicate application ID detected. Please try again.',
             });
-
-            isDuplicate = !!duplicateApplication;
-            if (isDuplicate) {
-                latestCase = duplicateApplication;  // Use this as the new latest case in the next loop
-            }
-
-        } while (isDuplicate);
+        }
 
         // Create the new case
         const newCase = await ClientManager.create({
