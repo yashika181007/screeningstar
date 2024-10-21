@@ -146,7 +146,7 @@ exports.createClient = async (req, res) => {
             from: 'yashikawebstep@gmail.com',
             to: email,
             subject: `Welcome , ${email}`,
-            text: `Hello ${organizationName},\n\nYour client account has been successfully created.\n\nHere are your login details:\n\nEmail: ${branchEmail}\nPassword:  ${plainPassword}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
+            text: `Hello ${organizationName},\n\nYour client account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword:  ${plainPassword}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
         };
 
         transporter.sendMail(clientMailOptions, (error, info) => {
