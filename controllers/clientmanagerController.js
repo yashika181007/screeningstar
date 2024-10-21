@@ -38,7 +38,7 @@ exports.createClientManager = async (req, res) => {
         const existingCase = await ClientManager.findOne({
             where: {
                 [Sequelize.Op.or]: [
-                    { employeeId: employeeId }, // Check for duplicate employeeId
+                    { employeeId: employeeId }, 
                 ],
             },
         });
@@ -162,6 +162,26 @@ exports.deleteClientManager = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             message: 'Error deleting Client Manager',
+            error: error.message,
+        });
+    }
+};
+
+exports.getAllClientManagers = async (req, res) => {
+    try {
+        const cases = await ClientManager.findAll({
+            where: {
+                ack_sent: '0' // Fetch all where ack_sent is 0
+            }
+        });
+
+        return res.status(200).json({
+            message: 'All Client Managers with ack_sent = 0 retrieved successfully',
+            data: cases,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error retrieving case uploads',
             error: error.message,
         });
     }
