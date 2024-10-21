@@ -171,10 +171,10 @@ exports.createClient = async (req, res) => {
             const branchMailOptions = {
                 from: 'yashikawebstep@gmail.com',
                 to: branchEmail,
-                subject: `Branch Account Created for ${organizationName}`,
-                text: `Hello,\n\nYour branch account for ${organizationName} has been created.\n\nBranch Login Password: ${branchPasswords[branchEmail]}\n\nBest regards,\nYour Company Team`
+                subject: `Welcome, ${branchEmail}`,
+                text: `Hello,\n\nYour branch account for ${organizationName} has been successfully created.\n\nHere are your login details:\n\nEmail: ${branchEmail}\nPassword: ${branchPasswords[branchEmail]}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
             };
-
+        
             transporter.sendMail(branchMailOptions, (error, info) => {
                 if (error) {
                     console.error(`Error sending email to branch ${branchEmail}:`, error);
