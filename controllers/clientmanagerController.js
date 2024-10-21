@@ -65,10 +65,19 @@ exports.createClientManager = async (req, res) => {
         let newApplicationId;
         if (latestCase) {
             const latestApplicationId = latestCase.application_id;
+            console.log('Latest Application ID:', latestApplicationId);
+
+            // Split the application_id by '-' and increment the number
             const idParts = latestApplicationId.split('-');
-            const nextIdNumber = parseInt(idParts[1], 10) + 1;
-            newApplicationId = `${clientId}-${nextIdNumber}`;
+            if (idParts.length > 1 && !isNaN(idParts[1])) {
+                const nextIdNumber = parseInt(idParts[1], 10) + 1;
+                newApplicationId = `${clientId}-${nextIdNumber}`;
+            } else {
+                // If parsing fails, set it to 1
+                newApplicationId = `${clientId}-1`;
+            }
         } else {
+            // If no case is found, start from 1
             newApplicationId = `${clientId}-1`;
         }
         console.log('New Application ID:', newApplicationId);
