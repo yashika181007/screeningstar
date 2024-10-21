@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
+const { v4: uuidv4 } = require('uuid');  
 
 exports.createClientManager = async (req, res) => {
     try {
@@ -43,37 +44,8 @@ exports.createClientManager = async (req, res) => {
             });
         }
 
-        // Generate a unique application ID
-        let latestCase = await ClientManager.findOne({
-            where: { clientId },
-            order: [['createdAt', 'DESC']],
-        });
-
-        let newApplicationId;
-        let isDuplicate;
-
-        do {
-            if (latestCase) {
-                const latestApplicationId = latestCase.application_id;
-                const idParts = latestApplicationId.split('-');
-                const nextIdNumber = parseInt(idParts[1], 10) + 1;
-                newApplicationId = `${clientId}-${nextIdNumber}`;
-            } else {
-                newApplicationId = `${clientId}-1`;
-            }
-
-            // Check if the generated application ID already exists
-            const duplicateApplication = await ClientManager.findOne({
-                where: { application_id: newApplicationId }
-            });
-
-            isDuplicate = !!duplicateApplication;
-
-            if (isDuplicate) {
-                latestCase = duplicateApplication;  // Update latestCase to check the next number in the next loop
-            }
-
-        } while (isDuplicate);
+        // Generate a unique application ID using UUID
+        const newApplicationId = uuidv4();
 
         // Create the new case
         const newCase = await ClientManager.create({
@@ -81,7 +53,7 @@ exports.createClientManager = async (req, res) => {
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId,
+            application_id: newApplicationId,  // Use UUID for unique application ID
         });
 
         return res.status(201).json({
