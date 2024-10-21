@@ -42,7 +42,7 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => { 
+exports.createUser = async (req, res) => { 
     try {
         const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
 
@@ -62,6 +62,30 @@ exports.createuser = async (req, res) => {
             password: hashedPassword,
             role,
             status,
+        });
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw' // Replace with your actual email password or an app-specific password
+            },
+        });
+
+        const mailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: email,
+            subject: `Welcome, ${employeeName}`,
+            text: `Hello ${employeeName},\n\nYour employee account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour Company Team`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email to new user:', error);
+            } else {
+                console.log('User email sent: ' + info.response);
+            }
         });
 
         return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
