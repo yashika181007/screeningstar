@@ -171,21 +171,22 @@ exports.getClientApplicationCounts = async (req, res) => {
     try {
         const applicationCounts = await ClientManager.findAll({
             where: {
-                ack_sent: '0' // Fetch only where ack_sent is 0
+                ack_sent: '0' 
             },
             attributes: [
-                'clientId',  // Include clientId
-                'organizationName',  // Include organizationName
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count applications for each client
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Format createdAt to show only the date
+                'clientId', 
+                'branchId',
+                'organizationName', 
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  
             ],
-            group: ['clientId', 'organizationName'],  // Group by clientId and organizationName
-            order: [['createdAt', 'ASC']]  // Sort by createdAt
+            group: ['clientId', 'organizationName'],
+            order: [['createdAt', 'ASC']] 
         });
 
         return res.status(200).json({
             message: 'Application counts retrieved successfully',
-            data: applicationCounts, // This will return the counts for each client
+            data: applicationCounts,
         });
     } catch (error) {
         return res.status(500).json({
