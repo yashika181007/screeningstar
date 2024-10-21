@@ -82,6 +82,19 @@ exports.createClientManager = async (req, res) => {
         }
         console.log('New Application ID:', newApplicationId);
 
+        // Check if the new application_id already exists
+        const duplicateApplication = await ClientManager.findOne({
+            where: {
+                application_id: newApplicationId
+            }
+        });
+        if (duplicateApplication) {
+            console.log(`Duplicate Application ID '${newApplicationId}' detected.`);
+            return res.status(400).json({
+                message: `Application ID '${newApplicationId}' already exists. Please use a unique Application ID.`,
+            });
+        }
+
         // Create the new case
         const newCase = await ClientManager.create({
             ...req.body,
