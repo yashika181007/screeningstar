@@ -167,21 +167,29 @@ exports.deleteClientManager = async (req, res) => {
     }
 };
 
-exports.getackapplications = async (req, res) => {
+exports.getClientApplicationCounts = async (req, res) => {
     try {
-        const cases = await ClientManager.findAll({
+        const applicationCounts = await ClientManager.findAll({
             where: {
-                ack_sent: '0' // Fetch all where ack_sent is 0
-            }
+                ack_sent: '0' // Fetch only where ack_sent is 0
+            },
+            attributes: [
+                'clientId',  // Include clientId
+                'organizationName',  // Include organizationName
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count applications for each client
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Format createdAt to show only the date
+            ],
+            group: ['clientId', 'organizationName'],  // Group by clientId and organizationName
+            order: [['createdAt', 'ASC']]  // Sort by createdAt
         });
 
         return res.status(200).json({
-            message: 'All Client Managers with ack_sent = 0 retrieved successfully',
-            data: cases,
+            message: 'Application counts retrieved successfully',
+            data: applicationCounts, // This will return the counts for each client
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error retrieving case uploads',
+            message: 'Error retrieving application counts',
             error: error.message,
         });
     }
