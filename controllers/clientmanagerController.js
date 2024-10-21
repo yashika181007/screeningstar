@@ -3,7 +3,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
-const { v4: uuidv4 } = require('uuid');  
+// const { v4: uuidv4 } = require('uuid');  
+
+// Helper function to generate an 8-digit numeric ID
+const generateNumericId = () => {
+    return Math.floor(10000000 + Math.random() * 90000000);  // Generates a random 8-digit number
+};
 
 exports.createClientManager = async (req, res) => {
     try {
@@ -19,7 +24,7 @@ exports.createClientManager = async (req, res) => {
 
         const jwtToken = tokenParts[1];
         let decodedToken;
-        
+
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
         } catch (err) {
@@ -44,8 +49,21 @@ exports.createClientManager = async (req, res) => {
             });
         }
 
-        // Generate a unique application ID using UUID
-        const newApplicationId = uuidv4();
+        let newApplicationId;
+        let isDuplicate;
+
+        // Generate unique 8-digit numeric application ID
+        do {
+            newApplicationId = generateNumericId();
+            const duplicateApplication = await ClientManager.findOne({ where: { application_id: newApplicationId } });
+            isDuplicate = !!duplicateApplication;
+
+            if (isDuplicate) {
+                return res.status(400).json({
+                    message: 'Duplicate application ID detected. Please try again.',
+                });
+            }
+        } while (isDuplicate);
 
         // Create the new case
         const newCase = await ClientManager.create({
@@ -53,7 +71,7 @@ exports.createClientManager = async (req, res) => {
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId,  // Use UUID for unique application ID
+            application_id: newApplicationId,  // Use generated 8-digit numeric ID
         });
 
         return res.status(201).json({
