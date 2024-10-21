@@ -77,7 +77,7 @@ exports.createuser = async (req, res) => {
             from: 'yashikawebstep@gmail.com',
             to: email,
             subject: `Welcome, ${employeeName}`,
-            text: `Hello ${employeeName},\n\nYour ${status} account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
+            text: `Hello ${employeeName},\n\nYour ${role} account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
