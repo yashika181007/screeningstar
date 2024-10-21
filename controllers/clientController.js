@@ -57,7 +57,6 @@ const generatePassword = (length = 8) => {
 
 exports.createClient = async (req, res) => {
     try {
-
         const token = req.headers['authorization'];
         if (!token) return res.status(401).json({ message: 'No token provided. Please log in.' });
 
@@ -79,14 +78,13 @@ exports.createClient = async (req, res) => {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
             agreementPeriod, customTemplate, accountManagement, packageOptions,
-            scopeOfServices, pricingPackages, standardProcess, loginRequired,username2, role,
+            scopeOfServices, pricingPackages, standardProcess, loginRequired, username2, role,
             status = 'Active', branches, clientSpoc, escalationManager, billingSpoc,
             billingEscalation, authorizedPerson
         } = req.body;
 
         const plainPassword = generatePassword();
         const encryptedPassword = encrypt(plainPassword); 
-
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
@@ -95,7 +93,7 @@ exports.createClient = async (req, res) => {
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             packageOptions, scopeOfServices, pricingPackages, standardProcess,
-            loginRequired,username2, role, status, branches, password: encryptedPassword, // Save encrypted password
+            loginRequired, username2, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
@@ -111,13 +109,24 @@ exports.createClient = async (req, res) => {
 
         const branchPasswords = {};
 
+        console.log("Branches received:", branches);
+
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
+
+                if (!branchEmail || !branchName) {
+                    console.error("Branch email or name is missing for branch:", branch);
+                    throw new Error("Branch email or name is missing");
+                }
+
+                console.log("Creating branch for email:", branchEmail);
+
                 const branchPassword = generatePassword();
-                const encryptedBranchPassword = encrypt(branchPassword); 
+                const encryptedBranchPassword = encrypt(branchPassword);
 
                 branchPasswords[branchEmail] = branchPassword;
+
                 return await Branch.create({
                     clientId: newClient.clientId,
                     user_id,
@@ -127,6 +136,7 @@ exports.createClient = async (req, res) => {
                     password: encryptedBranchPassword 
                 });
             });
+            
             await Promise.all(branchPromises);
         }
 
@@ -138,7 +148,7 @@ exports.createClient = async (req, res) => {
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw' 
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 
@@ -188,6 +198,7 @@ exports.createClient = async (req, res) => {
                 }))
             }
         });
+
     } catch (error) {
         console.error('Error creating client:', error);
         return res.status(500).json({ message: 'Error creating client', error: error.message });
