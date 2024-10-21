@@ -15,11 +15,14 @@ exports.createClientManager = async (req, res) => {
 
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
+        console.log('JWT Token:', jwtToken);
 
         let decodedToken;
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+            console.log('Decoded Token:', decodedToken);
         } catch (err) {
+            console.error('Invalid token:', err);
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
@@ -31,29 +34,33 @@ exports.createClientManager = async (req, res) => {
         console.log('Branch ID:', branchId);
 
         if (!user_id || !clientId || !branchId) {
+            console.error('User authentication failed.');
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
         const { employeeId } = req.body;
+        console.log('Employee ID:', employeeId);
+
         const existingCase = await ClientManager.findOne({
             where: {
-                [Sequelize.Op.or]: [
-                    { employeeId: employeeId }, 
-                ],
+                [Sequelize.Op.or]: [{ employeeId: employeeId }],
             },
         });
+        console.log('Existing Case:', existingCase);
 
         if (existingCase) {
+            console.log(`Duplicate Employee ID '${employeeId}' detected.`);
             return res.status(400).json({
                 message: `Employee ID '${employeeId}' already exists. Please use a unique Employee ID.`,
             });
         }
 
-        // Generate new application_id by checking for the latest case
+        // Find the latest application ID for this client to generate the next one
         const latestCase = await ClientManager.findOne({
             where: { clientId: clientId },
             order: [['createdAt', 'DESC']],
         });
+        console.log('Latest Case:', latestCase);
 
         let newApplicationId;
         if (latestCase) {
@@ -64,6 +71,7 @@ exports.createClientManager = async (req, res) => {
         } else {
             newApplicationId = `${clientId}-1`;
         }
+        console.log('New Application ID:', newApplicationId);
 
         // Create the new case
         const newCase = await ClientManager.create({
@@ -71,16 +79,16 @@ exports.createClientManager = async (req, res) => {
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId, // Use the new application_id
+            application_id: newApplicationId, // Use the generated application ID
         });
+        console.log('New Case Created:', newCase);
 
-        console.log('req.body', req.body);
-        console.log('newCase', newCase);
         return res.status(201).json({
             message: 'Case uploaded successfully',
             data: newCase,
         });
     } catch (error) {
+        console.error('Error creating case upload:', error.message);
         return res.status(500).json({
             message: 'Error creating case upload',
             error: error.message,
