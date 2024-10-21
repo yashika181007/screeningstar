@@ -167,7 +167,7 @@ exports.deleteClientManager = async (req, res) => {
     }
 };
 
-exports.getAllClientManagers = async (req, res) => {
+exports.getackapplications = async (req, res) => {
     try {
         const cases = await ClientManager.findAll({
             where: {

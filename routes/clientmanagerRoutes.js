@@ -8,5 +8,5 @@ router.get('/clientmanager',verifyToken , clientmanagerController.getAllClientMa
 router.get('/clientmanager/:id',verifyToken , clientmanagerController.getClientManagerById);     
 router.put('/clientmanager/:id',verifyToken , clientmanagerController.updateClientManager);      
 router.delete('/clientmanager/:id',verifyToken , clientmanagerController.deleteClientManager);   
-
+router.get('/getackapplications',verifyToken , clientmanagerController.getackapplications);   
 module.exports = router;
