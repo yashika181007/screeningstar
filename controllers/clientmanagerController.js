@@ -43,32 +43,37 @@ exports.createClientManager = async (req, res) => {
             });
         }
 
-        // Generate new application ID
+        // Generate a unique application ID
         let latestCase = await ClientManager.findOne({
             where: { clientId },
             order: [['createdAt', 'DESC']],
         });
 
         let newApplicationId;
-        if (latestCase) {
-            const latestApplicationId = latestCase.application_id;
-            const idParts = latestApplicationId.split('-');
-            const nextIdNumber = parseInt(idParts[1], 10) + 1;
-            newApplicationId = `${clientId}-${nextIdNumber}`;
-        } else {
-            newApplicationId = `${clientId}-1`;
-        }
+        let isDuplicate;
 
-        // Check for duplicate application ID
-        const duplicateApplication = await ClientManager.findOne({
-            where: { application_id: newApplicationId },
-        });
+        do {
+            if (latestCase) {
+                const latestApplicationId = latestCase.application_id;
+                const idParts = latestApplicationId.split('-');
+                const nextIdNumber = parseInt(idParts[1], 10) + 1;
+                newApplicationId = `${clientId}-${nextIdNumber}`;
+            } else {
+                newApplicationId = `${clientId}-1`;
+            }
 
-        if (duplicateApplication) {
-            return res.status(400).json({
-                message: 'Duplicate application ID detected. Please try again.',
+            // Check if the generated application ID already exists
+            const duplicateApplication = await ClientManager.findOne({
+                where: { application_id: newApplicationId }
             });
-        }
+
+            isDuplicate = !!duplicateApplication;
+
+            if (isDuplicate) {
+                latestCase = duplicateApplication;  // Update latestCase to check the next number in the next loop
+            }
+
+        } while (isDuplicate);
 
         // Create the new case
         const newCase = await ClientManager.create({
