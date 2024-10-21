@@ -145,7 +145,7 @@ exports.createClient = async (req, res) => {
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
             to: email,
-            subject: `Welcome , ${branchEmail}`,
+            subject: `Welcome , ${email}`,
             text: `Hello ${organizationName},\n\nYour client account has been successfully created.\n\nHere are your login details:\n\nEmail: ${branchEmail}\nPassword:  ${plainPassword}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
         };
 
