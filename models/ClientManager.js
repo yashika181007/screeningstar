@@ -46,6 +46,10 @@ const ClientManager = sequelize.define('clientmanager', {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },
+    application_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     organizationName: {
         type: DataTypes.STRING,
         allowNull: false,

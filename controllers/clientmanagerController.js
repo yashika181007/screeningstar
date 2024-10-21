@@ -24,19 +24,43 @@ exports.createClientManager = async (req, res) => {
 
         const user_id = decodedToken.user_id;
         const clientId = decodedToken.clientId;
-        const branchId  = decodedToken.id;
+        const branchId = decodedToken.id;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
-        console.log('branchId:', branchId);
-        if (!user_id || !clientId ||!branchId) {
+        console.log('Branch ID:', branchId);
+
+        if (!user_id || !clientId || !branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
+        // Get the latest application ID for the given client and branch
+        const latestCase = await ClientManager.findOne({
+            where: {
+                clientId: clientId,
+                branchId: branchId,
+            },
+            order: [['createdAt', 'DESC']], // Get the most recent entry
+        });
+
+        // Generate the new application ID
+        let newApplicationId;
+        if (latestCase) {
+            const latestApplicationId = latestCase.application_id;
+            const idParts = latestApplicationId.split('-');
+            const nextIdNumber = parseInt(idParts[1], 10) + 1;
+            newApplicationId = `${clientId}-${nextIdNumber}`;
+        } else {
+            // If no previous application exists for this client and branch, start with `clientId-1`
+            newApplicationId = `${clientId}-1`;
+        }
+
+        // Create new case with the generated application ID
         const newCase = await ClientManager.create({
             ...req.body,
             user_id,
             clientId,
             branchId,
+            application_id: newApplicationId, // Add generated application ID
         });
 
         console.log('req.body', req.body);
