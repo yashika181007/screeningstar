@@ -2,6 +2,7 @@ const ClientManager = require('../models/ClientManager');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { Sequelize, Op } = require('sequelize');
 
 exports.createClientManager = async (req, res) => {
     try {
@@ -32,11 +33,26 @@ exports.createClientManager = async (req, res) => {
         if (!user_id || !clientId || !branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
-        const latestCase = await ClientManager.findOne({
+
+        const { employeeId } = req.body;
+        const existingCase = await ClientManager.findOne({
             where: {
-                clientId: clientId,
+                [Sequelize.Op.or]: [
+                    { employeeId: employeeId }, // Check for duplicate employeeId
+                ],
             },
-            order: [['createdAt', 'DESC']], 
+        });
+
+        if (existingCase) {
+            return res.status(400).json({
+                message: `Employee ID '${employeeId}' already exists. Please use a unique Employee ID.`,
+            });
+        }
+
+        // Generate new application_id by checking for the latest case
+        const latestCase = await ClientManager.findOne({
+            where: { clientId: clientId },
+            order: [['createdAt', 'DESC']],
         });
 
         let newApplicationId;
@@ -48,12 +64,14 @@ exports.createClientManager = async (req, res) => {
         } else {
             newApplicationId = `${clientId}-1`;
         }
+
+        // Create the new case
         const newCase = await ClientManager.create({
             ...req.body,
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId, 
+            application_id: newApplicationId, // Use the new application_id
         });
 
         console.log('req.body', req.body);
