@@ -259,7 +259,7 @@ exports.getClientApplicationCounts = async (req, res) => {
         });
     }
 };
-exports.sendacknowledgemail  = async (req, res) => {
+exports.sendacknowledgemail = async (req, res) => {
     try {
         const applications = await ClientManager.findAll({
             where: { ack_sent: '0' },
@@ -269,16 +269,19 @@ exports.sendacknowledgemail  = async (req, res) => {
                 'branchId',
                 'application_id',
                 'services',
-                'organizationName',
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt', 'organizationName'],
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],
             order: [['createdAt', 'ASC']]
         });
 
+        if (!applications.length) {
+            return res.status(200).json({
+                message: 'No applications to send emails for.',
+            });
+        }
         const branchIds = [...new Set(applications.map(app => app.branchId))];
-
         const branches = await Branch.findAll({
             where: { id: branchIds },
             attributes: ['id', 'branchEmail']
@@ -295,11 +298,10 @@ exports.sendacknowledgemail  = async (req, res) => {
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw' // Use an app password or environment variable for security
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 
-        // Prepare emails to send
         const emailPromises = applications.map(async (app) => {
             const branchEmail = branchEmailMap[app.branchId];
             if (branchEmail) {
@@ -323,7 +325,6 @@ ScreeningStar Solutions Pvt Ltd
 `
                 };
 
-                // Send the email
                 return transporter.sendMail(mailOptions)
                     .then(info => {
                         console.log('Email sent to: ' + branchEmail + ' - ' + info.response);
@@ -334,11 +335,15 @@ ScreeningStar Solutions Pvt Ltd
             }
         });
 
-        // Wait for all email sending promises to complete
         await Promise.all(emailPromises);
 
+        await ClientManager.update(
+            { ack_sent: '1' }, 
+            { where: { ack_sent: '0', application_id: applications.map(app => app.application_id) } }
+        );
+
         return res.status(200).json({
-            message: 'Emails sent successfully to branches for all applications',
+            message: 'Emails sent successfully and acknowledgment updated.',
         });
     } catch (error) {
         console.error('Error sending emails:', error);
