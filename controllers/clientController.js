@@ -486,7 +486,7 @@ exports.getBranchbyclient = async (req, res) => {
         // Return the branch data without sensitive fields (adjust accordingly)
         const branchData = branches.map(branch => {
             // Destructure or remove sensitive fields if necessary
-            const { sensitiveField, ...safeData } = branch.dataValues;
+            const { password, ...safeData } = branch.dataValues;
             return safeData;
         });
 
