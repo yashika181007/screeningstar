@@ -188,69 +188,36 @@ exports.deleteClientManager = async (req, res) => {
 //         });
 //     }
 // };
-// exports.getClientApplicationCounts = async (req, res) => {
-//     try {
-//         const applicationCounts = await ClientManager.findAll({
-//             where: {
-//                 ack_sent: '0' 
-//             },
-//             attributes: [
-//                 'clientId', 
-//                 'organizationName', 
-//                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  
-//                 [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'], 
-//                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'] 
-//             ],
-//             group: ['clientId', 'organizationName'],  
-//             order: [['createdAt', 'ASC']]  
-//         });
-
-//         return res.status(200).json({
-//             message: 'Application counts retrieved successfully',
-//             data: applicationCounts,
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             message: 'Error retrieving application counts',
-//             error: error.message,
-//         });
-//     }
-// };
 exports.getClientApplicationCounts = async (req, res) => {
     try {
-        // Fetch application counts and related data from ClientManager
         const applications = await ClientManager.findAll({
-            where: { ack_sent: '0' },  // Only applications where ack_sent is 0
+            where: { ack_sent: '0' }, 
             attributes: [
                 'clientId', 
                 'organizationName', 
                 'branchId', 
                 'application_id', 
                 'services',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count applications
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Format createdAt as date
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], 
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],  // Group by client and application fields
-            order: [['createdAt', 'ASC']]  // Sort by createdAt
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],  
+            order: [['createdAt', 'ASC']]
         });
 
-        // Reformat the result to match the desired structure
         const result = applications.reduce((acc, app) => {
-            // Find if the client already exists in the accumulator
             let client = acc.find(c => c.clientId === app.clientId);
 
             if (!client) {
-                // If client doesn't exist, create a new entry
                 client = {
                     clientId: app.clientId,
                     organizationName: app.organizationName,
                     applicationCount: app.applicationCount,
-                    applications: []  // Initialize applications array
+                    applications: []  
                 };
                 acc.push(client);
             }
 
-            // Add application details to the current client
             client.applications.push({
                 branchIds: app.branchId,
                 application_id: app.application_id,
@@ -261,13 +228,31 @@ exports.getClientApplicationCounts = async (req, res) => {
             return acc;
         }, []);
 
+        const branchIds = [...new Set(applications.map(app => app.branchId))];
+
+        const branches = await Branch.findAll({
+            where: { id: branchIds },
+            attributes: ['id', 'branchEmail'] 
+        });
+
+        const branchEmailMap = {};
+        branches.forEach(branch => {
+            branchEmailMap[branch.id] = branch.branchEmail;
+        });
+
+        result.forEach(client => {
+            client.applications.forEach(app => {
+                app.branchEmail = branchEmailMap[app.branchIds] || null; 
+            });
+        });
+
         return res.status(200).json({
-            message: 'Application counts retrieved successfully',
+            message: 'Application counts and branch emails retrieved successfully',
             data: result,
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error retrieving application counts',
+            message: 'Error retrieving application counts and branch emails',
             error: error.message,
         });
     }
