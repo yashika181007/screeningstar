@@ -226,8 +226,8 @@ exports.getClientApplicationCounts = async (req, res) => {
                 'clientId', 
                 'organizationName', 
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count of applications
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'],  // Get all branch IDs
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT applicationId')), 'applicationIds'],  // Get all application IDs
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds '],  // Get all branch IDs
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT application_id')), 'application_ids '],  // Get all application IDs
                 [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT services')), 'services'],  // Get all services associated with each application
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Date when created
             ],
