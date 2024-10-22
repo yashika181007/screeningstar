@@ -15,27 +15,41 @@ const generateNumericId = () => {
 
 exports.createClientManager = async (req, res) => {
     try {
+        console.log("Request received:", req.body);
+        
         const token = req.headers['authorization'];
+        console.log("Authorization header:", token);
+        
         if (!token) {
+            console.log("No token provided.");
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
 
         const tokenParts = token.split(' ');
+        console.log("Token parts:", tokenParts);
+
         if (tokenParts.length !== 2) {
+            console.log("Invalid token format.");
             return res.status(401).json({ message: 'Invalid token format. Please log in.' });
         }
 
         const jwtToken = tokenParts[1];
+        console.log("JWT token extracted:", jwtToken);
         let decodedToken;
 
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+            console.log("Decoded token:", decodedToken);
         } catch (err) {
+            console.log("Invalid token:", err);
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
         const { user_id, clientId, id: branchId } = decodedToken; // Destructuring
+        console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
+
         if (!user_id || !clientId || !branchId) {
+            console.log("User not authenticated.");
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
@@ -44,15 +58,22 @@ exports.createClientManager = async (req, res) => {
 
         do {
             newApplicationId = generateNumericId();
+            console.log("Generated application ID:", newApplicationId);
+
             const duplicateApplication = await ClientManager.findOne({ where: { application_id: newApplicationId } });
             isDuplicate = !!duplicateApplication;
 
+            console.log("Is duplicate application:", isDuplicate);
+
             if (isDuplicate) {
+                console.log("Duplicate application ID detected.");
                 return res.status(400).json({
                     message: 'Duplicate application ID detected. Please try again.',
                 });
             }
         } while (isDuplicate);
+
+        console.log("No duplicate found, proceeding to create a new case.");
 
         const newCase = await ClientManager.create({
             ...req.body,
@@ -62,11 +83,14 @@ exports.createClientManager = async (req, res) => {
             application_id: newApplicationId,
         });
 
+        console.log("New case created successfully:", newCase);
+
         return res.status(201).json({
             message: 'Case uploaded successfully',
             data: newCase,
         });
     } catch (error) {
+        console.error("Error creating case upload:", error);
         return res.status(500).json({
             message: 'Error creating case upload',
             error: error.message,
