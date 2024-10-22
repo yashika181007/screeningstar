@@ -367,7 +367,7 @@ exports.sendacknowledgemail = async (req, res) => {
     }
 };
 
-exports.getadminmanagerdata = async (req, res) => {
+exports.getClientApplicationCounts = async (req, res) => {
     try {
         // Fetch applications where status is not completed
         const applications = await ClientManager.findAll({
@@ -396,22 +396,22 @@ exports.getadminmanagerdata = async (req, res) => {
             createdAt: app.createdAt
         }));
 
-        // Fetch branch information if needed
+        // Fetch branch information for matching branch IDs
         const branchIds = [...new Set(applications.map(app => app.branchId))];
         const branches = await Branch.findAll({
             where: { id: branchIds },
             attributes: ['id', 'isHeadBranch']
         });
 
-        // Create a map for isHeadBranch
+        // Create a map for isHeadBranch based on branchId
         const isHeadBranchMap = {};
         branches.forEach(branch => {
-            isHeadBranchMap[branch.id] = branch.isHeadBranch;
+            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Correctly mapping branchId to isHeadBranch
         });
 
-        // Attach isHeadBranch to the result
+        // Attach isHeadBranch to the result using the branchId
         result.forEach(client => {
-            client.isHeadBranch = isHeadBranchMap[client.branchId] || null;
+            client.isHeadBranch = isHeadBranchMap[client.branchId] || false;  // Set to false if branchId is not found
         });
 
         return res.status(200).json({
