@@ -431,7 +431,7 @@ exports.getadminmanagerdata = async (req, res) => {
 
 exports.getClientBranchData = async (req, res) => {
     try {
-        // Fetch all data from ClientManager without specifying attributes (fetch all columns)
+        // Fetch all data from ClientManager without specifying attributes
         const clientManagerData = await ClientManager.findAll();
 
         if (!clientManagerData.length) {
@@ -444,12 +444,12 @@ exports.getClientBranchData = async (req, res) => {
         const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
         const clientIds = [...new Set(clientManagerData.map(item => item.clientId))];
 
-        // Fetch corresponding data from Branch table where id matches branchId (fetch all columns)
+        // Fetch all data from Branch table where id matches branchId
         const branches = await Branch.findAll({
             where: { id: branchIds }
         });
 
-        // Fetch corresponding data from Client table where clientId matches (fetch all columns)
+        // Fetch all data from Client table where clientId matches
         const clients = await Client.findAll({
             where: { id: clientIds }
         });
@@ -471,12 +471,9 @@ exports.getClientBranchData = async (req, res) => {
             const clientData = clientMap[item.clientId] || {};  // Get client data or empty object
 
             return {
-                ...item.get(),                               // Fetch all fields from ClientManager table
-                branchEmail: branchData.branchEmail || null,  // Fetching data from Branch table
-                isHeadBranch: branchData.isHeadBranch || false,  // Default to false if not found
-                clientCode: clientData.clientCode || null,    // Fetching data from Client table
-                clientName: clientData.clientName || null,    // Fetching data from Client table
-                spocName: clientData.spocName || null         // Fetching data from Client table
+                ...item.get(),                          // Fetch all fields from ClientManager dynamically
+                ...branchData.get(),                    // Fetch all fields from Branch dynamically
+                ...clientData.get()                     // Fetch all fields from Client dynamically
             };
         });
 
