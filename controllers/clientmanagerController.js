@@ -225,12 +225,12 @@ exports.getClientApplicationCounts = async (req, res) => {
                 'clientId', 
                 'organizationName', 
                 'branchId', 
-                'application_ids', 
+                'application_id', 
                 'services',
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count applications
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Format createdAt as date
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'application_ids', 'services', 'createdAt'],  // Group by client and application fields
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],  // Group by client and application fields
             order: [['createdAt', 'ASC']]  // Sort by createdAt
         });
 
@@ -253,7 +253,7 @@ exports.getClientApplicationCounts = async (req, res) => {
             // Add application details to the current client
             client.applications.push({
                 branchIds: app.branchId,
-                application_ids: app.application_ids,
+                application_id: app.application_id,
                 services: app.services,
                 createdAt: app.createdAt
             });
