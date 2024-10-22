@@ -749,48 +749,40 @@ exports.fetchdataforclientmanager = async (req, res) => {
 
     let decodedToken;
     try {
-        // Verify the token and decode it
         decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
     } catch (err) {
         return res.status(401).json({ message: 'Invalid token. Please log in again.' });
     }
-
-    // Extract the user/client id from the decoded token
     const id = decodedToken.id;
     if (!id) {
         return res.status(401).json({ message: 'User not authenticated. Please log in.' });
     }
 
     try {
-        // Fetch the branch data
         const branches = await Branch.findAll({
-            where: { idx: id }, // Using clientId from the token
-            attributes: ['id', 'user_id', 'clientId', 'branchName'] // Select only the fields you need
+            where: { idx: id }, 
+            attributes: ['id', 'user_id', 'clientId', 'branchName'] 
         });
 
-        // Check if branches array is empty
         if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
         }
-
-        // Fetch client data based on clientId (assuming the first branch clientId is representative)
         const clientId = branches[0].clientId;
         const client = await Client.findOne({
             where: { id: clientId },
-            attributes: ['scopeOfServices', 'clientId'] // Select only the needed fields from client
+            attributes: ['scopeOfServices', 'clientId'] 
         });
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        // Map over branches and merge client data into branch data
         const branchData = branches.map(branch => {
-            const branchValues = branch.dataValues; // Extract branch data
+            const branchValues = branch.dataValues;
             return {
-                ...branchValues, // Spread the branch fields
-                scopeOfServices: client.scopeOfServices, // Add client fields
-                clientId: client.clientId // This clientId from client will overwrite the branch clientId
+                ...branchValues, 
+                scopeOfServices: client.scopeOfServices,
+                clientId: client.clientId
             };
         });
 
