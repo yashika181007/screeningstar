@@ -73,18 +73,18 @@ const Client = sequelize.define('client', {
     accountManagement: {
         type: DataTypes.STRING,
     },
-    packageOptions: {
-        type: DataTypes.JSON,
+    // packageOptions: {
+    //     type: DataTypes.JSON,
       
-    },
+    // },
     scopeOfServices: {
         type: DataTypes.JSON,
        
     },
-    pricingPackages: {
-        type: DataTypes.JSON,
+    // pricingPackages: {
+    //     type: DataTypes.JSON,
         
-    },
+    // },
     standardProcess: {
         type: DataTypes.TEXT,
         allowNull: false,
