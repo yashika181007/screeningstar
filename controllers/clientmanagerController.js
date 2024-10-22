@@ -411,7 +411,7 @@ exports.getClientApplicationCounts = async (req, res) => {
 
         // Attach isHeadBranch to the result using the branchId
         result.forEach(client => {
-            client.isHeadBranch = isHeadBranchMap[client.branchId] || false;  // Set to false if branchId is not found
+            client.isHeadBranch = isHeadBranchMap[client.branchId] ;  // Set to false if branchId is not found
         });
 
         return res.status(200).json({
