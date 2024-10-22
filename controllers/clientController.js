@@ -474,30 +474,43 @@ exports.getNonHeadBranches = async (req, res) => {
 };
 exports.getBranchbyclient = async (req, res) => {
     try {
-        // Fetch branch data based on branch ID
-        const branches = await Branch.findAll({
-            where: { id: req.params.id }
-        });
+        const token = req.headers['authorization'];
+        // console.log('token', req.headers['authorization']);
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Please log in.' });
+        }
+        
+        const tokenParts = token.split(' ');
+        const jwtToken = tokenParts[1];
+    
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+        }
+    
+        const id = decodedToken.id;
+        if (!id) {
+            return res.status(401).json({ message: 'Id not authenticated. Please log in.' });
+        }
 
-        // Check if branches array is empty
+        const branches = await Branch.findAll({
+            where: { id: id } 
+        });
         if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
         }
-
-        // Extract clientId from the first branch (assuming all branches share the same clientId)
         const clientId = branches[0].clientId;
-
-        // Fetch client data where clientId matches
         const client = await Client.findOne({
             where: { clientId: clientId },
-            attributes: { exclude: ['password'] } // Exclude sensitive fields like password
+            attributes: { exclude: ['password'] } 
         });
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        // Merge branch data with client data
         const branchData = branches.map(branch => {
             const { password, ...safeBranchData } = branch.dataValues; // Remove sensitive fields if needed
 
