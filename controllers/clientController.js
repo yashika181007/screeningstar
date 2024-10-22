@@ -764,7 +764,7 @@ exports.fetchdataforclientmanager = async (req, res) => {
     try {
         // Fetch the branch data
         const branches = await Branch.findAll({
-            where: { clientId: id }, // Using clientId from the token
+            where: { idx: id }, // Using clientId from the token
             attributes: ['id', 'user_id', 'clientId', 'branchName'] // Select only the fields you need
         });
 
