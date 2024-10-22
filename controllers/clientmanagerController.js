@@ -298,32 +298,28 @@ exports.sendacknowledgemail = async (req, res) => {
             port: 465,
             secure: true,
             auth: {
-                user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'
+                user: 'ychanalia@gmail.com',
+                pass: 'tefjpevodsanujgo'
             },
         });
 
         const emailPromises = applications.map(async (app) => {
             const branchEmail = branchEmailMap[app.branchId];
             if (branchEmail) {
-                // Parse services JSON
                 let services;
                 try {
                     services = JSON.parse(app.services);
                 } catch (error) {
                     console.error('Error parsing services JSON:', error);
-                    services = {}; // Default to empty object if parsing fails
+                    services = {}; 
                 }
-
-                // Extract service titles
                 const serviceTitles = Object.values(services).map(service => service.serviceTitle).join(', '); // Join titles as a string
 
-                // Log the services to check what is being parsed
                 console.log('Parsed Services:', services);
                 console.log('Service Titles:', serviceTitles);
 
                 const mailOptions = {
-                    from: 'yashikawebstep@gmail.com',
+                    from: 'ychanalia@gmail.com',
                     to: branchEmail,
                     subject: `New Applications Notification for ${app.organizationName}`,
                     text: `
