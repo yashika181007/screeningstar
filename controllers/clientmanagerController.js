@@ -5,9 +5,8 @@ const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
 // const { v4: uuidv4 } = require('uuid');  
 
-// Helper function to generate an 8-digit numeric ID
 const generateNumericId = () => {
-    return Math.floor(10000000 + Math.random() * 90000000);  // Generates a random 8-digit number
+    return Math.floor(10000000 + Math.random() * 90000000);  
 };
 
 exports.createClientManager = async (req, res) => {
@@ -41,7 +40,6 @@ exports.createClientManager = async (req, res) => {
             return res.status(400).json({ message: 'Employee ID is required.' });
         }
 
-        // Check if employee ID already exists
         const existingCase = await ClientManager.findOne({ where: { employeeId } });
         if (existingCase) {
             return res.status(400).json({
@@ -52,7 +50,6 @@ exports.createClientManager = async (req, res) => {
         let newApplicationId;
         let isDuplicate;
 
-        // Generate unique 8-digit numeric application ID
         do {
             newApplicationId = generateNumericId();
             const duplicateApplication = await ClientManager.findOne({ where: { application_id: newApplicationId } });
@@ -65,13 +62,12 @@ exports.createClientManager = async (req, res) => {
             }
         } while (isDuplicate);
 
-        // Create the new case
         const newCase = await ClientManager.create({
             ...req.body,
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId,  // Use generated 8-digit numeric ID
+            application_id: newApplicationId,  
         });
 
         return res.status(201).json({

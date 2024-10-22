@@ -472,20 +472,28 @@ exports.getNonHeadBranches = async (req, res) => {
         res.status(500).json({ message: 'Error fetching non-head branches', error: err.message });
     }
 };
-exports.getBranchbyclient = async (req, res) => {
+exports.getBranchbyClient = async (req, res) => {
     try {
-        const getbranch = await Branch.findAll({
+        const branches = await Branch.findAll({
             where: { id: req.params.id }
         });
 
-        if (!getbranch) {
+        // Check if branches array is empty
+        if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
         }
-        res.status(200).json(getbranch);
 
+        // Return the branch data without sensitive fields (adjust accordingly)
+        const branchData = branches.map(branch => {
+            // Destructure or remove sensitive fields if necessary
+            const { sensitiveField, ...safeData } = branch.dataValues;
+            return safeData;
+        });
+
+        res.status(200).json(branchData);
     } catch (err) {
-        console.error('Error fetching client:', err);
-        res.status(500).json({ message: 'Error fetching client', error: err.message });
+        console.error('Error fetching branch:', err);
+        res.status(500).json({ message: 'Error fetching branch', error: err.message });
     }
 };
 
