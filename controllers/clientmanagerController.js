@@ -306,7 +306,7 @@ exports.sendacknowledgemail = async (req, res) => {
         const emailPromises = applications.map(async (app) => {
             const branchEmail = branchEmailMap[app.branchId];
             if (branchEmail) {
-                // Parse services JSON and get service titles
+                // Parse services JSON
                 let services;
                 try {
                     services = JSON.parse(app.services);
@@ -315,8 +315,12 @@ exports.sendacknowledgemail = async (req, res) => {
                     services = {}; // Default to empty object if parsing fails
                 }
 
-                // Create a string of service titles
-                const serviceTitles = Object.keys(services).join(', '); // Join titles as a string
+                // Extract service titles
+                const serviceTitles = Object.values(services).map(service => service.serviceTitle).join(', '); // Join titles as a string
+
+                // Log the services to check what is being parsed
+                console.log('Parsed Services:', services);
+                console.log('Service Titles:', serviceTitles);
 
                 const mailOptions = {
                     from: 'yashikawebstep@gmail.com',
