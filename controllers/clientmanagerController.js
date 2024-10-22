@@ -366,3 +366,33 @@ exports.sendacknowledgemail = async (req, res) => {
         });
     }
 };
+exports.getadminmanagerdata = async (req, res) => {
+    try {
+        const branchId = req.params.branchId; 
+        const clientData = await ClientManager.findAll({
+            where: {
+                branchId: branchId,
+                status: { [Sequelize.Op.ne]: 'completed' } 
+            },
+            attributes: [
+                'clientId',
+                'organizationName',
+                'spocUploaded',
+                [Sequelize.fn('COUNT', Sequelize.col('application_id')), 'applicationCount']
+            ],
+            group: ['clientId', 'organizationName', 'spocUploaded'],
+            order: [['organizationName', 'ASC']]
+        });
+
+        return res.status(200).json({
+            message: 'Client data retrieved successfully',
+            data: clientData,
+        });
+    } catch (error) {
+        console.error('Error retrieving client data:', error);
+        return res.status(500).json({
+            message: 'Error retrieving client data',
+            error: error.message,
+        });
+    }
+};
