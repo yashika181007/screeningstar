@@ -431,7 +431,7 @@ exports.getadminmanagerdata = async (req, res) => {
 
 exports.getClientBranchData = async (req, res) => {
     try {
-        // Fetch all data from ClientManager without specifying attributes
+        // Fetch all data from ClientManager
         const clientManagerData = await ClientManager.findAll();
 
         if (!clientManagerData.length) {
@@ -457,12 +457,12 @@ exports.getClientBranchData = async (req, res) => {
         // Create maps for easier access to branch and client data by their ids
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch;  // Mapping branchId to branch data
+            branchMap[branch.id] = branch.get();  // Get all fields dynamically
         });
 
         const clientMap = {};
         clients.forEach(client => {
-            clientMap[client.id] = client;  // Mapping clientId to client data
+            clientMap[client.id] = client.get();  // Get all fields dynamically
         });
 
         // Prepare the final result by merging data from all three tables
@@ -471,9 +471,9 @@ exports.getClientBranchData = async (req, res) => {
             const clientData = clientMap[item.clientId] || {};  // Get client data or empty object
 
             return {
-                ...item,                          // Fetch all fields from ClientManager dynamically
-                ...branchData,                    // Merge all fields from Branch dynamically
-                ...clientData                     // Merge all fields from Client dynamically
+                ...item.get(),                          // Get all fields from ClientManager dynamically
+                ...branchData,                          // Merge all fields from Branch dynamically
+                ...clientData                           // Merge all fields from Client dynamically
             };
         });
 
