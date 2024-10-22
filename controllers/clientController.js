@@ -489,7 +489,7 @@ exports.getBranchbyclient = async (req, res) => {
 
         // Fetch client data where clientId matches
         const client = await Client.findOne({
-            where: { id: clientId },
+            where: { clientId: clientId },
             attributes: { exclude: ['password'] } // Exclude sensitive fields like password
         });
 
