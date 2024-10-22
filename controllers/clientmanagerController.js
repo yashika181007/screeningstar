@@ -269,11 +269,11 @@ exports.sendacknowledgemail  = async (req, res) => {
                 'branchId',
                 'application_id',
                 'services',
-                'candidateName',
+                'organizationName',
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt', 'candidateName'],
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt', 'organizationName'],
             order: [['createdAt', 'ASC']]
         });
 
@@ -308,14 +308,14 @@ exports.sendacknowledgemail  = async (req, res) => {
                     to: branchEmail,
                     subject: `New Applications Notification for ${app.organizationName}`,
                     text: `
-Dear ${app.candidateName},
+Dear ${app.organizationName},
 
 Greetings from Screeningstar!
 
 We acknowledge receiving the cases listed below. Please locate the reference ID for any upcoming communications. Checks will be processed, and if there are any insufficiencies, we will get back to you.
 
 SL\tReference ID\tClient Code\tCandidate Name\tServices
-1\t${app.application_id}\t${app.clientId}\t${app.candidateName}\t${app.services}
+1\t${app.application_id}\t${app.clientId}\t${app.organizationName}\t${app.services}
 
 Regards
 Team - Track Master (Tool)
