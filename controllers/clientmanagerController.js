@@ -5,9 +5,10 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
 // const { v4: uuidv4 } = require('uuid');  
+const nodemailer = require('nodemailer'); 
 
 const generateNumericId = () => {
-    return Math.floor(10000000 + Math.random() * 90000000);  
+    return Math.floor(10000000 + Math.random() * 90000000);
 };
 
 exports.createClientManager = async (req, res) => {
@@ -68,7 +69,7 @@ exports.createClientManager = async (req, res) => {
             user_id,
             clientId,
             branchId,
-            application_id: newApplicationId,  
+            application_id: newApplicationId,
         });
 
         return res.status(201).json({
@@ -101,7 +102,7 @@ exports.getAllClientManagers = async (req, res) => {
 exports.getClientManagerById = async (req, res) => {
     const { id } = req.params;
     try {
-        const getclientManager = await ClientManager.findByPk(id);  
+        const getclientManager = await ClientManager.findByPk(id);
         if (!getclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
@@ -122,7 +123,7 @@ exports.getClientManagerById = async (req, res) => {
 exports.updateClientManager = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateclientManager = await ClientManager.findByPk(id);  
+        const updateclientManager = await ClientManager.findByPk(id);
         if (!updateclientManager) {
             return res.status(404).json({
                 message: 'Client Manager not found',
@@ -192,17 +193,17 @@ exports.deleteClientManager = async (req, res) => {
 exports.getClientApplicationCounts = async (req, res) => {
     try {
         const applications = await ClientManager.findAll({
-            where: { ack_sent: '0' }, 
+            where: { ack_sent: '0' },
             attributes: [
-                'clientId', 
-                'organizationName', 
-                'branchId', 
-                'application_id', 
+                'clientId',
+                'organizationName',
+                'branchId',
+                'application_id',
                 'services',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], 
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],  
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt'],
             order: [['createdAt', 'ASC']]
         });
 
@@ -214,7 +215,7 @@ exports.getClientApplicationCounts = async (req, res) => {
                     clientId: app.clientId,
                     organizationName: app.organizationName,
                     applicationCount: app.applicationCount,
-                    applications: []  
+                    applications: []
                 };
                 acc.push(client);
             }
@@ -233,7 +234,7 @@ exports.getClientApplicationCounts = async (req, res) => {
 
         const branches = await Branch.findAll({
             where: { id: branchIds },
-            attributes: ['id', 'branchEmail'] 
+            attributes: ['id', 'branchEmail']
         });
 
         const branchEmailMap = {};
@@ -243,7 +244,7 @@ exports.getClientApplicationCounts = async (req, res) => {
 
         result.forEach(client => {
             client.applications.forEach(app => {
-                app.branchEmail = branchEmailMap[app.branchIds] || null; 
+                app.branchEmail = branchEmailMap[app.branchIds] || null;
             });
         });
 
@@ -254,6 +255,95 @@ exports.getClientApplicationCounts = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             message: 'Error retrieving application counts and branch emails',
+            error: error.message,
+        });
+    }
+};
+exports.sendacknowledgemail  = async (req, res) => {
+    try {
+        const applications = await ClientManager.findAll({
+            where: { ack_sent: '0' },
+            attributes: [
+                'clientId',
+                'organizationName',
+                'branchId',
+                'application_id',
+                'services',
+                'candidateName',
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
+            ],
+            group: ['clientId', 'organizationName', 'branchId', 'application_id', 'services', 'createdAt', 'candidateName'],
+            order: [['createdAt', 'ASC']]
+        });
+
+        const branchIds = [...new Set(applications.map(app => app.branchId))];
+
+        const branches = await Branch.findAll({
+            where: { id: branchIds },
+            attributes: ['id', 'branchEmail']
+        });
+
+        const branchEmailMap = {};
+        branches.forEach(branch => {
+            branchEmailMap[branch.id] = branch.branchEmail;
+        });
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw' // Use an app password or environment variable for security
+            },
+        });
+
+        // Prepare emails to send
+        const emailPromises = applications.map(async (app) => {
+            const branchEmail = branchEmailMap[app.branchId];
+            if (branchEmail) {
+                const mailOptions = {
+                    from: 'yashikawebstep@gmail.com',
+                    to: branchEmail,
+                    subject: `New Applications Notification for ${app.organizationName}`,
+                    text: `
+Dear ${app.candidateName},
+
+Greetings from Screeningstar!
+
+We acknowledge receiving the cases listed below. Please locate the reference ID for any upcoming communications. Checks will be processed, and if there are any insufficiencies, we will get back to you.
+
+SL\tReference ID\tClient Code\tCandidate Name\tServices
+1\t${app.application_id}\t${app.clientId}\t${app.candidateName}\t${app.services}
+
+Regards
+Team - Track Master (Tool)
+ScreeningStar Solutions Pvt Ltd
+`
+                };
+
+                // Send the email
+                return transporter.sendMail(mailOptions)
+                    .then(info => {
+                        console.log('Email sent to: ' + branchEmail + ' - ' + info.response);
+                    })
+                    .catch(error => {
+                        console.error('Error sending email to ' + branchEmail + ':', error);
+                    });
+            }
+        });
+
+        // Wait for all email sending promises to complete
+        await Promise.all(emailPromises);
+
+        return res.status(200).json({
+            message: 'Emails sent successfully to branches for all applications',
+        });
+    } catch (error) {
+        console.error('Error sending emails:', error);
+        return res.status(500).json({
+            message: 'Error sending emails to branches',
             error: error.message,
         });
     }
