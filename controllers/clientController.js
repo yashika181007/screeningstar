@@ -474,13 +474,9 @@ exports.getNonHeadBranches = async (req, res) => {
 };
 exports.getBranchbyclient = async (req, res) => {
     try {
+        // Fetch branch data based on branch ID
         const branches = await Branch.findAll({
-            where: { id: req.params.id },
-            include: [{
-                model: Client, // Assuming you've defined a relation between Branch and Client
-                as: 'client',  // Alias used when defining the association
-                attributes: { exclude: ['password'] }  // Exclude sensitive client fields
-            }]
+            where: { id: req.params.id }
         });
 
         // Check if branches array is empty
@@ -488,23 +484,33 @@ exports.getBranchbyclient = async (req, res) => {
             return res.status(404).json({ message: 'Branch not found' });
         }
 
-        // Prepare the branch and client data without sensitive fields
+        // Extract clientId from the first branch (assuming all branches share the same clientId)
+        const clientId = branches[0].clientId;
+
+        // Fetch client data where clientId matches
+        const client = await Client.findOne({
+            where: { id: clientId },
+            attributes: { exclude: ['password'] } // Exclude sensitive fields like password
+        });
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        // Merge branch data with client data
         const branchData = branches.map(branch => {
-            const { password, ...safeBranchData } = branch.dataValues;
-            
-            // Client data is included under the 'client' alias
-            const clientData = branch.client ? branch.client.dataValues : null;
+            const { password, ...safeBranchData } = branch.dataValues; // Remove sensitive fields if needed
 
             return {
                 ...safeBranchData,
-                client: clientData
+                client: client.dataValues // Attach client data to each branch
             };
         });
 
         res.status(200).json(branchData);
     } catch (err) {
-        console.error('Error fetching branch and client:', err);
-        res.status(500).json({ message: 'Error fetching branch and client', error: err.message });
+        console.error('Error fetching branch and client data:', err);
+        res.status(500).json({ message: 'Error fetching data', error: err.message });
     }
 };
 
