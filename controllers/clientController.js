@@ -512,11 +512,11 @@ exports.getBranchbyclient = async (req, res) => {
         }
 
         const branchData = branches.map(branch => {
-            const { password, ...safeBranchData } = branch.dataValues; // Remove sensitive fields if needed
+            const { password, ...safeBranchData } = branch.dataValues; 
 
             return {
                 ...safeBranchData,
-                client: client.dataValues // Attach client data to each branch
+                client: client.dataValues 
             };
         });
 
@@ -613,31 +613,29 @@ exports.getInactiveClients = async (req, res) => {
 };
 exports.changeClientStatus = async (req, res) => {
     try {
-        console.log('Request ID:', req.params.id);  // Log the client ID from the request
+        console.log('Request ID:', req.params.id);  
         const client = await Client.findByPk(req.params.id);
-        console.log('Client:', client);  // Log the client object
+        console.log('Client:', client);  
 
         if (!client) {
-            console.log('Client not found');  // Log if the client is not found
+            console.log('Client not found'); 
             return res.status(404).json({ message: 'Client not found' });
         }
-
-        console.log('Current Status:', client.status);  // Log the current status of the client
+        console.log('Current Status:', client.status); 
 
         if (client.status === 'Active') {
             client.status = 'Inactive';
-            console.log('Changing status to Inactive');  // Log status change to Inactive
+            console.log('Changing status to Inactive'); 
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
-            console.log('Changing status to Active');  // Log status change to Active
+            console.log('Changing status to Active');  
         }
-
         await client.save();
-        console.log('Client status saved:', client.status);  // Log the saved status
+        console.log('Client status saved:', client.status);  
 
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
-        console.log('Error:', err.message);  // Log the error message
+        console.log('Error:', err.message);  
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
@@ -672,10 +670,8 @@ exports.updateClient = async (req, res) => {
         agreementPeriod,
         customTemplate,
         clientLogo,
-        accountManagement,
-        
-        scopeOfServices,
-        
+        accountManagement,        
+        scopeOfServices,       
         standardProcess,
         loginRequired,
         username2,
@@ -704,9 +700,7 @@ exports.updateClient = async (req, res) => {
             customTemplate,
             clientLogo,
             accountManagement,
-            
             scopeOfServices,
-            
             standardProcess,
             loginRequired,
             username2,
@@ -738,12 +732,9 @@ exports.deleteClient = async (req, res) => {
 exports.fetchdataforclientmanager = async (req, res) => {
     const token = req.headers['authorization'];
 
-    // Check if token exists
     if (!token) {
         return res.status(401).json({ message: 'No token provided. Please log in.' });
     }
-
-    // Split token if it's in "Bearer token" format
     const tokenParts = token.split(' ');
     const jwtToken = tokenParts[1];
 
@@ -760,7 +751,7 @@ exports.fetchdataforclientmanager = async (req, res) => {
 
     try {
         const branches = await Branch.findAll({
-            where: { idx: id }, 
+            where: { id : id }, 
             attributes: ['id', 'user_id', 'clientId', 'branchName'] 
         });
 
