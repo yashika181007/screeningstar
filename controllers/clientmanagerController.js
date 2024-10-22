@@ -39,18 +39,6 @@ exports.createClientManager = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
-        const { employeeId } = req.body;
-        if (!employeeId) {
-            return res.status(400).json({ message: 'Employee ID is required.' });
-        }
-
-        const existingCase = await ClientManager.findOne({ where: { employeeId } });
-        if (existingCase) {
-            return res.status(400).json({
-                message: `Employee ID '${employeeId}' already exists. Please use a unique Employee ID.`,
-            });
-        }
-
         let newApplicationId;
         let isDuplicate;
 
