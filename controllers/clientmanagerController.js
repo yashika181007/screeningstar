@@ -188,30 +188,60 @@ exports.deleteClientManager = async (req, res) => {
 //         });
 //     }
 // };
+// exports.getClientApplicationCounts = async (req, res) => {
+//     try {
+//         const applicationCounts = await ClientManager.findAll({
+//             where: {
+//                 ack_sent: '0' 
+//             },
+//             attributes: [
+//                 'clientId', 
+//                 'organizationName', 
+//                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  
+//                 [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'], 
+//                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'] 
+//             ],
+//             group: ['clientId', 'organizationName'],  
+//             order: [['createdAt', 'ASC']]  
+//         });
+
+//         return res.status(200).json({
+//             message: 'Application counts retrieved successfully',
+//             data: applicationCounts,
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             message: 'Error retrieving application counts',
+//             error: error.message,
+//         });
+//     }
+// };
 exports.getClientApplicationCounts = async (req, res) => {
     try {
         const applicationCounts = await ClientManager.findAll({
             where: {
-                ack_sent: '0' 
+                ack_sent: '0' // Condition to filter records
             },
             attributes: [
                 'clientId', 
                 'organizationName', 
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'], // Fetch all branchIds as a concatenated string
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Only get the date part of createdAt
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count of applications
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds'],  // Get all branch IDs
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT applicationId')), 'applicationIds'],  // Get all application IDs
+                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT services')), 'services'],  // Get all services associated with each application
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Date when created
             ],
-            group: ['clientId', 'organizationName'],  // Group by clientId and organizationName only
-            order: [['createdAt', 'ASC']]  // Order the results by creation date
+            group: ['clientId', 'organizationName'],  // Grouping by clientId and organizationName
+            order: [['createdAt', 'ASC']]  // Ordering by createdAt in ascending order
         });
 
         return res.status(200).json({
-            message: 'Application counts retrieved successfully',
+            message: 'Application counts and services retrieved successfully',
             data: applicationCounts,
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error retrieving application counts',
+            message: 'Error retrieving application counts and services',
             error: error.message,
         });
     }
