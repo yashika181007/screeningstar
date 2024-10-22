@@ -472,10 +472,15 @@ exports.getNonHeadBranches = async (req, res) => {
         res.status(500).json({ message: 'Error fetching non-head branches', error: err.message });
     }
 };
-exports.getBranchbyclient = async (req, res) => {
+exports.getBranchbyClient = async (req, res) => {
     try {
         const branches = await Branch.findAll({
-            where: { id: req.params.id }
+            where: { id: req.params.id },
+            include: [{
+                model: Client, // Assuming you've defined a relation between Branch and Client
+                as: 'client',  // Alias used when defining the association
+                attributes: { exclude: ['password'] }  // Exclude sensitive client fields
+            }]
         });
 
         // Check if branches array is empty
@@ -483,17 +488,23 @@ exports.getBranchbyclient = async (req, res) => {
             return res.status(404).json({ message: 'Branch not found' });
         }
 
-        // Return the branch data without sensitive fields (adjust accordingly)
+        // Prepare the branch and client data without sensitive fields
         const branchData = branches.map(branch => {
-            // Destructure or remove sensitive fields if necessary
-            const { password, ...safeData } = branch.dataValues;
-            return safeData;
+            const { password, ...safeBranchData } = branch.dataValues;
+            
+            // Client data is included under the 'client' alias
+            const clientData = branch.client ? branch.client.dataValues : null;
+
+            return {
+                ...safeBranchData,
+                client: clientData
+            };
         });
 
         res.status(200).json(branchData);
     } catch (err) {
-        console.error('Error fetching branch:', err);
-        res.status(500).json({ message: 'Error fetching branch', error: err.message });
+        console.error('Error fetching branch and client:', err);
+        res.status(500).json({ message: 'Error fetching branch and client', error: err.message });
     }
 };
 
