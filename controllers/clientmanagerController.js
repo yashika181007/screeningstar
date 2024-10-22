@@ -366,30 +366,62 @@ exports.sendacknowledgemail = async (req, res) => {
         });
     }
 };
+
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        const clientData = await ClientManager.findAll({
+        // Fetch applications where status is not completed
+        const applications = await ClientManager.findAll({
             where: {
-                status: { [Sequelize.Op.ne]: 'completed' } 
+                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
             },
             attributes: [
                 'clientId',
                 'organizationName',
+                'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('application_id')), 'applicationCount']
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
             ],
-            group: ['clientId', 'organizationName', 'spocUploaded'],
-            order: [['organizationName', 'ASC']]
+            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
+            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']]
+        });
+
+        // Create the result structure
+        const result = applications.map(app => ({
+            clientId: app.clientId,
+            organizationName: app.organizationName,
+            branchId: app.branchId,
+            spocUploaded: app.spocUploaded,
+            applicationCount: app.applicationCount,
+            createdAt: app.createdAt
+        }));
+
+        // Fetch branch information if needed
+        const branchIds = [...new Set(applications.map(app => app.branchId))];
+        const branches = await Branch.findAll({
+            where: { id: branchIds },
+            attributes: ['id', 'isHeadBranch']
+        });
+
+        // Create a map for isHeadBranch
+        const isHeadBranchMap = {};
+        branches.forEach(branch => {
+            isHeadBranchMap[branch.id] = branch.isHeadBranch;
+        });
+
+        // Attach isHeadBranch to the result
+        result.forEach(client => {
+            client.isHeadBranch = isHeadBranchMap[client.branchId] || null;
         });
 
         return res.status(200).json({
-            message: 'Client data retrieved successfully',
-            data: clientData,
+            message: 'Application counts retrieved successfully',
+            data: result,
         });
     } catch (error) {
-        console.error('Error retrieving client data:', error);
+        console.error('Error retrieving application counts:', error);
         return res.status(500).json({
-            message: 'Error retrieving client data',
+            message: 'Error retrieving application counts',
             error: error.message,
         });
     }
