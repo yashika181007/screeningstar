@@ -442,33 +442,33 @@ exports.getClientBranchData = async (req, res) => {
 
         // Extract unique branchIds and clientIds from clientManagerData
         const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
-        const clientIds = [...new Set(clientManagerData.map(item => item.clientId))];
+        const clientIds = [...new Set(clientManagerData.map(item => item.clientId))]; // Match by clientId
 
         // Fetch all data from Branch table where id matches branchId
         const branches = await Branch.findAll({
             where: { id: branchIds }
         });
 
-        // Fetch all data from Client table where clientId matches
+        // Fetch all data from Client table where clientId matches clientId
         const clients = await Client.findAll({
-            where: { id: clientIds }
+            where: { clientId: clientIds }  // Use clientId for matching, not id
         });
 
         // Create maps for easier access to branch and client data by their ids
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();  // Get all fields dynamically
+            branchMap[branch.id] = branch.get();  // Get all fields dynamically from Branch
         });
 
         const clientMap = {};
         clients.forEach(client => {
-            clientMap[client.clientId] = client.get();  // Get all fields dynamically
+            clientMap[client.clientId] = client.get();  // Get all fields dynamically from Client, keyed by clientId
         });
 
         // Prepare the final result by merging data from all three tables
         const result = clientManagerData.map(item => {
             const branchData = branchMap[item.branchId] || {};  // Get branch data or empty object
-            const clientData = clientMap[item.clientId] || {};  // Get client data or empty object
+            const clientData = clientMap[item.clientId] || {};  // Get client data by clientId or empty object
 
             return {
                 ...item.get(),                          // Get all fields from ClientManager dynamically
