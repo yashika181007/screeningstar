@@ -462,7 +462,7 @@ exports.getClientBranchData = async (req, res) => {
 
         const clientMap = {};
         clients.forEach(client => {
-            clientMap[client.id] = client.get();  // Get all fields dynamically
+            clientMap[client.clientId] = client.get();  // Get all fields dynamically
         });
 
         // Prepare the final result by merging data from all three tables
