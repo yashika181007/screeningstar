@@ -310,19 +310,19 @@ exports.sendacknowledgemail = async (req, res) => {
                     to: branchEmail,
                     subject: `New Applications Notification for ${app.organizationName}`,
                     text: `
-Dear ${app.organizationName},
+                        Dear ${app.organizationName},
 
-Greetings from Screeningstar!
+                        Greetings from Screeningstar!
 
-We acknowledge receiving the cases listed below. Please locate the reference ID for any upcoming communications. Checks will be processed, and if there are any insufficiencies, we will get back to you.
+                        We acknowledge receiving the cases listed below. Please locate the reference ID for any upcoming communications. Checks will be processed, and if there are any insufficiencies, we will get back to you.
 
-SL\tReference ID\tClient Code\tCandidate Name\tServices
-1\t${app.application_id}\t${app.clientId}\t${app.organizationName}\t${app.services}
+                        SL\tReference ID\tClient Code\tCandidate Name\tServices
+                        1\t${app.application_id}\t${app.clientId}\t${app.organizationName}\t${app.services}
 
-Regards
-Team - Track Master (Tool)
-ScreeningStar Solutions Pvt Ltd
-`
+                        Regards
+                        Team - Track Master (Tool)
+                        ScreeningStar Solutions Pvt Ltd
+                        `
                 };
 
                 return transporter.sendMail(mailOptions)

@@ -87,14 +87,7 @@ const ClientManager = sequelize.define('clientmanager', {
         allowNull: true,
     },ack_sent: {
         type: DataTypes.ENUM('0', '1'),
-    }, sub_client: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    batch_number: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    }, 
     status: {
         type: DataTypes.STRING,
         allowNull: true,
