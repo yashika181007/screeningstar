@@ -734,3 +734,70 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ message: 'Error deleting client.', error: error.message });
     }
 };
+const jwt = require('jsonwebtoken'); // Ensure jwt is imported
+
+exports.fetchdataforclientmanager = async (req, res) => {
+    const token = req.headers['authorization'];
+
+    // Check if token exists
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided. Please log in.' });
+    }
+
+    // Split token if it's in "Bearer token" format
+    const tokenParts = token.split(' ');
+    const jwtToken = tokenParts[1];
+
+    let decodedToken;
+    try {
+        // Verify the token and decode it
+        decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+    } catch (err) {
+        return res.status(401).json({ message: 'Invalid token. Please log in again.' });
+    }
+
+    // Extract the user/client id from the decoded token
+    const id = decodedToken.id;
+    if (!id) {
+        return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+    }
+
+    try {
+        // Fetch the branch data
+        const branches = await Branch.findAll({
+            where: { clientId: id }, // Using clientId from the token
+            attributes: ['id', 'user_id', 'clientId', 'branchName'] // Select only the fields you need
+        });
+
+        // Check if branches array is empty
+        if (!branches || branches.length === 0) {
+            return res.status(404).json({ message: 'Branch not found' });
+        }
+
+        // Fetch client data based on clientId (assuming the first branch clientId is representative)
+        const clientId = branches[0].clientId;
+        const client = await Client.findOne({
+            where: { id: clientId },
+            attributes: ['scopeOfServices', 'clientId'] // Select only the needed fields from client
+        });
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        // Map over branches and merge client data into branch data
+        const branchData = branches.map(branch => {
+            const branchValues = branch.dataValues; // Extract branch data
+            return {
+                ...branchValues, // Spread the branch fields
+                scopeOfServices: client.scopeOfServices, // Add client fields
+                clientId: client.clientId // This clientId from client will overwrite the branch clientId
+            };
+        });
+
+        res.status(200).json(branchData);
+    } catch (err) {
+        console.error('Error fetching branch and client data:', err);
+        res.status(500).json({ message: 'Error fetching data', error: err.message });
+    }
+};

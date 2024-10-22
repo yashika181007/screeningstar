@@ -26,5 +26,5 @@ router.put('/clients/:id',verifyToken, clientController.updateClient);
 
 router.delete('/clients/:id',verifyToken, clientController.deleteClient);
 router.put('/clients/status/:id',verifyToken, clientController.changeClientStatus);
-
+router.get('/fetchcmdata',verifyToken, clientController.fetchdataforclientmanager);
 module.exports = router;
