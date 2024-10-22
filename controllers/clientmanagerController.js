@@ -281,6 +281,7 @@ exports.sendacknowledgemail = async (req, res) => {
                 message: 'No applications to send emails for.',
             });
         }
+
         const branchIds = [...new Set(applications.map(app => app.branchId))];
         const branches = await Branch.findAll({
             where: { id: branchIds },
@@ -305,6 +306,18 @@ exports.sendacknowledgemail = async (req, res) => {
         const emailPromises = applications.map(async (app) => {
             const branchEmail = branchEmailMap[app.branchId];
             if (branchEmail) {
+                // Parse services JSON and get service titles
+                let services;
+                try {
+                    services = JSON.parse(app.services);
+                } catch (error) {
+                    console.error('Error parsing services JSON:', error);
+                    services = {}; // Default to empty object if parsing fails
+                }
+
+                // Create a string of service titles
+                const serviceTitles = Object.keys(services).join(', '); // Join titles as a string
+
                 const mailOptions = {
                     from: 'yashikawebstep@gmail.com',
                     to: branchEmail,
@@ -317,12 +330,12 @@ exports.sendacknowledgemail = async (req, res) => {
                         We acknowledge receiving the cases listed below. Please locate the reference ID for any upcoming communications. Checks will be processed, and if there are any insufficiencies, we will get back to you.
 
                         SL\tReference ID\tClient Code\tCandidate Name\tServices
-                        1\t${app.application_id}\t${app.clientId}\t${app.organizationName}\t${app.services}
+                        1\t${app.application_id}\t${app.clientId}\t${app.organizationName}\t${serviceTitles}
 
                         Regards
                         Team - Track Master (Tool)
                         ScreeningStar Solutions Pvt Ltd
-                        `
+                    `
                 };
 
                 return transporter.sendMail(mailOptions)
@@ -338,7 +351,7 @@ exports.sendacknowledgemail = async (req, res) => {
         await Promise.all(emailPromises);
 
         await ClientManager.update(
-            { ack_sent: '1' }, 
+            { ack_sent: '1' },
             { where: { ack_sent: '0', application_id: applications.map(app => app.application_id) } }
         );
 
