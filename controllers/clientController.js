@@ -734,7 +734,6 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ message: 'Error deleting client.', error: error.message });
     }
 };
-const jwt = require('jsonwebtoken'); // Ensure jwt is imported
 
 exports.fetchdataforclientmanager = async (req, res) => {
     const token = req.headers['authorization'];
