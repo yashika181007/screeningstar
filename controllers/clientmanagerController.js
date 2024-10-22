@@ -367,7 +367,7 @@ exports.sendacknowledgemail = async (req, res) => {
     }
 };
 
-exports.getClientApplicationCounts = async (req, res) => {
+exports.getadminmanagerdata = async (req, res) => {
     try {
         // Fetch applications where status is not completed
         const applications = await ClientManager.findAll({
