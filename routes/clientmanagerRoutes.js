@@ -11,4 +11,5 @@ router.delete('/clientmanager/:id',verifyToken , clientmanagerController.deleteC
 router.get('/getClientApplicationCounts',verifyToken , clientmanagerController.getClientApplicationCounts);  
 router.get('/sendacknowledgemail',verifyToken , clientmanagerController.sendacknowledgemail);     
 router.get('/adminmanagerdata',verifyToken , clientmanagerController.getadminmanagerdata);     
+router.get('/getdata',verifyToken , clientmanagerController.getClientBranchData);     
 module.exports = router;

@@ -1,5 +1,7 @@
 const ClientManager = require('../models/ClientManager');
 const Branch = require('../models/Branch');
+const Client = require('../models/Client');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
@@ -423,6 +425,71 @@ exports.getadminmanagerdata = async (req, res) => {
         return res.status(500).json({
             message: 'Error retrieving application counts',
             error: error.message,
+        });
+    }
+};
+
+exports.getClientBranchData = async (req, res) => {
+    try {
+        // Fetch all data from ClientManager without specifying attributes (fetch all columns)
+        const clientManagerData = await ClientManager.findAll();
+
+        if (!clientManagerData.length) {
+            return res.status(200).json({
+                message: 'No data available in ClientManager.'
+            });
+        }
+
+        // Extract unique branchIds and clientIds from clientManagerData
+        const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
+        const clientIds = [...new Set(clientManagerData.map(item => item.clientId))];
+
+        // Fetch corresponding data from Branch table where id matches branchId (fetch all columns)
+        const branches = await Branch.findAll({
+            where: { id: branchIds }
+        });
+
+        // Fetch corresponding data from Client table where clientId matches (fetch all columns)
+        const clients = await Client.findAll({
+            where: { id: clientIds }
+        });
+
+        // Create maps for easier access to branch and client data by their ids
+        const branchMap = {};
+        branches.forEach(branch => {
+            branchMap[branch.id] = branch;  // Mapping branchId to branch data
+        });
+
+        const clientMap = {};
+        clients.forEach(client => {
+            clientMap[client.id] = client;  // Mapping clientId to client data
+        });
+
+        // Prepare the final result by merging data from all three tables
+        const result = clientManagerData.map(item => {
+            const branchData = branchMap[item.branchId] || {};  // Get branch data or empty object
+            const clientData = clientMap[item.clientId] || {};  // Get client data or empty object
+
+            return {
+                ...item.get(),                               // Fetch all fields from ClientManager table
+                branchEmail: branchData.branchEmail || null,  // Fetching data from Branch table
+                isHeadBranch: branchData.isHeadBranch || false,  // Default to false if not found
+                clientCode: clientData.clientCode || null,    // Fetching data from Client table
+                clientName: clientData.clientName || null,    // Fetching data from Client table
+                spocName: clientData.spocName || null         // Fetching data from Client table
+            };
+        });
+
+        // Return the final data as JSON
+        return res.status(200).json({
+            message: 'Data fetched successfully',
+            data: result
+        });
+    } catch (error) {
+        console.error('Error fetching client, branch, and client manager data:', error);
+        return res.status(500).json({
+            message: 'Error fetching data',
+            error: error.message
         });
     }
 };
