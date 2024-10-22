@@ -471,9 +471,9 @@ exports.getClientBranchData = async (req, res) => {
             const clientData = clientMap[item.clientId] || {};  // Get client data or empty object
 
             return {
-                ...item.get(),                          // Fetch all fields from ClientManager dynamically
-                ...branchData.get(),                    // Fetch all fields from Branch dynamically
-                ...clientData.get()                     // Fetch all fields from Client dynamically
+                ...item,                          // Fetch all fields from ClientManager dynamically
+                ...branchData,                    // Merge all fields from Branch dynamically
+                ...clientData                     // Merge all fields from Client dynamically
             };
         });
 
