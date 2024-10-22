@@ -368,10 +368,8 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        const branchId = req.params.branchId; 
         const clientData = await ClientManager.findAll({
             where: {
-                branchId: branchId,
                 status: { [Sequelize.Op.ne]: 'completed' } 
             },
             attributes: [
