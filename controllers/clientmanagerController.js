@@ -218,30 +218,56 @@ exports.deleteClientManager = async (req, res) => {
 // };
 exports.getClientApplicationCounts = async (req, res) => {
     try {
-        const applicationCounts = await ClientManager.findAll({
-            where: {
-                ack_sent: '0' // Condition to filter records
-            },
+        // Fetch application counts and related data from ClientManager
+        const applications = await ClientManager.findAll({
+            where: { ack_sent: '0' },  // Only applications where ack_sent is 0
             attributes: [
                 'clientId', 
                 'organizationName', 
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count of applications
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT branchId')), 'branchIds '],  // Get all branch IDs
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT application_id')), 'application_ids '],  // Get all application IDs
-                [Sequelize.fn('GROUP_CONCAT', Sequelize.literal('DISTINCT services')), 'services'],  // Get all services associated with each application
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Date when created
+                'branchId', 
+                'application_ids', 
+                'services',
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count applications
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']  // Format createdAt as date
             ],
-            group: ['clientId', 'organizationName'],  // Grouping by clientId and organizationName
-            order: [['createdAt', 'ASC']]  // Ordering by createdAt in ascending order
+            group: ['clientId', 'organizationName', 'branchId', 'application_ids', 'services', 'createdAt'],  // Group by client and application fields
+            order: [['createdAt', 'ASC']]  // Sort by createdAt
         });
 
+        // Reformat the result to match the desired structure
+        const result = applications.reduce((acc, app) => {
+            // Find if the client already exists in the accumulator
+            let client = acc.find(c => c.clientId === app.clientId);
+
+            if (!client) {
+                // If client doesn't exist, create a new entry
+                client = {
+                    clientId: app.clientId,
+                    organizationName: app.organizationName,
+                    applicationCount: app.applicationCount,
+                    applications: []  // Initialize applications array
+                };
+                acc.push(client);
+            }
+
+            // Add application details to the current client
+            client.applications.push({
+                branchIds: app.branchId,
+                application_ids: app.application_ids,
+                services: app.services,
+                createdAt: app.createdAt
+            });
+
+            return acc;
+        }, []);
+
         return res.status(200).json({
-            message: 'Application counts and services retrieved successfully',
-            data: applicationCounts,
+            message: 'Application counts retrieved successfully',
+            data: result,
         });
     } catch (error) {
         return res.status(500).json({
-            message: 'Error retrieving application counts and services',
+            message: 'Error retrieving application counts',
             error: error.message,
         });
     }
