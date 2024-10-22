@@ -758,9 +758,9 @@ exports.fetchdataforclientmanager = async (req, res) => {
         if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
         }
-        const clientId = branches[0].clientId;
-        const client = await Client.findOne({
-            where: { id: clientId },
+            const clientId = branches[0].clientId;
+            const client = await Client.findOne({
+                where: { clientId: clientId },
             attributes: ['scopeOfServices', 'clientId'] 
         });
 
