@@ -394,13 +394,31 @@ exports.getadminmanagerdata = async (req, res) => {
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications for the row
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'],
-                [Sequelize.literal('(SELECT COUNT(*) FROM clientmanagers WHERE branchId = ClientManager.branchId AND status != "completed")'), 'branchApplicationCount'] // Count total applications for the same branchId
             ],
             group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
             order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
             raw: true  // Make sure raw results are returned for easier handling
+        });
+
+        // Fetch the count of applications for each branchId
+        const branchCounts = await ClientManager.findAll({
+            where: {
+                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
+            },
+            attributes: [
+                'branchId',
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
+            ],
+            group: ['branchId'],
+            raw: true
+        });
+
+        // Create a map of branchId to its total application count
+        const branchCountMap = {};
+        branchCounts.forEach(branch => {
+            branchCountMap[branch.branchId] = branch.branchApplicationCount;
         });
 
         // Create the result structure
@@ -410,7 +428,7 @@ exports.getadminmanagerdata = async (req, res) => {
             branchId: app.branchId,
             spocUploaded: app.spocUploaded,
             applicationCount: app.applicationCount,  // Extract alias for application count
-            branchApplicationCount: app.branchApplicationCount, // Total entries for the same branchId
+            branchApplicationCount: branchCountMap[app.branchId] || 0, // Total entries for the same branchId
             createdAt: app.createdAt
         }));
 
