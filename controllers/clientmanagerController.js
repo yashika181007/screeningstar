@@ -384,25 +384,25 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch applications where status is not completed and group by clientId and branchId
+        // Fetch and group applications by clientId and branchId where status is not completed
         const applications = await ClientManager.findAll({
             where: {
-                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
+                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not 'completed'
             },
             attributes: [
                 'clientId',
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count the applications in each group
-                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Fetch the latest createdAt date for each group
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count applications in each group
+                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Get the latest 'createdAt' date for each group
             ],
             group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'], // Group by clientId, organizationName, branchId, and spocUploaded
             order: [[Sequelize.fn('MAX', Sequelize.col('createdAt')), 'ASC']],
             raw: true  // Return raw results
         });
 
-        // Create the result structure
+        // Create the result structure with grouped data
         const result = applications.map(app => ({
             clientId: app.clientId,
             organizationName: app.organizationName,
@@ -412,7 +412,7 @@ exports.getadminmanagerdata = async (req, res) => {
             createdAt: app.createdAt
         }));
 
-        // Fetch branch information for matching branch IDs
+        // Fetch branch information for the matching branch IDs
         const branchIds = [...new Set(applications.map(app => app.branchId))];
         const branches = await Branch.findAll({
             where: { id: branchIds },
