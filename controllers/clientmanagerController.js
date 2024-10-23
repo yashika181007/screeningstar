@@ -394,12 +394,12 @@ exports.getadminmanagerdata = async (req, res) => {
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']    // Group by creation date
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
+                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Fetch the latest createdAt date
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
-            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
-            raw: true  // Make sure raw results are returned for easier handling
+            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'],
+            order: [[Sequelize.fn('MAX', Sequelize.col('createdAt')), 'ASC']],
+            raw: true  // Return raw results
         });
 
         // Create the result structure
