@@ -396,7 +396,7 @@ exports.getadminmanagerdata = async (req, res) => {
                 'spocUploaded',
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'],
-                [Sequelize.literal('(SELECT COUNT(*) FROM ClientManagers WHERE branchId = ClientManager.branchId AND status != "completed")'), 'branchApplicationCount'] // Count total applications for the same branchId
+                [Sequelize.literal('(SELECT COUNT(*) FROM clientmanagers WHERE branchId = ClientManager.branchId AND status != "completed")'), 'branchApplicationCount'] // Count total applications for the same branchId
             ],
             group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
             order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
