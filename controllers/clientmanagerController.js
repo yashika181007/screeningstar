@@ -398,7 +398,6 @@ exports.getadminmanagerdata = async (req, res) => {
                 [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Get the latest 'createdAt' date for each group
             ],
             group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'], // Group by clientId, organizationName, branchId, and spocUploaded
-            order: [[Sequelize.fn('MAX', Sequelize.col('createdAt')), 'ASC']],
             raw: true  // Return raw results
         });
 
@@ -409,7 +408,7 @@ exports.getadminmanagerdata = async (req, res) => {
             branchId: app.branchId,
             spocUploaded: app.spocUploaded,
             applicationCount: app.applicationCount,  // Total applications for this clientId and branchId
-            createdAt: app.createdAt
+            createdAt: app.createdAt  // Show latest application date in each group
         }));
 
         // Fetch branch information for the matching branch IDs
