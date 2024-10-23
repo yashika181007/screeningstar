@@ -13,6 +13,7 @@ router.get('/clients',verifyToken, clientController.getClients);
 
 router.get('/getheadBranches', verifyToken, clientController.getheadbranch);
 router.get('/getheadBranchescm', verifyToken, clientController.getHeadBranchWithClientManagerData);
+router.get('/getnonheadBranchescm', verifyToken, clientController.getnonHeadBranchWithClientManagerData);
 router.get('/getnonheadBranches/:clientId', verifyToken, clientController.getNonHeadBranches);
 router.get('/Branches',verifyToken, clientController.getBranchbyclient);
 router.put('/Branches/:id',verifyToken, clientController.updateBranch);
