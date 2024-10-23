@@ -384,23 +384,29 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch the count of applications for each branchId where status is not completed
-        const branchCounts = await ClientManager.findAll({
+        // Fetch applications where status is not completed
+        const applications = await ClientManager.findAll({
             where: {
                 status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
             },
             attributes: [
+                'clientId',
+                'organizationName',
                 'branchId',
+                'spocUploaded',
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
             ],
-            group: ['branchId'],
-            raw: true  // Make sure raw results are returned for easier handling
+            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'],  // Group by relevant fields
+            raw: true  // Ensure raw results are returned for easier handling
         });
 
-        // Structure the result to only include branchId and branchApplicationCount
-        const result = branchCounts.map(branch => ({
-            branchId: branch.branchId,
-            branchApplicationCount: branch.branchApplicationCount  // Total entries for the branchId
+        // Structure the result to include clientId, organizationName, branchId, spocUploaded, and branchApplicationCount
+        const result = applications.map(app => ({
+            clientId: app.clientId,
+            organizationName: app.organizationName,
+            branchId: app.branchId,
+            spocUploaded: app.spocUploaded,
+            branchApplicationCount: app.branchApplicationCount  // Total entries for the branchId
         }));
 
         return res.status(200).json({
