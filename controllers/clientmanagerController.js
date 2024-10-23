@@ -394,11 +394,12 @@ exports.getadminmanagerdata = async (req, res) => {
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt']    // Group by creation date
             ],
             group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
-            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']]
+            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
+            raw: true  // Make sure raw results are returned for easier handling
         });
 
         // Create the result structure
@@ -407,7 +408,7 @@ exports.getadminmanagerdata = async (req, res) => {
             organizationName: app.organizationName,
             branchId: app.branchId,
             spocUploaded: app.spocUploaded,
-            applicationCount: app.applicationCount,
+            applicationCount: app.applicationCount,  // Extract alias for application count
             createdAt: app.createdAt
         }));
 
@@ -415,7 +416,8 @@ exports.getadminmanagerdata = async (req, res) => {
         const branchIds = [...new Set(applications.map(app => app.branchId))];
         const branches = await Branch.findAll({
             where: { id: branchIds },
-            attributes: ['id', 'isHeadBranch']
+            attributes: ['id', 'isHeadBranch'],
+            raw: true
         });
 
         // Create a map for isHeadBranch based on branchId
@@ -426,7 +428,7 @@ exports.getadminmanagerdata = async (req, res) => {
 
         // Attach isHeadBranch to the result using the branchId
         result.forEach(client => {
-            client.isHeadBranch = isHeadBranchMap[client.branchId] ;  // Set to false if branchId is not found
+            client.isHeadBranch = isHeadBranchMap[client.branchId] || false;  // Set to false if branchId is not found
         });
 
         return res.status(200).json({
@@ -600,7 +602,7 @@ exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;  
 
     try {
-        const getClientManager = await ClientManager.findOne({
+        const getClientManager = await ClientManager.findall({
             where: { application_id } 
         });
         if (!getClientManager) {
