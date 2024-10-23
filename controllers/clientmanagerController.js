@@ -494,38 +494,10 @@ exports.getadminmanagerdata = async (req, res) => {
 
 exports.getClientBranchData = async (req, res) => {
     try {
-        const token = req.headers['authorization'];
-        console.log("Authorization header:", token);
-
-        if (!token) {
-            console.log("No token provided.");
-            return res.status(401).json({ message: 'No token provided. Please log in.' });
-        }
-
-        const tokenParts = token.split(' ');
-        console.log("Token parts:", tokenParts);
-
-        if (tokenParts.length !== 2) {
-            console.log("Invalid token format.");
-            return res.status(401).json({ message: 'Invalid token format. Please log in.' });
-        }
-
-        const jwtToken = tokenParts[1];
-        console.log("JWT token extracted:", jwtToken);
-        let decodedToken;
-
-        try {
-            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
-            console.log("Decoded token:", decodedToken);
-        } catch (err) {
-            console.log("Invalid token:", err);
-            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
-        }
-
-        const { clientId, id: branchId } = decodedToken; 
-
-        console.log("Extracted values from token - clientId:", clientId, "branchId:", branchId);
-
+        const branchId = req.session.branchId;
+        console.log('branchId',branchId);
+        const clientId = req.session.clientId;
+        console.log('clientId',clientId);
         const clientManagerData = await ClientManager.findAll({
             where: { clientId, branchId }
         });

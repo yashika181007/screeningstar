@@ -478,6 +478,10 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
 
             // Only add to the response if the applicationCount is greater than 0
             if (applicationCount > 0) {
+                req.session.branchId = branch.id;
+                console.log('req.session.branchId',req.session.branchId);
+                req.session.clientId = branch.clientId;
+                console.log('req.session.clientId',req.session.clientId);
                 responseData.push({
                     branch: branch, // Includes specified fields from Branch
                     applicationCount: applicationCount,
@@ -526,6 +530,10 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
 
             // Only add to the response if the applicationCount is greater than 0
             if (applicationCount > 0) {
+                req.session.branchId = branch.id;
+                console.log('req.session.branchId',req.session.branchId);
+                req.session.clientId = branch.clientId;
+                console.log('req.session.clientId',req.session.clientId);
                 responseData.push({
                     branch: branch, // Includes specified fields from Branch
                     applicationCount: applicationCount,
