@@ -499,12 +499,12 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
         res.status(500).json({ message: 'Error fetching head branches and client managers', error: err.message });
     }
 };
-
 exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
     try {
-        // Fetch all head branches
+        // Fetch all head branches with specific fields
         const headBranches = await Branch.findAll({
-            where: { isHeadBranch: false }
+            where: { isHeadBranch: false },
+            attributes: ['id', 'user_id', 'clientId', 'branchEmail', 'branchName', 'isHeadBranch']
         });
 
         if (!headBranches || headBranches.length === 0) {
@@ -517,18 +517,26 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
         // Loop through each head branch and fetch corresponding ClientManager data
         for (const branch of headBranches) {
             const clientManagers = await ClientManager.findAll({
-                where: { branchId: branch.id }
+                where: { branchId: branch.id },
+                attributes: ['id', 'user_id', 'clientId', 'branchId', 'organizationName', 'spocUploaded']
             });
 
             // Count the number of ClientManager entries for the current branch
             const applicationCount = clientManagers.length;
 
-            // Prepare the data to be returned
-            responseData.push({
-                branch: branch,
-                applicationCount: applicationCount,
-                clientManagers: clientManagers
-            });
+            // Only add to the response if the applicationCount is greater than 0
+            if (applicationCount > 0) {
+                responseData.push({
+                    branch: branch, // Includes specified fields from Branch
+                    applicationCount: applicationCount,
+                    clientManagers: clientManagers // Includes specified fields from ClientManager
+                });
+            }
+        }
+
+        // If no branches have client managers, return a 404
+        if (responseData.length === 0) {
+            return res.status(404).json({ message: 'No head branches with client managers found' });
         }
 
         // Send the response with head branches, client manager data, and application count
@@ -539,6 +547,7 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
         res.status(500).json({ message: 'Error fetching head branches and client managers', error: err.message });
     }
 };
+
 exports.getNonHeadBranches = async (req, res) => {
     try {
         const clientId = req.params.clientId; 
