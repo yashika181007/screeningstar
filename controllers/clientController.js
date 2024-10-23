@@ -5,7 +5,7 @@ const BranchLoginLog = require('../models/BranchLoginLog');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-
+const { Sequelize, Op } = require('sequelize');
 const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
 const iv = Buffer.from(process.env.IV, 'hex');
 
