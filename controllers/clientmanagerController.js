@@ -384,35 +384,44 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch applications where status is not completed, including the isHeadBranch field from the Branch table
-        const branchCounts = await ClientManager.findAll({
+        // Fetch applications where status is not completed
+        const applications = await ClientManager.findAll({
             where: {
-                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
+                status: { [Sequelize.Op.ne]: 'completed' }  // Ensure status is not completed
             },
             attributes: [
                 'branchId',
                 'clientId',
                 'organizationName',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount'],  // Count total applications for each branchId
-                [Sequelize.col('Branch.isHeadBranch'), 'isHeadBranch']  // Fetch isHeadBranch from the Branch table
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
             ],
-            include: [{
-                model: Branch,  // Join with Branch table
-                attributes: []  // No need to fetch other Branch attributes except isHeadBranch
-            }],
-            group: ['branchId', 'clientId', 'organizationName', 'spocUploaded', 'Branch.isHeadBranch'],  // Group by necessary fields
-            raw: true  // Ensure raw results are returned for easier handling
+            group: ['branchId', 'clientId', 'organizationName', 'spocUploaded'],
+            raw: true  // Make sure raw results are returned for easier handling
         });
 
-        // Structure the result to include branchId, applicationCount, isHeadBranch, and other relevant fields
-        const result = branchCounts.map(branch => ({
-            branchId: branch.branchId,
-            clientId: branch.clientId,
-            organizationName: branch.organizationName,
-            spocUploaded: branch.spocUploaded,
-            branchApplicationCount: branch.branchApplicationCount,  // Total entries for the branchId
-            isHeadBranch: branch.isHeadBranch  // Whether this is the head branch
+        // Fetch branch information for matching branch IDs
+        const branchIds = applications.map(app => app.branchId);
+        const branches = await Branch.findAll({
+            where: { id: branchIds },
+            attributes: ['id', 'isHeadBranch'],
+            raw: true  // Fetch the data in a raw format
+        });
+
+        // Create a map for isHeadBranch based on branchId
+        const branchMap = {};
+        branches.forEach(branch => {
+            branchMap[branch.id] = branch.isHeadBranch;
+        });
+
+        // Combine the results by attaching isHeadBranch from the branchMap
+        const result = applications.map(app => ({
+            branchId: app.branchId,
+            clientId: app.clientId,
+            organizationName: app.organizationName,
+            spocUploaded: app.spocUploaded,
+            branchApplicationCount: app.branchApplicationCount,  // Total entries for the branchId
+            isHeadBranch: branchMap[app.branchId] || false  // Default to false if not found
         }));
 
         return res.status(200).json({
