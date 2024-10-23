@@ -484,6 +484,8 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
                 // Store the branchId and clientId in session
                 req.session.branchId = branch.id;
                 req.session.clientId = branch.clientId;
+                console.log('Session created: Branch ID:', req.session.branchId);
+                console.log('Session created: Client ID:', req.session.clientId);
 
                 responseData.push({
                     branch: branch, // Includes specified fields from Branch
@@ -539,6 +541,8 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
                 // Store the branchId and clientId in session
                 req.session.branchId = branch.id;
                 req.session.clientId = branch.clientId;
+                console.log('Session created: Branch ID:', req.session.branchId);
+                console.log('Session created: Client ID:', req.session.clientId);
 
                 responseData.push({
                     branch: branch, // Includes specified fields from Branch
