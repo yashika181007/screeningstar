@@ -450,6 +450,46 @@ exports.getheadbranch = async (req, res) => {
         res.status(500).json({ message: 'Error fetching head branches', error: err.message });
     }
 };
+exports.getHeadBranchWithClientManagerData = async (req, res) => {
+    try {
+        // Fetch all head branches
+        const headBranches = await Branch.findAll({
+            where: { isHeadBranch: true }
+        });
+
+        if (!headBranches || headBranches.length === 0) {
+            return res.status(404).json({ message: 'No head branches found' });
+        }
+
+        // Prepare the response data structure
+        const responseData = [];
+
+        // Loop through each head branch and fetch corresponding ClientManager data
+        for (const branch of headBranches) {
+            const clientManagers = await ClientManager.findAll({
+                where: { branchId: branch.id }
+            });
+
+            // Count the number of ClientManager entries for the current branch
+            const applicationCount = clientManagers.length;
+
+            // Prepare the data to be returned
+            responseData.push({
+                branch: branch,
+                applicationCount: applicationCount,
+                clientManagers: clientManagers
+            });
+        }
+
+        // Send the response with head branches, client manager data, and application count
+        res.status(200).json(responseData);
+
+    } catch (err) {
+        console.error('Error fetching head branches and client managers:', err);
+        res.status(500).json({ message: 'Error fetching head branches and client managers', error: err.message });
+    }
+};
+
 exports.getNonHeadBranches = async (req, res) => {
     try {
         const clientId = req.params.clientId; 
