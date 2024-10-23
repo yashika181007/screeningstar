@@ -384,7 +384,7 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch applications where status is not completed
+        // Fetch applications where status is not completed and group by clientId and branchId
         const applications = await ClientManager.findAll({
             where: {
                 status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
@@ -394,10 +394,10 @@ exports.getadminmanagerdata = async (req, res) => {
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],
-                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Fetch the latest createdAt date
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count the applications in each group
+                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Fetch the latest createdAt date for each group
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'],
+            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'], // Group by clientId, organizationName, branchId, and spocUploaded
             order: [[Sequelize.fn('MAX', Sequelize.col('createdAt')), 'ASC']],
             raw: true  // Return raw results
         });
@@ -408,7 +408,7 @@ exports.getadminmanagerdata = async (req, res) => {
             organizationName: app.organizationName,
             branchId: app.branchId,
             spocUploaded: app.spocUploaded,
-            applicationCount: app.applicationCount,  // Extract alias for application count
+            applicationCount: app.applicationCount,  // Total applications for this clientId and branchId
             createdAt: app.createdAt
         }));
 
@@ -423,7 +423,7 @@ exports.getadminmanagerdata = async (req, res) => {
         // Create a map for isHeadBranch based on branchId
         const isHeadBranchMap = {};
         branches.forEach(branch => {
-            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Correctly mapping branchId to isHeadBranch
+            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Map branchId to isHeadBranch
         });
 
         // Attach isHeadBranch to the result using the branchId
