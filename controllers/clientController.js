@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const Branch = require('../models/Branch');
+const ClientManager = require('../models/ClientManager');
 const BranchLoginLog = require('../models/BranchLoginLog');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
