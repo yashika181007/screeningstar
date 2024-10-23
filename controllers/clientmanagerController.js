@@ -404,10 +404,10 @@ exports.getadminmanagerdata = async (req, res) => {
         // Structure the result to only include branchId and branchApplicationCount
         const result = branchCounts.map(branch => ({
             branchId: branch.branchId,
-            clientId: app.clientId,
-            organizationName: app.organizationName,
-            branchId: app.branchId,
-            spocUploaded: app.spocUploaded,
+            clientId: branch.clientId,
+            organizationName: branch.organizationName,
+            branchId: branch.branchId,
+            spocUploaded: branch.spocUploaded,
             branchApplicationCount: branch.branchApplicationCount  // Total entries for the branchId
         }));
 
