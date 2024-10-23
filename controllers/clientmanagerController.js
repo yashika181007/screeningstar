@@ -384,34 +384,37 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch and group applications by clientId and branchId where status is not completed
+        // Fetch applications where status is not completed
         const applications = await ClientManager.findAll({
             where: {
-                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not 'completed'
+                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
             },
             attributes: [
                 'clientId',
                 'organizationName',
                 'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'], // Count applications in each group
-                [Sequelize.fn('MAX', Sequelize.col('createdAt')), 'createdAt']  // Get the latest 'createdAt' date for each group
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'],
+                [Sequelize.literal('(SELECT COUNT(*) FROM ClientManagers WHERE branchId = ClientManager.branchId AND status != "completed")'), 'branchApplicationCount'] // Count total applications for the same branchId
             ],
-            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded'], // Group by clientId, organizationName, branchId, and spocUploaded
-            raw: true  // Return raw results
+            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
+            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
+            raw: true  // Make sure raw results are returned for easier handling
         });
 
-        // Create the result structure with grouped data
+        // Create the result structure
         const result = applications.map(app => ({
             clientId: app.clientId,
             organizationName: app.organizationName,
             branchId: app.branchId,
             spocUploaded: app.spocUploaded,
-            applicationCount: app.applicationCount,  // Total applications for this clientId and branchId
-            createdAt: app.createdAt  // Show latest application date in each group
+            applicationCount: app.applicationCount,  // Extract alias for application count
+            branchApplicationCount: app.branchApplicationCount, // Total entries for the same branchId
+            createdAt: app.createdAt
         }));
 
-        // Fetch branch information for the matching branch IDs
+        // Fetch branch information for matching branch IDs
         const branchIds = [...new Set(applications.map(app => app.branchId))];
         const branches = await Branch.findAll({
             where: { id: branchIds },
@@ -422,7 +425,7 @@ exports.getadminmanagerdata = async (req, res) => {
         // Create a map for isHeadBranch based on branchId
         const isHeadBranchMap = {};
         branches.forEach(branch => {
-            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Map branchId to isHeadBranch
+            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Correctly mapping branchId to isHeadBranch
         });
 
         // Attach isHeadBranch to the result using the branchId
