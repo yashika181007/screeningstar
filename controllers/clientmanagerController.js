@@ -384,7 +384,7 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch the count of applications for each branchId where status is not completed
+        // Fetch applications where status is not completed, including the isHeadBranch field from the Branch table
         const branchCounts = await ClientManager.findAll({
             where: {
                 status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
@@ -393,22 +393,26 @@ exports.getadminmanagerdata = async (req, res) => {
                 'branchId',
                 'clientId',
                 'organizationName',
-                'branchId',
                 'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount'],  // Count total applications for each branchId
+                [Sequelize.col('Branch.isHeadBranch'), 'isHeadBranch']  // Fetch isHeadBranch from the Branch table
             ],
-            group: ['branchId'],
-            raw: true  // Make sure raw results are returned for easier handling
+            include: [{
+                model: Branch,  // Join with Branch table
+                attributes: []  // No need to fetch other Branch attributes except isHeadBranch
+            }],
+            group: ['branchId', 'clientId', 'organizationName', 'spocUploaded', 'Branch.isHeadBranch'],  // Group by necessary fields
+            raw: true  // Ensure raw results are returned for easier handling
         });
 
-        // Structure the result to only include branchId and branchApplicationCount
+        // Structure the result to include branchId, applicationCount, isHeadBranch, and other relevant fields
         const result = branchCounts.map(branch => ({
             branchId: branch.branchId,
             clientId: branch.clientId,
             organizationName: branch.organizationName,
-            branchId: branch.branchId,
             spocUploaded: branch.spocUploaded,
-            branchApplicationCount: branch.branchApplicationCount  // Total entries for the branchId
+            branchApplicationCount: branch.branchApplicationCount,  // Total entries for the branchId
+            isHeadBranch: branch.isHeadBranch  // Whether this is the head branch
         }));
 
         return res.status(200).json({
@@ -423,7 +427,7 @@ exports.getadminmanagerdata = async (req, res) => {
         });
     }
 };
-
+w
 // exports.getClientBranchData = async (req, res) => {
 //     try {
 
@@ -481,7 +485,6 @@ exports.getadminmanagerdata = async (req, res) => {
 
 exports.getClientBranchData = async (req, res) => {
     try {
-        // Extract the token from the request headers
         const token = req.headers['authorization'];
         console.log("Authorization header:", token);
 
@@ -510,11 +513,10 @@ exports.getClientBranchData = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const { clientId, id: branchId } = decodedToken; // Extract clientId and branchId from token
+        const { clientId, id: branchId } = decodedToken; 
 
         console.log("Extracted values from token - clientId:", clientId, "branchId:", branchId);
 
-        // Fetch client manager data matching both clientId and branchId
         const clientManagerData = await ClientManager.findAll({
             where: { clientId, branchId }
         });
