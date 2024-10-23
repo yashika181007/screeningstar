@@ -470,7 +470,7 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
         for (const branch of headBranches) {
             const clientManagers = await ClientManager.findAll({
                 where: { branchId: branch.id },
-                attributes: ['id', 'user_id', 'clientId','application_id', 'branchId', 'organizationName', 'spocUploaded']
+                attributes: ['id', 'user_id', 'clientId','application_id',  'branchId', 'organizationName', 'spocUploaded']
             });
 
             // Count the number of ClientManager entries for the current branch
@@ -504,7 +504,7 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
         // Fetch all head branches with specific fields
         const headBranches = await Branch.findAll({
             where: { isHeadBranch: false },
-            attributes: ['id', 'user_id', 'clientId','application_id', 'branchEmail', 'branchName', 'isHeadBranch']
+            attributes: ['id', 'user_id', 'clientId','branchEmail', 'branchName', 'isHeadBranch']
         });
 
         if (!headBranches || headBranches.length === 0) {
@@ -518,7 +518,7 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
         for (const branch of headBranches) {
             const clientManagers = await ClientManager.findAll({
                 where: { branchId: branch.id },
-                attributes: ['id', 'user_id', 'clientId', 'branchId', 'organizationName', 'spocUploaded']
+                attributes: ['id', 'user_id', 'clientId','application_id',  'branchId', 'organizationName', 'spocUploaded']
             });
 
             // Count the number of ClientManager entries for the current branch
