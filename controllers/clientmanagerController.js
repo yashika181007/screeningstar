@@ -427,7 +427,7 @@ exports.getadminmanagerdata = async (req, res) => {
         });
     }
 };
-w
+
 // exports.getClientBranchData = async (req, res) => {
 //     try {
 
