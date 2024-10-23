@@ -384,25 +384,7 @@ exports.sendacknowledgemail = async (req, res) => {
 
 exports.getadminmanagerdata = async (req, res) => {
     try {
-        // Fetch applications where status is not completed
-        const applications = await ClientManager.findAll({
-            where: {
-                status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
-            },
-            attributes: [
-                'clientId',
-                'organizationName',
-                'branchId',
-                'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'applicationCount'],  // Count the number of applications for the row
-                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'createdAt'],
-            ],
-            group: ['clientId', 'organizationName', 'branchId', 'spocUploaded', Sequelize.fn('DATE', Sequelize.col('createdAt'))],
-            order: [[Sequelize.fn('DATE', Sequelize.col('createdAt')), 'ASC']],
-            raw: true  // Make sure raw results are returned for easier handling
-        });
-
-        // Fetch the count of applications for each branchId
+        // Fetch the count of applications for each branchId where status is not completed
         const branchCounts = await ClientManager.findAll({
             where: {
                 status: { [Sequelize.Op.ne]: 'completed' } // Ensure status is not completed
@@ -412,53 +394,23 @@ exports.getadminmanagerdata = async (req, res) => {
                 [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
             ],
             group: ['branchId'],
-            raw: true
+            raw: true  // Make sure raw results are returned for easier handling
         });
 
-        // Create a map of branchId to its total application count
-        const branchCountMap = {};
-        branchCounts.forEach(branch => {
-            branchCountMap[branch.branchId] = branch.branchApplicationCount;
-        });
-
-        // Create the result structure
-        const result = applications.map(app => ({
-            clientId: app.clientId,
-            organizationName: app.organizationName,
-            branchId: app.branchId,
-            spocUploaded: app.spocUploaded,
-            applicationCount: app.applicationCount,  // Extract alias for application count
-            branchApplicationCount: branchCountMap[app.branchId] || 0, // Total entries for the same branchId
-            createdAt: app.createdAt
+        // Structure the result to only include branchId and branchApplicationCount
+        const result = branchCounts.map(branch => ({
+            branchId: branch.branchId,
+            branchApplicationCount: branch.branchApplicationCount  // Total entries for the branchId
         }));
 
-        // Fetch branch information for matching branch IDs
-        const branchIds = [...new Set(applications.map(app => app.branchId))];
-        const branches = await Branch.findAll({
-            where: { id: branchIds },
-            attributes: ['id', 'isHeadBranch'],
-            raw: true
-        });
-
-        // Create a map for isHeadBranch based on branchId
-        const isHeadBranchMap = {};
-        branches.forEach(branch => {
-            isHeadBranchMap[branch.id] = branch.isHeadBranch;  // Correctly mapping branchId to isHeadBranch
-        });
-
-        // Attach isHeadBranch to the result using the branchId
-        result.forEach(client => {
-            client.isHeadBranch = isHeadBranchMap[client.branchId] || false;  // Set to false if branchId is not found
-        });
-
         return res.status(200).json({
-            message: 'Application counts retrieved successfully',
+            message: 'Branch application counts retrieved successfully',
             data: result,
         });
     } catch (error) {
-        console.error('Error retrieving application counts:', error);
+        console.error('Error retrieving branch application counts:', error);
         return res.status(500).json({
-            message: 'Error retrieving application counts',
+            message: 'Error retrieving branch application counts',
             error: error.message,
         });
     }
