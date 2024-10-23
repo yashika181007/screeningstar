@@ -12,4 +12,5 @@ router.get('/getClientApplicationCounts',verifyToken , clientmanagerController.g
 router.get('/sendacknowledgemail',verifyToken , clientmanagerController.sendacknowledgemail);     
 router.get('/adminmanagerdata',verifyToken , clientmanagerController.getadminmanagerdata);     
 router.get('/getdata',verifyToken , clientmanagerController.getClientBranchData);     
+router.get('/findapplication',verifyToken , clientmanagerController.getClientManagerByAppID); 
 module.exports = router;
