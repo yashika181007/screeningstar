@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
 // const { v4: uuidv4 } = require('uuid');  
-const nodemailer = require('nodemailer'); 
+const nodemailer = require('nodemailer');
 
 const generateNumericId = () => {
     return Math.floor(10000000 + Math.random() * 90000000);
@@ -16,10 +16,10 @@ const generateNumericId = () => {
 exports.createClientManager = async (req, res) => {
     try {
         console.log("Request received:", req.body);
-        
+
         const token = req.headers['authorization'];
         console.log("Authorization header:", token);
-        
+
         if (!token) {
             console.log("No token provided.");
             return res.status(401).json({ message: 'No token provided. Please log in.' });
@@ -177,7 +177,6 @@ exports.deleteClientManager = async (req, res) => {
         });
     }
 };
-
 // exports.getClientApplicationCounts = async (req, res) => {
 //     try {
 //         const applicationCounts = await ClientManager.findAll({
@@ -326,7 +325,7 @@ exports.sendacknowledgemail = async (req, res) => {
                     services = JSON.parse(app.services);
                 } catch (error) {
                     console.error('Error parsing services JSON:', error);
-                    services = {}; 
+                    services = {};
                 }
                 const serviceTitles = Object.values(services).map(service => service.serviceTitle).join(', '); // Join titles as a string
 
@@ -381,123 +380,12 @@ exports.sendacknowledgemail = async (req, res) => {
         });
     }
 };
-
-exports.getadminmanagerdata = async (req, res) => {
-    try {
-        // Fetch applications where status is not completed
-        const applications = await ClientManager.findAll({
-            where: {
-                status: { [Sequelize.Op.ne]: 'completed' }  // Ensure status is not completed
-            },
-            attributes: [
-                'branchId',
-                'clientId',
-                'organizationName',
-                'spocUploaded',
-                [Sequelize.fn('COUNT', Sequelize.col('id')), 'branchApplicationCount']  // Count total applications for each branchId
-            ],
-            group: ['branchId', 'clientId', 'organizationName', 'spocUploaded'],
-            raw: true  // Make sure raw results are returned for easier handling
-        });
-
-        // Fetch branch information for matching branch IDs
-        const branchIds = applications.map(app => app.branchId);
-        const branches = await Branch.findAll({
-            where: { id: branchIds },
-            attributes: ['id', 'isHeadBranch'],
-            raw: true  // Fetch the data in a raw format
-        });
-
-        // Create a map for isHeadBranch based on branchId
-        const branchMap = {};
-        branches.forEach(branch => {
-            branchMap[branch.id] = branch.isHeadBranch;
-        });
-
-        // Combine the results by attaching isHeadBranch from the branchMap
-        const result = applications.map(app => ({
-            branchId: app.branchId,
-            clientId: app.clientId,
-            organizationName: app.organizationName,
-            spocUploaded: app.spocUploaded,
-            branchApplicationCount: app.branchApplicationCount,  // Total entries for the branchId
-            isHeadBranch: branchMap[app.branchId] || false  // Default to false if not found
-        }));
-
-        return res.status(200).json({
-            message: 'Branch application counts retrieved successfully',
-            data: result,
-        });
-    } catch (error) {
-        console.error('Error retrieving branch application counts:', error);
-        return res.status(500).json({
-            message: 'Error retrieving branch application counts',
-            error: error.message,
-        });
-    }
-};
-
-// exports.getClientBranchData = async (req, res) => {
-//     try {
-
-//         const clientManagerData = await ClientManager.findAll();
-
-//         if (!clientManagerData.length) {
-//             return res.status(200).json({
-//                 message: 'No data available in ClientManager.'
-//             });
-//         }
-
-//         const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
-//         const clientIds = [...new Set(clientManagerData.map(item => item.clientId))]; 
-
-//         const branches = await Branch.findAll({
-//             where: { id: branchIds }
-//         });
-
-//         const clients = await Client.findAll({
-//             where: { clientId: clientIds }  
-//         });
-
-//         const branchMap = {};
-//         branches.forEach(branch => {
-//             branchMap[branch.id] = branch.get();  
-//         });
-
-//         const clientMap = {};
-//         clients.forEach(client => {
-//             clientMap[client.clientId] = client.get();  
-//         });
-
-//         const result = clientManagerData.map(item => {
-//             const branchData = branchMap[item.branchId] || {};  
-//             const clientData = clientMap[item.clientId] || {}; 
-//             return {
-//                 ...item.get(),                      
-//                 ...branchData,                         
-//                 ...clientData                          
-//             };
-//         });
-
-//         return res.status(200).json({
-//             message: 'Data fetched successfully',
-//             data: result
-//         });
-//     } catch (error) {
-//         console.error('Error fetching client, branch, and client manager data:', error);
-//         return res.status(500).json({
-//             message: 'Error fetching data',
-//             error: error.message
-//         });
-//     }
-// };
-
 exports.getClientBranchData = async (req, res) => {
     try {
         const branchId = req.session.branchId;
-        console.log('branchId',branchId);
+        console.log('branchId', branchId);
         const clientId = req.session.clientId;
-        console.log('clientId',clientId);
+        console.log('clientId', clientId);
         const clientManagerData = await ClientManager.findAll({
             where: { clientId, branchId }
         });
@@ -533,17 +421,16 @@ exports.getClientBranchData = async (req, res) => {
 
         const clientMap = {};
         clients.forEach(client => {
-            clientMap[client.clientId] = client.get();  // Mapping client data by clientId
+            clientMap[client.clientId] = client.get();
         });
 
-        // Merge client manager data with respective branch and client data
         const result = clientManagerData.map(item => {
-            const branchData = branchMap[item.branchId] || {};  // Get branch data for current branchId
-            const clientData = clientMap[item.clientId] || {};  // Get client data for current clientId
+            const branchData = branchMap[item.branchId] || {};
+            const clientData = clientMap[item.clientId] || {};
             return {
-                ...item.get(),                        // ClientManager data
-                branchData,                           // Branch data (merged)
-                clientData                            // Client data (merged)
+                ...item.get(),
+                branchData,
+                clientData
             };
         });
 
@@ -561,12 +448,12 @@ exports.getClientBranchData = async (req, res) => {
         });
     }
 };
-exports.getClientManagerByAppID = async (req, res) => { 
-    const { application_id } = req.body;  
+exports.getClientManagerByAppID = async (req, res) => {
+    const { application_id } = req.body;
 
     try {
         const getClientManager = await ClientManager.findAll({
-            where: { application_id } 
+            where: { application_id }
         });
         if (!getClientManager) {
             return res.status(404).json({
