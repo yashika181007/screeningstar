@@ -565,7 +565,7 @@ exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;  
 
     try {
-        const getClientManager = await ClientManager.findall({
+        const getClientManager = await ClientManager.findAll({
             where: { application_id } 
         });
         if (!getClientManager) {

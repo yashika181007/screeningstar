@@ -1,10 +1,8 @@
 const GenerateReport = require('../models/GenerateReport');
 
-// CREATE - Add a new report
 exports.createGenerateReport = async (req, res) => {
-    try {
+    try {        
         const { user_id, serviceid, formjson } = req.body;
-
         const newReport = await GenerateReport.create({
             user_id,
             serviceid,
@@ -21,7 +19,6 @@ exports.createGenerateReport = async (req, res) => {
     }
 };
 
-// READ - Get all reports
 exports.getAllGenerateReports = async (req, res) => {
     try {
         const reports = await GenerateReport.findAll();
@@ -35,7 +32,6 @@ exports.getAllGenerateReports = async (req, res) => {
     }
 };
 
-// READ - Get a specific report by ID
 exports.getGenerateReportById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -58,7 +54,6 @@ exports.getGenerateReportById = async (req, res) => {
     }
 };
 
-// UPDATE - Update a specific report
 exports.updateGenerateReport = async (req, res) => {
     try {
         const { id } = req.params;
@@ -88,7 +83,6 @@ exports.updateGenerateReport = async (req, res) => {
     }
 };
 
-// DELETE - Delete a specific report
 exports.deleteGenerateReport = async (req, res) => {
     try {
         const { id } = req.params;
