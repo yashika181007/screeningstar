@@ -1,7 +1,6 @@
 const ClientManager = require('../models/ClientManager');
 const Branch = require('../models/Branch');
 const Client = require('../models/Client');
-
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
@@ -396,11 +395,9 @@ exports.getClientBranchData = async (req, res) => {
             });
         }
 
-        // Extract unique client and branch IDs from the fetched client manager data
         const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
         const clientIds = [...new Set(clientManagerData.map(item => item.clientId))];
 
-        // Fetch branch data where clientId matches and branchId matches the primary key
         const branches = await Branch.findAll({
             where: {
                 id: branchIds,
@@ -408,15 +405,13 @@ exports.getClientBranchData = async (req, res) => {
             }
         });
 
-        // Fetch client data where only the clientId matches
         const clients = await Client.findAll({
             where: { clientId: clientIds }
         });
 
-        // Create a map for quick lookup of branch and client data
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();  // Mapping branch data by branchId
+            branchMap[branch.id] = branch.get();  
         });
 
         const clientMap = {};
@@ -434,7 +429,6 @@ exports.getClientBranchData = async (req, res) => {
             };
         });
 
-        // Respond with the merged data
         return res.status(200).json({
             message: 'Data fetched successfully',
             data: result
@@ -483,7 +477,7 @@ exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
 
     try {
-        // Step 1: Find ClientManager data by application_id
+
         const getClientManager = await ClientManager.findAll({
             where: { application_id }
         });
@@ -494,44 +488,38 @@ exports.getClientManagerByAppID = async (req, res) => {
             });
         }
 
-        // Step 2: Extract services from the first result
-        const clientManagerData = getClientManager[0]; // Assuming single result
-        const services = JSON.parse(clientManagerData.services); // Parse the services field (which is a JSON string)
+        const clientManagerData = getClientManager[0];
+        const services = JSON.parse(clientManagerData.services); 
         const serviceIds = Object.keys(services).map(key => services[key].serviceId);
 
-        // Step 3: Fetch formjson from report_forms using raw SQL query
-        const serviceIdsString = serviceIds.join(','); // Convert array to string for SQL IN clause
+        const serviceIdsString = serviceIds.join(','); 
         const query = `
             SELECT service_id, formjson 
             FROM report_forms 
             WHERE service_id IN (${serviceIdsString})
         `;
-        const [reportForms] = await sequelize.query(query); // Run raw SQL query
+        const [reportForms] = await sequelize.query(query);
 
-        // Step 4: Create a map of service_id to formjson
         const formJsonMap = {};
         reportForms.forEach(form => {
-            formJsonMap[form.service_id] = form.formjson; // Create a map of service_id -> formjson
+            formJsonMap[form.service_id] = form.formjson; 
         });
 
-        // Step 5: Enrich services with formjson from report_forms table
         const enrichedServices = Object.keys(services).reduce((acc, key) => {
             const service = services[key];
             const serviceId = service.serviceId;
             acc[key] = {
                 ...service,
-                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null // Parse formjson string to JSON
+                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null 
             };
             return acc;
         }, {});
 
-        // Step 6: Create the final enriched response
         const result = {
-            ...clientManagerData.get(), // Original ClientManager data
-            services: enrichedServices // Enriched services with formjson
+            ...clientManagerData.get(), 
+            services: enrichedServices 
         };
 
-        // Step 7: Send the enriched result
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
             data: result,
