@@ -496,13 +496,13 @@ exports.getClientManagerByAppID = async (req, res) => {
 
         // Step 2: Extract services from the first result
         const clientManagerData = getClientManager[0]; // Assuming single result
-        const services = JSON.parse(clientManagerData.services);
+        const services = JSON.parse(clientManagerData.services); // Parse the services field (which is a JSON string)
         const serviceIds = Object.keys(services).map(key => services[key].serviceId);
 
         // Step 3: Fetch formjson from report_forms using raw SQL query
         const serviceIdsString = serviceIds.join(','); // Convert array to string for SQL IN clause
         const query = `
-            SELECT service_id, json 
+            SELECT service_id, formjson 
             FROM report_forms 
             WHERE service_id IN (${serviceIdsString})
         `;
@@ -511,7 +511,7 @@ exports.getClientManagerByAppID = async (req, res) => {
         // Step 4: Create a map of service_id to formjson
         const formJsonMap = {};
         reportForms.forEach(form => {
-            formJsonMap[form.service_id] = form.formjson;
+            formJsonMap[form.service_id] = form.formjson; // Create a map of service_id -> formjson
         });
 
         // Step 5: Enrich services with formjson from report_forms table
@@ -527,8 +527,8 @@ exports.getClientManagerByAppID = async (req, res) => {
 
         // Step 6: Create the final enriched response
         const result = {
-            ...clientManagerData.get(),
-            services: enrichedServices
+            ...clientManagerData.get(), // Original ClientManager data
+            services: enrichedServices // Enriched services with formjson
         };
 
         // Step 7: Send the enriched result
