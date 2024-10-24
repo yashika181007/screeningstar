@@ -448,7 +448,7 @@ exports.getClientBranchData = async (req, res) => {
         });
     }
 };
-exports.getClientManagerByappID  = async (req, res) => { 
+exports.getClientManagerByAppID  = async (req, res) => { 
     const { application_id } = req.params;
     try {
         const getclientManager = await ClientManager.findOne({
