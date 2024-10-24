@@ -520,7 +520,7 @@ exports.getClientManagerByAppID = async (req, res) => {
             const serviceId = service.serviceId;
             acc[key] = {
                 ...service,
-                formjson: formJsonMap[serviceId] || null // Add formjson if found, otherwise null
+                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null // Parse formjson string to JSON
             };
             return acc;
         }, {});
