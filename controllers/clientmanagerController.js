@@ -448,25 +448,33 @@ exports.getClientBranchData = async (req, res) => {
         });
     }
 };
-exports.getClientManagerByAppID = async (req, res) => {
-    const { application_id } = req.body;
-
+exports.getClientManagerByappID = async (req, res) => { 
+    const { application_id } = req.params;
     try {
-        const getClientManager = await ClientManager.findAll({
+        const getclientManager = await ClientManager.findOne({
             where: { application_id }
         });
-        if (!getClientManager) {
+        
+        if (!getclientManager) {
             return res.status(404).json({
-                message: 'Client Manager not found for the given application ID',
+                message: 'Client Manager not found',
             });
         }
+
+        // Parse the services field into a JSON object
+        let servicesJson = {};
+        if (getclientManager.services) {
+            servicesJson = JSON.parse(getclientManager.services);
+        }
+
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
-            data: getClientManager,
+            data: {
+                ...getclientManager.toJSON(),  // Include all the client manager data
+                services: servicesJson          // Send services as parsed JSON
+            }
         });
-
     } catch (error) {
-        console.error("Error retrieving Client Manager:", error);
         return res.status(500).json({
             message: 'Error retrieving Client Manager',
             error: error.message,
