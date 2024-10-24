@@ -233,7 +233,6 @@ exports.getClientApplicationCounts = async (req, res) => {
                 };
                 acc.push(client);
             }
-
             client.applications.push({
                 branchIds: app.branchId,
                 application_id: app.application_id,
@@ -396,11 +395,9 @@ exports.getClientBranchData = async (req, res) => {
             });
         }
 
-        // Extract unique client and branch IDs from the fetched client manager data
         const branchIds = [...new Set(clientManagerData.map(item => item.branchId))];
         const clientIds = [...new Set(clientManagerData.map(item => item.clientId))];
 
-        // Fetch branch data where clientId matches and branchId matches the primary key
         const branches = await Branch.findAll({
             where: {
                 id: branchIds,
@@ -408,15 +405,13 @@ exports.getClientBranchData = async (req, res) => {
             }
         });
 
-        // Fetch client data where only the clientId matches
         const clients = await Client.findAll({
             where: { clientId: clientIds }
         });
 
-        // Create a map for quick lookup of branch and client data
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();  // Mapping branch data by branchId
+            branchMap[branch.id] = branch.get(); 
         });
 
         const clientMap = {};
@@ -434,7 +429,6 @@ exports.getClientBranchData = async (req, res) => {
             };
         });
 
-        // Respond with the merged data
         return res.status(200).json({
             message: 'Data fetched successfully',
             data: result
