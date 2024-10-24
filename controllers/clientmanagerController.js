@@ -448,21 +448,88 @@ exports.getClientBranchData = async (req, res) => {
         });
     }
 };
+// exports.getClientManagerByAppID = async (req, res) => {
+//     const { application_id } = req.body;
+
+//     try {
+//         const getClientManager = await ClientManager.findAll({
+//             where: { application_id }
+//         });
+//         if (!getClientManager) {
+//             return res.status(404).json({
+//                 message: 'Client Manager not found for the given application ID',
+//             });
+//         }
+//         return res.status(200).json({
+//             message: 'Client Manager retrieved successfully',
+//             data: getClientManager,
+//         });
+
+//     } catch (error) {
+//         console.error("Error retrieving Client Manager:", error);
+//         return res.status(500).json({
+//             message: 'Error retrieving Client Manager',
+//             error: error.message,
+//         });
+//     }
+// };
+
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
 
     try {
+        // Step 1: Find ClientManager data by application_id
         const getClientManager = await ClientManager.findAll({
             where: { application_id }
         });
-        if (!getClientManager) {
+
+        if (!getClientManager || getClientManager.length === 0) {
             return res.status(404).json({
                 message: 'Client Manager not found for the given application ID',
             });
         }
+
+        // Step 2: Extract services from the first result
+        const clientManagerData = getClientManager[0]; // Assuming single result
+        const services = JSON.parse(clientManagerData.services);
+        const serviceIds = Object.keys(services).map(key => services[key].serviceId);
+
+        // Step 3: Fetch formjson from report_forms using raw SQL query
+        const serviceIdsString = serviceIds.join(','); // Convert array to string for SQL IN clause
+        const query = `
+            SELECT service_id, json 
+            FROM report_forms 
+            WHERE service_id IN (${serviceIdsString})
+        `;
+        const [reportForms] = await sequelize.query(query); // Run raw SQL query
+
+        // Step 4: Create a map of service_id to formjson
+        const formJsonMap = {};
+        reportForms.forEach(form => {
+            formJsonMap[form.service_id] = form.formjson;
+        });
+
+        // Step 5: Enrich services with formjson from report_forms table
+        const enrichedServices = Object.keys(services).reduce((acc, key) => {
+            const service = services[key];
+            const serviceId = service.serviceId;
+            acc[key] = {
+                ...service,
+                formjson: formJsonMap[serviceId] || null // Add formjson if found, otherwise null
+            };
+            return acc;
+        }, {});
+
+        // Step 6: Create the final enriched response
+        const result = {
+            ...clientManagerData.get(),
+            services: enrichedServices
+        };
+
+        // Step 7: Send the enriched result
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
-            data: getClientManager,
+            data: result,
         });
 
     } catch (error) {
