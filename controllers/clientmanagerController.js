@@ -474,6 +474,8 @@ exports.getClientBranchData = async (req, res) => {
 //     }
 // };
 
+const ClientManager = require('../models/ClientManager'); // ClientManager model
+
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
 
@@ -497,7 +499,7 @@ exports.getClientManagerByAppID = async (req, res) => {
         // Step 3: Fetch formjson from report_forms using raw SQL query
         const serviceIdsString = serviceIds.join(','); // Convert array to string for SQL IN clause
         const query = `
-            SELECT service_id, json 
+            SELECT service_id, formjson 
             FROM report_forms 
             WHERE service_id IN (${serviceIdsString})
         `;
