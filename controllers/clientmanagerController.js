@@ -474,8 +474,6 @@ exports.getClientBranchData = async (req, res) => {
 //     }
 // };
 
-const ClientManager = require('../models/ClientManager'); // ClientManager model
-
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
 
