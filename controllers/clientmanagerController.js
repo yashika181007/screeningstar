@@ -474,6 +474,11 @@ exports.getClientBranchData = async (req, res) => {
 //     }
 // };
 
+const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
+    host: config.database.host,
+    dialect: 'mysql',
+});
+
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
 
