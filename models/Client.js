@@ -100,7 +100,7 @@ const Client = sequelize.define('client', {
         allowNull: false,
     },
     status: {
-        type: DataTypes.ENUM('Active', 'In Active'),
+        type: DataTypes.ENUM('Active', 'Inactive'),
         allowNull: false,
     },
     clientSpoc: {
