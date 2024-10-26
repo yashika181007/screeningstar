@@ -10,6 +10,6 @@ router.put('/clientmanager/:id',verifyToken , clientmanagerController.updateClie
 router.delete('/clientmanager/:id',verifyToken , clientmanagerController.deleteClientManager);   
 router.get('/getClientApplicationCounts',verifyToken , clientmanagerController.getClientApplicationCounts);  
 router.get('/sendacknowledgemail',verifyToken , clientmanagerController.sendacknowledgemail);         
-router.get('/getdata',verifyToken , clientmanagerController.getClientBranchData);     
+router.get('/getdata/:clientId/:branchId',verifyToken , clientmanagerController.getClientBranchData);     
 router.post('/findapplication',verifyToken , clientmanagerController.getClientManagerByAppID); 
 module.exports = router;

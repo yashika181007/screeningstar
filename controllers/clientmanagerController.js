@@ -383,10 +383,10 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getClientBranchData = async (req, res) => {
     try {
-        const branchId = req.session.branchId;
+        const { clientId, branchId } = req.params;  // Read from URL parameters
         console.log('getbranchId', branchId);
-        const clientId = req.session.clientId;
-        console.log('gclientId', clientId);
+        console.log('getclientId', clientId);
+
         const clientManagerData = await ClientManager.findAll({
             where: { clientId, branchId }
         });
@@ -444,6 +444,7 @@ exports.getClientBranchData = async (req, res) => {
         });
     }
 };
+
 // exports.getClientManagerByAppID = async (req, res) => {
 //     const { application_id } = req.body;
 
