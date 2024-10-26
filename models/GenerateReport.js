@@ -25,7 +25,15 @@ const GenerateReport = sequelize.define('generateReporte', {
         onUpdate: 'CASCADE',
     },
 
-    serviceid: {
+    clientId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    branchId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    application_id: {
         type: DataTypes.STRING,
         allowNull: false,
     },

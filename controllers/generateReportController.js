@@ -5,7 +5,9 @@ exports.createGenerateReport = async (req, res) => {
         const { user_id, serviceid, formjson } = req.body;
         const newReport = await GenerateReport.create({
             user_id,
-            serviceid,
+            clientId,
+            branchId,
+            application_id,
             formjson,
         });
 

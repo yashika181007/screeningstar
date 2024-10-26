@@ -383,7 +383,7 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getClientBranchData = async (req, res) => {
     try {
-        const { clientId, branchId } = req.params;  // Read from URL parameters
+        const { clientId, branchId } = req.params;          
         console.log('getbranchId', branchId);
         console.log('getclientId', clientId);
 
