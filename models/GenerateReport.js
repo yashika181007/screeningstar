@@ -8,7 +8,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
     dialect: 'mysql',
 });
 
-const GenerateReport = sequelize.define('generateReporte', {
+const GenerateReport = sequelize.define('generatereport', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
