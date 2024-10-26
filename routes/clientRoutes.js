@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../config/verifyToken');
+const verifyBothTokens = require('./config/verifyBothTokens');
 const clientController = require('../controllers/clientController');
 
 router.post('/clients',verifyToken, clientController.createClient);
