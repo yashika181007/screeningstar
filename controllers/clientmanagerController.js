@@ -7,6 +7,8 @@ const config = require('../config');
 const { Sequelize, Op } = require('sequelize');
 // const { v4: uuidv4 } = require('uuid');  
 const nodemailer = require('nodemailer');
+const express = require('express');
+const session = require('express-session');
 
 const generateNumericId = () => {
     return Math.floor(10000000 + Math.random() * 90000000);
@@ -44,7 +46,7 @@ exports.createClientManager = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const { user_id, clientId, id: branchId } = decodedToken; // Destructuring
+        const { user_id, clientId, id: branchId } = decodedToken; 
         console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
 
         if (!user_id || !clientId || !branchId) {
@@ -382,9 +384,9 @@ exports.sendacknowledgemail = async (req, res) => {
 exports.getClientBranchData = async (req, res) => {
     try {
         const branchId = req.session.branchId;
-        console.log('branchId', branchId);
+        console.log('getbranchId', branchId);
         const clientId = req.session.clientId;
-        console.log('clientId', clientId);
+        console.log('gclientId', clientId);
         const clientManagerData = await ClientManager.findAll({
             where: { clientId, branchId }
         });
