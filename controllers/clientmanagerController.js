@@ -475,7 +475,7 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
 
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
-
+console.log('application_id',req.body);
     try {
 
         const getClientManager = await ClientManager.findAll({
