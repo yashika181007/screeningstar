@@ -2,11 +2,16 @@ const GenerateReport = require('../models/GenerateReport');
 
 exports.createGenerateReport = async (req, res) => {
     try {        
-        const { user_id,
+        const { 
+            user_id,
             clientId,
             branchId,
             application_id,
-            formjson,} = req.body;
+            formjson
+        } = req.body;
+
+        console.log('Request body:', req.body);
+
         const newReport = await GenerateReport.create({
             user_id,
             clientId,
@@ -14,6 +19,8 @@ exports.createGenerateReport = async (req, res) => {
             application_id,
             formjson,
         });
+
+        console.log('New GenerateReport entry created:', newReport);
 
         return res.status(201).json({
             message: 'GenerateReport created successfully',
