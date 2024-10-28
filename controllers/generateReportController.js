@@ -47,7 +47,7 @@ exports.getAllGenerateReports = async (req, res) => {
 
 exports.getGenerateReportById = async (req, res) => {
     try {
-        const { application_id } = req.body;
+        const { application_id } = req.params;
 
         const report = await GenerateReport.findByPk(id);
 
