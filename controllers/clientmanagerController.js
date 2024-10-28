@@ -16,75 +16,39 @@ const generateNumericId = () => {
 
 exports.createClientManager = async (req, res) => {
     try {
+        const { user_id, clientId, branchId, formjson } = req.body;
         console.log("Request received:", req.body);
 
-        const token = req.headers['authorization'];
-        console.log("Authorization header:", token);
-
-        if (!token) {
-            console.log("No token provided.");
-            return res.status(401).json({ message: 'No token provided. Please log in.' });
-        }
-
-        const tokenParts = token.split(' ');
-        console.log("Token parts:", tokenParts);
-
-        if (tokenParts.length !== 2) {
-            console.log("Invalid token format.");
-            return res.status(401).json({ message: 'Invalid token format. Please log in.' });
-        }
-
-        const jwtToken = tokenParts[1];
-        console.log("JWT token extracted:", jwtToken);
-        let decodedToken;
-
-        try {
-            decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
-            console.log("Decoded token:", decodedToken);
-        } catch (err) {
-            console.log("Invalid token:", err);
-            return res.status(401).json({ message: 'Invalid token. Please log in again.' });
-        }
-
-        const { user_id, clientId, id: branchId } = decodedToken;
-        console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
-
+        // Check if required fields are provided
         if (!user_id || !clientId || !branchId) {
-            console.log("User not authenticated.");
-            return res.status(401).json({ message: 'User not authenticated. Please log in.' });
+            return res.status(400).json({ message: 'Missing required fields: user_id, clientId, or branchId.' });
         }
 
         let newApplicationId;
-        let isDuplicate;
+        let isDuplicate = true;
 
-        do {
+        while (isDuplicate) {
             newApplicationId = generateNumericId();
             console.log("Generated application ID:", newApplicationId);
 
-            const duplicateApplication = await ClientManager.findOne({ where: { application_id: newApplicationId } });
+            const duplicateApplication = await ClientManager.findOne({
+                where: { application_id: newApplicationId },
+            });
             isDuplicate = !!duplicateApplication;
 
-            console.log("Is duplicate application:", isDuplicate);
-
             if (isDuplicate) {
-                console.log("Duplicate application ID detected.");
-                return res.status(400).json({
-                    message: 'Duplicate application ID detected. Please try again.',
-                });
+                console.log("Duplicate application ID detected, generating a new ID.");
             }
-        } while (isDuplicate);
+        }
 
-        console.log("No duplicate found, proceeding to create a new case.");
+        console.log("Unique application ID generated:", newApplicationId);
 
+        // Create new case
         const newCase = await ClientManager.create({
             ...req.body,
-            user_id,
-            clientId,
-            branchId,
             application_id: newApplicationId,
         });
-        console.log("Incoming request body:", req.body);
-
+        
         console.log("New case created successfully:", newCase);
 
         return res.status(201).json({
@@ -383,7 +347,7 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getClientBranchData = async (req, res) => {
     try {
-        const { clientId, branchId } = req.params;
+        const { clientId, branchId } = req.params;          
         console.log('getbranchId', branchId);
         console.log('getclientId', clientId);
 
@@ -413,7 +377,7 @@ exports.getClientBranchData = async (req, res) => {
 
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();
+            branchMap[branch.id] = branch.get();  
         });
 
         const clientMap = {};
@@ -478,15 +442,11 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
 
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
-    console.log('application_id:', application_id);
-
-    if (!application_id) {
-        return res.status(400).json({ message: 'Application ID is required.' });
-    }
-
+console.log('application_id',req.body);
     try {
+
         const getClientManager = await ClientManager.findAll({
-            where: { application_id },
+            where: { application_id }
         });
 
         if (!getClientManager || getClientManager.length === 0) {
@@ -496,34 +456,20 @@ exports.getClientManagerByAppID = async (req, res) => {
         }
 
         const clientManagerData = getClientManager[0];
-        let services;
+        const services = JSON.parse(clientManagerData.services); 
+        const serviceIds = Object.keys(services).map(key => services[key].serviceId);
 
-        try {
-            services = JSON.parse(clientManagerData.services);
-        } catch (parseError) {
-            console.error("Error parsing services JSON:", parseError);
-            return res.status(500).json({
-                message: 'Error parsing services data',
-                error: parseError.message,
-            });
-        }
-
-        const serviceIds = Object.keys(services).map((key) => services[key].serviceId);
-        console.log("serviceIds:", serviceIds);
-
-        const serviceIdsString = serviceIds.join(',');
+        const serviceIdsString = serviceIds.join(','); 
         const query = `
             SELECT service_id, formjson 
             FROM report_forms 
             WHERE service_id IN (${serviceIdsString})
         `;
-        
         const [reportForms] = await sequelize.query(query);
-        console.log("reportForms:", reportForms);
 
         const formJsonMap = {};
-        reportForms.forEach((form) => {
-            formJsonMap[form.service_id] = form.formjson;
+        reportForms.forEach(form => {
+            formJsonMap[form.service_id] = form.formjson; 
         });
 
         const enrichedServices = Object.keys(services).reduce((acc, key) => {
@@ -531,20 +477,21 @@ exports.getClientManagerByAppID = async (req, res) => {
             const serviceId = service.serviceId;
             acc[key] = {
                 ...service,
-                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null,
+                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null 
             };
             return acc;
         }, {});
 
         const result = {
-            ...clientManagerData.get(),
-            services: enrichedServices,
+            ...clientManagerData.get(), 
+            services: enrichedServices 
         };
 
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
             data: result,
         });
+
     } catch (error) {
         console.error("Error retrieving Client Manager:", error);
         return res.status(500).json({

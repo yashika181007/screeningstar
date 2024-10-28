@@ -27,7 +27,7 @@ exports.createcandidatemanager = async (req, res) => {
         const branchId  = decodedToken.id;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
-        console.log('branchId:', branchId);;
+        console.log('branchId:', branchId);
 
         if (!user_id || !clientId ||!branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
