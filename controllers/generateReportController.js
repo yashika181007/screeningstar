@@ -47,9 +47,10 @@ exports.getAllGenerateReports = async (req, res) => {
 
 exports.getGenerateReportById = async (req, res) => {
     try {
-        const { application_id } = req.params;
+        const { application_id } = req.params; // Extract application_id from request parameters
 
-        const report = await GenerateReport.findAll(application_id);
+        // Use findOne with a where clause to find the report by application_id
+        const report = await GenerateReport.findOne({ where: { application_id } });
 
         if (!report) {
             return res.status(404).json({
