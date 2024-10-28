@@ -26,13 +26,11 @@ exports.createcandidatemanager = async (req, res) => {
         }
 
         // Extract and log user, client, and branch IDs
-        const { user_id, clientId, branchId } = decodedToken;
-        console.log("User ID:", user_id);
-        console.log("Client ID:", clientId);
-        console.log("Branch ID:", branchId);
+        const { user_id, clientId, id: branchId } = decodedToken;
+        console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
 
         if (!user_id || !clientId || !branchId) {
-            console.log("Missing authentication details in token.");
+            console.log("User not authenticated.");
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
