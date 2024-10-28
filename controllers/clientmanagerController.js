@@ -46,7 +46,7 @@ exports.createClientManager = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const { user_id, clientId, id: branchId } = decodedToken; 
+        const { user_id, clientId, id: branchId } = decodedToken;
         console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
 
         if (!user_id || !clientId || !branchId) {
@@ -383,7 +383,7 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getClientBranchData = async (req, res) => {
     try {
-        const { clientId, branchId } = req.params;          
+        const { clientId, branchId } = req.params;
         console.log('getbranchId', branchId);
         console.log('getclientId', clientId);
 
@@ -413,7 +413,7 @@ exports.getClientBranchData = async (req, res) => {
 
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();  
+            branchMap[branch.id] = branch.get();
         });
 
         const clientMap = {};
@@ -478,9 +478,9 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
 
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
-console.log('application_id',req.body);
-    try {
+    console.log('application_id:', req.body);
 
+    try {
         const getClientManager = await ClientManager.findAll({
             where: { application_id }
         });
@@ -492,10 +492,10 @@ console.log('application_id',req.body);
         }
 
         const clientManagerData = getClientManager[0];
-        const services = JSON.parse(clientManagerData.services); 
+        const services = JSON.parse(clientManagerData.services);
         const serviceIds = Object.keys(services).map(key => services[key].serviceId);
 
-        const serviceIdsString = serviceIds.join(','); 
+        const serviceIdsString = serviceIds.join(',');
         const query = `
             SELECT service_id, formjson 
             FROM report_forms 
@@ -505,7 +505,7 @@ console.log('application_id',req.body);
 
         const formJsonMap = {};
         reportForms.forEach(form => {
-            formJsonMap[form.service_id] = form.formjson; 
+            formJsonMap[form.service_id] = form.formjson;
         });
 
         const enrichedServices = Object.keys(services).reduce((acc, key) => {
@@ -513,15 +513,50 @@ console.log('application_id',req.body);
             const serviceId = service.serviceId;
             acc[key] = {
                 ...service,
-                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null 
+                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null
             };
             return acc;
         }, {});
 
         const result = {
-            ...clientManagerData.get(), 
-            services: enrichedServices 
+            ...clientManagerData.get(),
+            services: enrichedServices
         };
+
+        // Check and create tables dynamically based on formjson
+        const queryInterface = sequelize.getQueryInterface();
+
+        for (const key in enrichedServices) {
+            const formjson = enrichedServices[key].formjson;
+
+            if (formjson && formjson.db_table) {
+                const tableName = formjson.db_table;
+
+                // Check if table already exists
+                const tableExists = await queryInterface.tableExists(tableName);
+
+                if (!tableExists) {
+                    console.log(`Creating table ${tableName} as it does not exist.`);
+                    
+                    // Define columns based on formjson structure
+                    const columns = {};
+                    formjson.rows.forEach(row => {
+                        row.inputs.forEach(input => {
+                            columns[input.name] = {
+                                type: Sequelize.STRING, // Change type based on `input.type` if needed
+                                allowNull: true
+                            };
+                        });
+                    });
+
+                    // Create table
+                    await queryInterface.createTable(tableName, columns);
+                    console.log(`Table ${tableName} created successfully.`);
+                } else {
+                    console.log(`Table ${tableName} already exists. Skipping creation.`);
+                }
+            }
+        }
 
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
