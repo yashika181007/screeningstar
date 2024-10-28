@@ -537,9 +537,26 @@ exports.getClientManagerByAppID = async (req, res) => {
 
                 if (!tableExists) {
                     console.log(`Creating table ${tableName} as it does not exist.`);
-                    
-                    // Define columns based on formjson structure and add timestamps
+
+                    // Define columns based on formjson structure and add standard fields
                     const columns = {
+                        id: {
+                            type: Sequelize.INTEGER,
+                            primaryKey: true,
+                            autoIncrement: true
+                        },
+                        clientId: {
+                            type: Sequelize.STRING,
+                            allowNull: false
+                        },
+                        branchId: {
+                            type: Sequelize.STRING,
+                            allowNull: false
+                        },
+                        application_id: {
+                            type: Sequelize.STRING,
+                            allowNull: false
+                        },
                         ...formjson.rows.reduce((acc, row) => {
                             row.inputs.forEach(input => {
                                 acc[input.name] = {
@@ -563,7 +580,7 @@ exports.getClientManagerByAppID = async (req, res) => {
 
                     // Create table
                     await queryInterface.createTable(tableName, columns);
-                    console.log(`Table ${tableName} created successfully with timestamps.`);
+                    console.log(`Table ${tableName} created successfully with additional fields.`);
                 } else {
                     console.log(`Table ${tableName} already exists. Skipping creation.`);
                 }
