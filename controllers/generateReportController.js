@@ -2,7 +2,11 @@ const GenerateReport = require('../models/GenerateReport');
 
 exports.createGenerateReport = async (req, res) => {
     try {        
-        const { user_id, serviceid, formjson } = req.body;
+        const { user_id,
+            clientId,
+            branchId,
+            application_id,
+            formjson,} = req.body;
         const newReport = await GenerateReport.create({
             user_id,
             clientId,
