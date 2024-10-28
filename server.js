@@ -22,6 +22,7 @@ const clientmanagerRoutes = require('./routes/clientmanagerRoutes');
 const candidatemanagerRoutes = require('./routes/candidatemanagerRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const generateReportRoutes = require('./routes/generateReportRoutes');
+const candidateportalRoutes = require('./routes/candidateportalRoutes');
 const app = express();
 
 app.use(cors());
@@ -95,6 +96,7 @@ app.use('/Screeningstar', clientmanagerRoutes);
 app.use('/Screeningstar', candidatemanagerRoutes);
 app.use('/Screeningstar', invoiceRoutes);
 app.use('/Screeningstar', generateReportRoutes);
+app.use('/Screeningstar', candidateportalRoutes);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!', error: err.message });
