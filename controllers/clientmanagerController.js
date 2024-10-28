@@ -46,7 +46,7 @@ exports.createClientManager = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        const { user_id, clientId, id: branchId } = decodedToken; 
+        const { user_id, clientId, id: branchId } = decodedToken;
         console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
 
         if (!user_id || !clientId || !branchId) {
@@ -383,7 +383,7 @@ exports.sendacknowledgemail = async (req, res) => {
 };
 exports.getClientBranchData = async (req, res) => {
     try {
-        const { clientId, branchId } = req.params;          
+        const { clientId, branchId } = req.params;
         console.log('getbranchId', branchId);
         console.log('getclientId', clientId);
 
@@ -413,7 +413,7 @@ exports.getClientBranchData = async (req, res) => {
 
         const branchMap = {};
         branches.forEach(branch => {
-            branchMap[branch.id] = branch.get();  
+            branchMap[branch.id] = branch.get();
         });
 
         const clientMap = {};
@@ -478,11 +478,15 @@ const sequelize = new Sequelize(config.database.database, config.database.user, 
 
 exports.getClientManagerByAppID = async (req, res) => {
     const { application_id } = req.body;
-console.log('application_id',req.body);
-    try {
+    console.log('application_id:', application_id);
 
+    if (!application_id) {
+        return res.status(400).json({ message: 'Application ID is required.' });
+    }
+
+    try {
         const getClientManager = await ClientManager.findAll({
-            where: { application_id }
+            where: { application_id },
         });
 
         if (!getClientManager || getClientManager.length === 0) {
@@ -492,20 +496,34 @@ console.log('application_id',req.body);
         }
 
         const clientManagerData = getClientManager[0];
-        const services = JSON.parse(clientManagerData.services); 
-        const serviceIds = Object.keys(services).map(key => services[key].serviceId);
+        let services;
 
-        const serviceIdsString = serviceIds.join(','); 
+        try {
+            services = JSON.parse(clientManagerData.services);
+        } catch (parseError) {
+            console.error("Error parsing services JSON:", parseError);
+            return res.status(500).json({
+                message: 'Error parsing services data',
+                error: parseError.message,
+            });
+        }
+
+        const serviceIds = Object.keys(services).map((key) => services[key].serviceId);
+        console.log("serviceIds:", serviceIds);
+
+        const serviceIdsString = serviceIds.join(',');
         const query = `
             SELECT service_id, formjson 
             FROM report_forms 
             WHERE service_id IN (${serviceIdsString})
         `;
+        
         const [reportForms] = await sequelize.query(query);
+        console.log("reportForms:", reportForms);
 
         const formJsonMap = {};
-        reportForms.forEach(form => {
-            formJsonMap[form.service_id] = form.formjson; 
+        reportForms.forEach((form) => {
+            formJsonMap[form.service_id] = form.formjson;
         });
 
         const enrichedServices = Object.keys(services).reduce((acc, key) => {
@@ -513,21 +531,20 @@ console.log('application_id',req.body);
             const serviceId = service.serviceId;
             acc[key] = {
                 ...service,
-                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null 
+                formjson: formJsonMap[serviceId] ? JSON.parse(formJsonMap[serviceId]) : null,
             };
             return acc;
         }, {});
 
         const result = {
-            ...clientManagerData.get(), 
-            services: enrichedServices 
+            ...clientManagerData.get(),
+            services: enrichedServices,
         };
 
         return res.status(200).json({
             message: 'Client Manager retrieved successfully',
             data: result,
         });
-
     } catch (error) {
         console.error("Error retrieving Client Manager:", error);
         return res.status(500).json({
