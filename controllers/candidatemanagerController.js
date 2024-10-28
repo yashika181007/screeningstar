@@ -63,7 +63,7 @@ exports.createcandidatemanager = async (req, res) => {
             from: 'yashikawebstep@gmail.com',
             to: emailId,
             subject: `Welcome, ${applicantName}`,
-            text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttp://screeningstar.in/candidate-portal.php?client_id=${clientId}&cid=${newCase.id}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
+            text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttps://screeningstar.onrender.com/Screeningstar/candidate-portal.php?client_id=${clientId}&cid=${newCase.id}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
         };
         console.log("Mail options:", mailOptions);
 
