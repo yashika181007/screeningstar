@@ -538,20 +538,32 @@ exports.getClientManagerByAppID = async (req, res) => {
                 if (!tableExists) {
                     console.log(`Creating table ${tableName} as it does not exist.`);
                     
-                    // Define columns based on formjson structure
-                    const columns = {};
-                    formjson.rows.forEach(row => {
-                        row.inputs.forEach(input => {
-                            columns[input.name] = {
-                                type: Sequelize.STRING, // Change type based on `input.type` if needed
-                                allowNull: true
-                            };
-                        });
-                    });
+                    // Define columns based on formjson structure and add timestamps
+                    const columns = {
+                        ...formjson.rows.reduce((acc, row) => {
+                            row.inputs.forEach(input => {
+                                acc[input.name] = {
+                                    type: Sequelize.STRING, // Adjust type if necessary
+                                    allowNull: true
+                                };
+                            });
+                            return acc;
+                        }, {}),
+                        createdAt: {
+                            type: Sequelize.DATE,
+                            allowNull: false,
+                            defaultValue: Sequelize.NOW
+                        },
+                        updatedAt: {
+                            type: Sequelize.DATE,
+                            allowNull: false,
+                            defaultValue: Sequelize.NOW
+                        }
+                    };
 
                     // Create table
                     await queryInterface.createTable(tableName, columns);
-                    console.log(`Table ${tableName} created successfully.`);
+                    console.log(`Table ${tableName} created successfully with timestamps.`);
                 } else {
                     console.log(`Table ${tableName} already exists. Skipping creation.`);
                 }
