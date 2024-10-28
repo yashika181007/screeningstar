@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../config/verifyToken');
-const verifyBothTokens = require('./config/verifyBothTokens');
+// const verifyBothTokens = require('./config/verifyBothTokens');
 const clientmanagerController = require('../controllers/clientmanagerController');
 
 router.post('/clientmanager', verifyToken ,clientmanagerController.createClientManager);       
