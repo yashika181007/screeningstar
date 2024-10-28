@@ -6,7 +6,6 @@ const nodemailer = require('nodemailer');
 
 exports.createcandidatemanager = async (req, res) => {
     try {
-
         const token = req.headers['authorization'];
         console.log("Authorization token:", token);
         if (!token) {
@@ -25,7 +24,6 @@ exports.createcandidatemanager = async (req, res) => {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
-        // Extract and log user, client, and branch IDs
         const { user_id, clientId, id: branchId } = decodedToken;
         console.log("Extracted values from token - user_id:", user_id, "clientId:", clientId, "branchId:", branchId);
 
@@ -34,10 +32,9 @@ exports.createcandidatemanager = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
-        // Extract and log request body data
         const { applicantName, organizationName, MobileNumber, emailId, employeeId, services } = req.body;
         console.log("req.body:", req.body);
-  
+
         const newCase = await CandidateManager.create({
             user_id,
             clientId,
@@ -66,7 +63,7 @@ exports.createcandidatemanager = async (req, res) => {
             from: 'yashikawebstep@gmail.com',
             to: emailId,
             subject: `Welcome, ${applicantName}`,
-            text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttp://screeningstar.in/candidate-portal.php?client_id=${clientId}&cid=${id}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
+            text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttp://screeningstar.in/candidate-portal.php?client_id=${clientId}&cid=${newCase.id}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
         };
         console.log("Mail options:", mailOptions);
 
