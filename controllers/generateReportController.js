@@ -10,7 +10,7 @@ exports.createGenerateReport = async (req, res) => {
             formjson
         } = req.body;
 
-        console.log('Request body:', req.body);
+        // console.log('Request body:', req.body);
 
         const newReport = await GenerateReport.create({
             user_id,
@@ -20,7 +20,7 @@ exports.createGenerateReport = async (req, res) => {
             formjson,
         });
 
-        console.log('New GenerateReport entry created:', newReport);
+        // console.log('New GenerateReport entry created:', newReport);
 
         return res.status(201).json({
             message: 'GenerateReport created successfully',
