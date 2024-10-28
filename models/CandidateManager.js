@@ -45,6 +45,10 @@ const CandidateManager = sequelize.define('candidatemanager', {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },
+    applicantName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     organizationName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -62,10 +66,6 @@ const CandidateManager = sequelize.define('candidatemanager', {
         allowNull: false,
     },
 
-    packageselection: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
     services: {
         type: DataTypes.JSON,
         allowNull: true,

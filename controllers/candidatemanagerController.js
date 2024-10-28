@@ -2,6 +2,7 @@ const CandidateManager = require('../models/CandidateManager');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const nodemailer = require('nodemailer'); 
 
 exports.createcandidatemanager = async (req, res) => {
     try {
@@ -24,15 +25,14 @@ exports.createcandidatemanager = async (req, res) => {
 
         const user_id = decodedToken.user_id;
         const clientId = decodedToken.clientId;
-        const branchId  = decodedToken.id;
+        const branchId = decodedToken.id;
         console.log('User ID:', user_id);
         console.log('Client ID:', clientId);
-        console.log('branchId:', branchId);
+        console.log('Branch ID:', branchId);
 
-        if (!user_id || !clientId ||!branchId) {
+        if (!user_id || !clientId || !branchId) {
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
-
         const newCase = await CandidateManager.create({
             ...req.body,
             user_id,
@@ -40,19 +40,50 @@ exports.createcandidatemanager = async (req, res) => {
             branchId,
         });
 
-        console.log('req.body', req.body);
-        console.log('newCase', newCase);
+        console.log('Request Body:', req.body);
+        console.log('New Case:', newCase);
+
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw' 
+            },
+        });
+
+
+        const mailOptions = {
+            from: 'yashikawebstep@gmail.com',
+            to: emailId,
+            subject: `Welcome, ${employeeName}`,
+            text: `Hi ${employeeName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttp://screeningstar.in/candidate-portal.php?client_id=${clientId}&cid=${branchId}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`
+        };
+
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email to candidate:', error);
+            } else {
+                console.log('Email sent successfully: ' + info.response);
+            }
+        });
+
         return res.status(201).json({
-            message: 'Case uploaded successfully',
+            message: 'Case uploaded successfully and email sent',
             data: newCase,
         });
     } catch (error) {
+        console.error('Error creating candidate manager case:', error);
         return res.status(500).json({
             message: 'Error creating case upload',
             error: error.message,
         });
     }
 };
+
 
 exports.getAllCandidateManagers = async (req, res) => {
     try {
