@@ -2,13 +2,13 @@ const Users = require('../models/User');
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 const Client = require('../models/Client');
-
+const CandidateManager = require('../models/CandidateManager');
 const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
     host: config.database.host,
     dialect: 'mysql',
 });
 
-const GenerateReport = sequelize.define('generatereport', {
+const CandidatePortal = sequelize.define('candidateportal', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -19,7 +19,7 @@ const GenerateReport = sequelize.define('generatereport', {
         allowNull: false,
         references: {
             model: Users,
-            key: 'id',                                                                                                                                                    
+            key: 'id',
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
@@ -33,9 +33,15 @@ const GenerateReport = sequelize.define('generatereport', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    application_id: {
-        type: DataTypes.STRING,
+    candidate_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: CandidateManager,
+            key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
     },
     formjson: {
         type: DataTypes.JSON,
@@ -48,12 +54,12 @@ const GenerateReport = sequelize.define('generatereport', {
         paranoid: false,
     });
 
-console.log('GenerateReport model:', GenerateReport);
+console.log('CandidatePortal model:', CandidatePortal);
 
 sequelize.sync()
-    .then(() => console.log('GenerateReport table created successfully.'))
+    .then(() => console.log('CandidatePortal table created successfully.'))
     .catch(error => {
-        console.error('Error creating GenerateReport table:', error);
+        console.error('Error creating CandidatePortal table:', error);
     });
 
-module.exports = GenerateReport;
+module.exports = CandidatePortal;
