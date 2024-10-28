@@ -6,26 +6,40 @@ const nodemailer = require('nodemailer');
 
 exports.createcandidatemanager = async (req, res) => {
     try {
+
         const token = req.headers['authorization'];
+        console.log("Authorization token:", token);
         if (!token) {
+            console.log("No token provided");
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
 
         const jwtToken = token.split(' ')[1];
+        console.log("JWT Token:", jwtToken);
         let decodedToken;
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
+            console.log("Decoded Token:", decodedToken);
         } catch (err) {
+            console.log("Invalid token:", err);
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
 
+        // Extract and log user, client, and branch IDs
         const { user_id, clientId, branchId } = decodedToken;
+        console.log("User ID:", user_id);
+        console.log("Client ID:", clientId);
+        console.log("Branch ID:", branchId);
+
         if (!user_id || !clientId || !branchId) {
+            console.log("Missing authentication details in token.");
             return res.status(401).json({ message: 'User not authenticated. Please log in.' });
         }
 
+        // Extract and log request body data
         const { applicantName, organizationName, MobileNumber, emailId, employeeId, services } = req.body;
-
+        console.log("req.body:", req.body);
+  
         const newCase = await CandidateManager.create({
             user_id,
             clientId,
@@ -37,16 +51,18 @@ exports.createcandidatemanager = async (req, res) => {
             employeeId,
             services,
         });
+        console.log("New Case created:", newCase);
 
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
+                user: 'yashikawebstep@gmail.com',
+                pass: 'tnudhsdgcwkknraw'
             },
         });
+        console.log("Email transporter set up");
 
         const mailOptions = {
             from: 'yashikawebstep@gmail.com',
@@ -54,15 +70,17 @@ exports.createcandidatemanager = async (req, res) => {
             subject: `Welcome, ${applicantName}`,
             text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttp://screeningstar.in/candidate-portal.php?client_id=${clientId}&cid=${branchId}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
         };
+        console.log("Mail options:", mailOptions);
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error('Error sending email to candidate:', error);
             } else {
-                console.log('Email sent successfully: ' + info.response);
+                console.log('Email sent successfully:', info.response);
             }
         });
 
+        console.log("Returning success response");
         return res.status(201).json({
             message: 'Case uploaded successfully and email sent',
             data: newCase,
