@@ -39,7 +39,7 @@ const GenerateReport = sequelize.define('generatereport', {
     },
     formjson: {
         type: DataTypes.JSON,
-        allowNull: true,
+        allowNull: false,
 
     },
 },
