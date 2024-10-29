@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const nodemailer = require('nodemailer');
+const Service = require('../models/Service');
 
 exports.createcandidatemanager = async (req, res) => {
     try {
@@ -59,25 +60,51 @@ exports.createcandidatemanager = async (req, res) => {
         });
         console.log("Email transporter set up");
 
-        const mailOptions = {
+        // Main email to candidate
+        const mainMailOptions = {
             from: 'yashikawebstep@gmail.com',
             to: emailId,
             subject: `Welcome, ${applicantName}`,
             text: `Hi ${applicantName},\n\nGreetings from ScreeningStar!!\n\nPlease click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.\n\nhttps://screeningstar.onrender.com/Screeningstar/candidate-portal?client_id=${clientId}&cid=${newCase.id}&bymail=true\n\nPlease find the attached checklist and provide the supporting documents accordingly.\n\nIf you have any questions or need any support, kindly respond by email. If you need any assistance, you may also call us at 8148750989. We will be happy to help you.\n\nRegards,\n\nTeam-Track Master\nScreeningStar Solutions Pvt Ltd`,
         };
-        console.log("Mail options:", mailOptions);
+        console.log("Main mail options:", mainMailOptions);
 
-        transporter.sendMail(mailOptions, (error, info) => {
+        transporter.sendMail(mainMailOptions, (error, info) => {
             if (error) {
-                console.error('Error sending email to candidate:', error);
+                console.error('Error sending main email to candidate:', error);
             } else {
-                console.log('Email sent successfully:', info.response);
+                console.log('Main email sent successfully:', info.response);
             }
         });
 
+        // Check for serviceId 43 in Service model and send additional email if it exists
+        const hasServiceId43 = await Service.findOne({
+            where: {
+                id: 43,
+            },
+        });
+
+        if (hasServiceId43 && services.some(service => service.serviceId === 43)) {
+            const additionalMailOptions = {
+                from: 'yashikawebstep@gmail.com',
+                to: emailId,
+                subject: `Action Required: Digital Address Verification`,
+                text: `Dear Candidate (MISS YASHIKA),\n\nGreetings from Screening Star !!\n\nKindly complete the digital address verification process initiated by YASHIKA as part of Employee Background Verification process, by accessing the following link.\n\nCLICK HERE\n\nThanks for your cooperation and wishing you a good luck for your Job opportunity.\n\nFeel free to contact us for any clarification by reaching 81487 50989. I'll be glad to assist.\n\nWarm Regards,\nDigital Address Team`
+            };
+            console.log("Additional mail options for serviceId 43:", additionalMailOptions);
+
+            transporter.sendMail(additionalMailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error sending additional email for serviceId 43:', error);
+                } else {
+                    console.log('Additional email sent successfully for serviceId 43:', info.response);
+                }
+            });
+        }
+
         console.log("Returning success response");
         return res.status(201).json({
-            message: 'Case uploaded successfully and email sent',
+            message: 'Case uploaded successfully and emails sent',
             data: newCase,
         });
     } catch (error) {
