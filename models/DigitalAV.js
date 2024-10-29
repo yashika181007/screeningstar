@@ -1,5 +1,10 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config'); // Assuming your database config is here
+const config = require('../config');
+
+const sequelize = new Sequelize(config.database.database, config.database.user, config.database.password, {
+    host: config.database.host,
+    dialect: 'mysql',
+});
 
 const DigitalAV = sequelize.define('digital_av', {
     company_name: { type: DataTypes.STRING },
