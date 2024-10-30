@@ -95,6 +95,10 @@ const Client = sequelize.define('client', {
     username2: {
         type: DataTypes.STRING,
     },
+    secondaryPassword: {
+        type: DataTypes.STRING,  
+        allowNull: true,
+    },
     role: {
         type: DataTypes.TEXT,
         allowNull: false,
