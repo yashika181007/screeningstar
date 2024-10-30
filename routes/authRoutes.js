@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
-const verifyToken = require('../config/verifyToken');
+
 const upload = require('../config/multer');
 
 router.post('/login',  authController.login);
