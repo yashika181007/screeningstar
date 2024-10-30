@@ -93,7 +93,7 @@ exports.createClient = async (req, res) => {
         if (username2) {
             secondaryPassword = generatePassword();
             encryptedSecondaryPassword = encrypt(secondaryPassword);
-            console.log('encryptedSecondaryPassword',encryptedSecondaryPassword)
+            console.log('encryptedSecondaryPassword', encryptedSecondaryPassword)
         }
 
         const existingClient = await Client.findOne({ where: { email } });
@@ -106,11 +106,11 @@ exports.createClient = async (req, res) => {
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             scopeOfServices, standardProcess,
             loginRequired, username2, role, status, branches, password: encryptedPassword,
-             secondaryPassword: encryptedSecondaryPassword ,
+            secondaryPassword: encryptedSecondaryPassword,
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
-console.log('newClient',newClient)
+        console.log('newClient', newClient)
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
@@ -160,7 +160,11 @@ console.log('newClient',newClient)
             html: `
                 <div>Dear <span>${organizationName}</span>,</div><br>
                 <div>Greetings!!!!</div><br>
-                <div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong></div><br>
+                <div>A warm welcome to <strong>\"Track Master\" Background Verification Portal\".</strong> Kindly review the service level agreement and scope of services selected for your Organisation before we proceed further.</div><br>
+   <div>Please Find the attached ScreeningStar Solutions \"PDF\" to know more about our standard \"Scope of Process - SOP\".</div><br>
+   <br>
+   <div>Feel free to notify us if discrepancies in \"Client MASTER DATA\" page. so that we are happy to assist you.</div><br>
+   <div><h3>Login Details:</h3></div><br>
                 <div><h3>Login Details:</h3></div>
                 <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
                     <tr style="background-color: #ffd3d3;">
@@ -183,7 +187,12 @@ console.log('newClient',newClient)
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
                     </tr>
                     ` : ''}
-                </table><br>
+                </table><br><div>For sub user's, kindly create the login credentials from the \"CREATE USER MENU\" Menu in \"Track Master\"</div><br>
+            <div>our client relationship Manager/Dedicated single point of contact will be available between 9:30 AM to 7:00 PM for any support related to BGV process or status of any Applications processed</div><div><br><br>
+   <div>Regards</div>
+   <div>Team - Track Master (Tool)</div>
+   <div>ScreeningStar Solutions Pvt Ltd</div>
+   <div>Mobile Number - 9980004953</div>
             `,
             attachments: [
                 {
@@ -219,9 +228,9 @@ console.log('newClient',newClient)
                     <div>Best Regards</div>
                     <div>Screening Star BGV Team</div>
                 `,
-               
+
             };
-        
+
             transporter.sendMail(secondaryUserMailOptions, (error, info) => {
                 if (error) {
                     console.error('Error sending email to secondary user:', error);
@@ -230,7 +239,7 @@ console.log('newClient',newClient)
                 }
             });
         }
-        
+
         res.status(201).json({
             message: 'Client and branches created successfully',
             client: {
