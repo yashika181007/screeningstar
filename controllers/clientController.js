@@ -93,6 +93,7 @@ exports.createClient = async (req, res) => {
         if (username2) {
             secondaryPassword = generatePassword();
             encryptedSecondaryPassword = encrypt(secondaryPassword);
+            console.log('encryptedSecondaryPassword',encryptedSecondaryPassword)
         }
 
         const existingClient = await Client.findOne({ where: { email } });
@@ -109,7 +110,7 @@ exports.createClient = async (req, res) => {
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
-
+console.log('newClient',newClient)
         await Branch.create({
             clientId: newClient.clientId,
             user_id,
