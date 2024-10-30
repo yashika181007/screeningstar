@@ -87,6 +87,14 @@ exports.createClient = async (req, res) => {
 
         const plainPassword = generatePassword();
         const encryptedPassword = encrypt(plainPassword);
+
+// Generate password for secondary user (username2) only if it exists
+let secondaryPassword, encryptedSecondaryPassword;
+if (username2) {
+    secondaryPassword = generatePassword();
+    encryptedSecondaryPassword = encrypt(secondaryPassword);
+}
+
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
@@ -95,7 +103,8 @@ exports.createClient = async (req, res) => {
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             scopeOfServices, standardProcess,
-            loginRequired, username2, role, status, branches, password: encryptedPassword, // Save encrypted password
+            loginRequired, username2, role, status, branches,password: encryptedPassword, // Save encrypted primary password
+            ...(username2 && { secondaryPassword: encryptedSecondaryPassword }), // Save encrypted secondary password if username2 exists
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
@@ -160,43 +169,50 @@ exports.createClient = async (req, res) => {
             to: email,
             subject: `Welcome to "Track Master" Verification Portal presented by "ScreeningStar Solutions Pvt Ltd`,
             html: `
-<div>Dear <span>${organizationName}</span>,</div><br>
-<div>Greetings!!!!</div><br>
-<div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong> Kindly review the service level
-    agreement and scope of services selected for your Organisation before we proceed further.</div><br>
-<div>Please find the attached ScreeningStar Solutions "PDF" to know more about our standard "Scope of Process - SOP".
-</div><br>
-<div>Feel free to notify us if there are discrepancies in the "Client MASTER DATA" page. We are happy to assist you.
-</div><br>
-<div>
-    <h3>Login Details:</h3>
-</div>
-<table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
-    <tr style="background-color: #ffd3d3;">
-        <th style="padding: 10px; border: 1px solid #000; text-align: center;">TRACK MASTER URL</th>
-        <th style="padding: 10px; border: 1px solid #000; text-align: center;">USERNAME</th>
-        <th style="padding: 10px; border: 1px solid #000; text-align: center;">PASSWORD</th>
-    </tr>
-    <tr>
-        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a
-                href="${APP_PATH}/customerlogin/">http://screeningstar.in/customerlogin/</a></td>
-        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${email}</td>
-        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${plainPassword}</td>
-    </tr>
-</table><br>
-<div>For sub-users, kindly create login credentials from the "CREATE USER MENU" in "Track Master".</div><br>
-<div>Our client relationship manager/dedicated single point of contact will be available between 9:30 AM to 7:00 PM for
-    any support related to the BGV process or the status of any applications processed.</div>
-<div><br><br>Regards,<br>Team - Track Master (Tool)<br>ScreeningStar Solutions Pvt Ltd<br>Mobile Number - 9980004953
-</div>`,
-            attachments: [
+        <div>Dear <span>${organizationName}</span>,</div><br>
+        <div>Greetings!!!!</div><br>
+        <div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong> Kindly review the service level agreement and scope of services selected for your Organisation before we proceed further.</div><br>
+        <div>Please find the attached ScreeningStar Solutions "PDF" to know more about our standard "Scope of Process - SOP".</div><br>
+        <div>Feel free to notify us if there are discrepancies in the "Client MASTER DATA" page. We are happy to assist you.</div><br>
+        <div><h3>Login Details:</h3></div>
+        <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
+            <tr style="background-color: #ffd3d3;">
+                <th style="padding: 10px; border: 1px solid #000; text-align: center;">USER</th>
+                <th style="padding: 10px; border: 1px solid #000; text-align: center;">URL</th>
+                <th style="padding: 10px; border: 1px solid #000; text-align: center;">USERNAME</th>
+                <th style="padding: 10px; border: 1px solid #000; text-align: center;">PASSWORD</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">Primary User</td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${email}</td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${plainPassword}</td>
+            </tr>
+            ${username2 ? `
+            <tr>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">Secondary User</td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${username2}</td>
+                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
+            </tr>
+            ` : ''}
+        </table><br>
+        <div>For sub-users, kindly create login credentials from the "CREATE USER MENU" in "Track Master".</div><br>
+        <div>Our client relationship manager will be available between 9:30 AM to 7:00 PM for any support related to BGV process or status of applications processed.</div>
+        <br><br>
+        <div>Regards,</div>
+        <div>Team - Track Master (Tool)</div>
+        <div>ScreeningStar Solutions Pvt Ltd</div>
+        <div>Mobile Number - 9980004953</div>`, 
+        attachments: [
                 {
                     filename: 'Scope_of_Process.pdf',
                     path: path.join(__dirname, '../pdf', 'Scope_of_Process.pdf'), // Adjust to the correct directory structure
                     contentType: 'application/pdf'
                 }
             ]
-        };
+    
+};
 
         transporter.sendMail(clientMailOptions, (error, info) => {
             if (error) {
