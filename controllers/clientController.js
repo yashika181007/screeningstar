@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const { Sequelize, Op } = require('sequelize');
 const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
 const iv = Buffer.from(process.env.IV, 'hex');
+const path = require('path');
 
 function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
@@ -152,6 +153,7 @@ exports.createClient = async (req, res) => {
                 pass: 'tnudhsdgcwkknraw'
             },
         });
+        const APP_PATH = 'http://screeningstar.in';
 
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
