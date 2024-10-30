@@ -185,7 +185,7 @@ exports.createClient = async (req, res) => {
 <div>For sub-users, kindly create login credentials from the "CREATE USER MENU" in "Track Master".</div><br>
 <div>Our client relationship manager/dedicated single point of contact will be available between 9:30 AM to 7:00 PM for
     any support related to the BGV process or the status of any applications processed.</div>
-<div><br><br>Regards,<br>Team - Track Master (Tool)<br>ScreeningStar Solutions Pvt Ltd<br>Mobile Number - 9980004953
+<div><br><br>Regards,<br>Team - Track Master (Tool)<br>ScreeningStssar Solutions Pvt Ltd<br>Mobile Number - 9980004953
 </div>`,
             attachments: [
                 {
