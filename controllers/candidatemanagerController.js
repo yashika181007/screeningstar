@@ -66,7 +66,7 @@ exports.createcandidatemanager = async (req, res) => {
             to: emailId,
             subject: `Online Background Verification Form ${applicantName} (${organizationName}) `,
             html: `
-            <p>Hi ${candidateName.toUpperCase()},</p><br>
+            <p>Hi ${applicantName},</p><br>
             <p>Greetings from ScreeningStar!!</p><br>
             <p>Please click the following link to fill out the BGV form that has been initiated as part of the Employee Background Verification process.</p>
             <p>
