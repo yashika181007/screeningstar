@@ -78,14 +78,14 @@ exports.createClient = async (req, res) => {
         const {
             clientLogo, organizationName, clientId, mobileNumber, email, registeredAddress,
             state, stateCode, gstNumber, tat, serviceAgreementDate, clientProcedure,
-            agreementPeriod, customTemplate, accountManagement, 
-            scopeOfServices,  standardProcess, loginRequired, username2, role,
+            agreementPeriod, customTemplate, accountManagement,
+            scopeOfServices, standardProcess, loginRequired, username2, role,
             status = 'Active', branches, clientSpoc, escalationManager, billingSpoc,
             billingEscalation, authorizedPerson
         } = req.body;
 
         const plainPassword = generatePassword();
-        const encryptedPassword = encrypt(plainPassword); 
+        const encryptedPassword = encrypt(plainPassword);
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
@@ -93,7 +93,7 @@ exports.createClient = async (req, res) => {
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
-             scopeOfServices,  standardProcess,
+            scopeOfServices, standardProcess,
             loginRequired, username2, role, status, branches, password: encryptedPassword, // Save encrypted password
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
@@ -105,7 +105,7 @@ exports.createClient = async (req, res) => {
             branchEmail: email,
             branchName: organizationName,
             isHeadBranch: true,
-            password: encryptedPassword 
+            password: encryptedPassword
         });
 
         const branchPasswords = {};
@@ -134,10 +134,10 @@ exports.createClient = async (req, res) => {
                     branchEmail,
                     branchName,
                     isHeadBranch: false,
-                    password: encryptedBranchPassword 
+                    password: encryptedBranchPassword
                 });
             });
-            
+
             await Promise.all(branchPromises);
         }
 
@@ -156,8 +156,44 @@ exports.createClient = async (req, res) => {
         const clientMailOptions = {
             from: 'yashikawebstep@gmail.com',
             to: email,
-            subject: `Welcome , ${email}`,
-            text: `Hello ${organizationName},\n\nYour client account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword:  ${plainPassword}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
+            subject: `Welcome to "Track Master" Verification Portal presented by "ScreeningStar Solutions Pvt Ltd`,
+            html: `
+<div>Dear <span>${organizationName}</span>,</div><br>
+<div>Greetings!!!!</div><br>
+<div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong> Kindly review the service level
+    agreement and scope of services selected for your Organisation before we proceed further.</div><br>
+<div>Please find the attached ScreeningStar Solutions "PDF" to know more about our standard "Scope of Process - SOP".
+</div><br>
+<div>Feel free to notify us if there are discrepancies in the "Client MASTER DATA" page. We are happy to assist you.
+</div><br>
+<div>
+    <h3>Login Details:</h3>
+</div>
+<table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
+    <tr style="background-color: #ffd3d3;">
+        <th style="padding: 10px; border: 1px solid #000; text-align: center;">TRACK MASTER URL</th>
+        <th style="padding: 10px; border: 1px solid #000; text-align: center;">USERNAME</th>
+        <th style="padding: 10px; border: 1px solid #000; text-align: center;">PASSWORD</th>
+    </tr>
+    <tr>
+        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a
+                href="${APP_PATH}/customerlogin/">http://screeningstar.in/customerlogin/</a></td>
+        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${email}</td>
+        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${plainPassword}</td>
+    </tr>
+</table><br>
+<div>For sub-users, kindly create login credentials from the "CREATE USER MENU" in "Track Master".</div><br>
+<div>Our client relationship manager/dedicated single point of contact will be available between 9:30 AM to 7:00 PM for
+    any support related to the BGV process or the status of any applications processed.</div>
+<div><br><br>Regards,<br>Team - Track Master (Tool)<br>ScreeningStar Solutions Pvt Ltd<br>Mobile Number - 9980004953
+</div>`,
+            attachments: [
+                {
+                    filename: 'Scope_of_Process.pdf',
+                    path: path.join(__dirname, '../pdf', 'Scope_of_Process.pdf'), // Adjust to the correct directory structure
+                    contentType: 'application/pdf'
+                }
+            ]
         };
 
         transporter.sendMail(clientMailOptions, (error, info) => {
@@ -175,7 +211,7 @@ exports.createClient = async (req, res) => {
                 subject: `Welcome, ${branchEmail}`,
                 text: `Hello,\n\nYour branch account for ${organizationName} has been successfully created.\n\nHere are your login details:\n\nEmail: ${branchEmail}\nPassword: ${branchPasswords[branchEmail]}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
             };
-        
+
             transporter.sendMail(branchMailOptions, (error, info) => {
                 if (error) {
                     console.error(`Error sending email to branch ${branchEmail}:`, error);
@@ -235,7 +271,7 @@ exports.fetchPassword = async (req, res) => {
         res.status(200).json({
             message: 'Branch found',
             branchEmail: branch.branchEmail,
-            password: decrypt(branch.password) 
+            password: decrypt(branch.password)
         });
 
     } catch (error) {
@@ -265,10 +301,10 @@ exports.loginClient = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-       const decryptedPassword = decrypt(branch.password);
+        const decryptedPassword = decrypt(branch.password);
 
-       if (password !== decryptedPassword) {
-        console.log('Password mismatch, logging failed attempt.');
+        if (password !== decryptedPassword) {
+            console.log('Password mismatch, logging failed attempt.');
             await BranchLoginLog.create({
                 branchEmail,
                 status: 'Failed',
@@ -276,22 +312,22 @@ exports.loginClient = async (req, res) => {
                 ipAddress,
             });
             console.log('Log entry created for failed password.');
-           return res.status(400).json({ message: 'Invalid email or password' });
-       }
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
 
-       const token = jwt.sign(
-           { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
-           process.env.jwtSecret,
-           { expiresIn: '6h' }
-       );
-       console.log('Login successful, logging successful login.');
-       await BranchLoginLog.create({
-           branchEmail,
-           status: 'Success',
-           message: 'Login successful',
-           ipAddress,
-       });
-       console.log('Log entry created for successful login.');
+        const token = jwt.sign(
+            { id: branch.id, user_id: branch.user_id, clientId: branch.clientId, branchEmail: branch.branchEmail },
+            process.env.jwtSecret,
+            { expiresIn: '6h' }
+        );
+        console.log('Login successful, logging successful login.');
+        await BranchLoginLog.create({
+            branchEmail,
+            status: 'Success',
+            message: 'Login successful',
+            ipAddress,
+        });
+        console.log('Log entry created for successful login.');
         return res.status(200).json({
             message: 'Login successful',
             token,
@@ -303,7 +339,7 @@ exports.loginClient = async (req, res) => {
                 status: branch.status
             }
         });
-    }catch (error) {
+    } catch (error) {
         console.error('Error during login:', error);
         console.log('Logging error attempt.');
         await BranchLoginLog.create({
@@ -469,7 +505,7 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
             const clientManagers = await ClientManager.findAll({
                 where: {
                     branchId: branch.id,
-                    status: { [Op.ne]: 'completed' } 
+                    status: { [Op.ne]: 'completed' }
                 },
                 attributes: ['id', 'user_id', 'clientId', 'branchId', 'organizationName', 'spocUploaded']
             });
@@ -485,7 +521,7 @@ exports.getHeadBranchWithClientManagerData = async (req, res) => {
                 responseData.push({
                     branch: branch,
                     applicationCount: applicationCount,
-                    clientManagers: clientManagers 
+                    clientManagers: clientManagers
                 });
             }
         }
@@ -516,7 +552,7 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
             const clientManagers = await ClientManager.findAll({
                 where: {
                     branchId: branch.id,
-                    status: { [Op.ne]: 'completed' } 
+                    status: { [Op.ne]: 'completed' }
                 },
                 attributes: ['id', 'user_id', 'clientId', 'branchId', 'organizationName', 'spocUploaded']
             });
@@ -551,12 +587,12 @@ exports.getnonHeadBranchWithClientManagerData = async (req, res) => {
 
 exports.getNonHeadBranches = async (req, res) => {
     try {
-        const clientId = req.params.clientId; 
+        const clientId = req.params.clientId;
 
         const nonHeadBranches = await Branch.findAll({
-            where: { 
-                clientId,       
-                isHeadBranch: false  
+            where: {
+                clientId,
+                isHeadBranch: false
             }
         });
 
@@ -578,24 +614,24 @@ exports.getBranchbyclient = async (req, res) => {
         if (!token) {
             return res.status(401).json({ message: 'No token provided. Please log in.' });
         }
-        
+
         const tokenParts = token.split(' ');
         const jwtToken = tokenParts[1];
-    
+
         let decodedToken;
         try {
             decodedToken = jwt.verify(jwtToken, process.env.jwtSecret);
         } catch (err) {
             return res.status(401).json({ message: 'Invalid token. Please log in again.' });
         }
-    
+
         const id = decodedToken.id;
         if (!id) {
             return res.status(401).json({ message: 'Id not authenticated. Please log in.' });
         }
 
         const branches = await Branch.findAll({
-            where: { id: id } 
+            where: { id: id }
         });
         if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
@@ -603,7 +639,7 @@ exports.getBranchbyclient = async (req, res) => {
         const clientId = branches[0].clientId;
         const client = await Client.findOne({
             where: { clientId: clientId },
-            attributes: { exclude: ['password'] } 
+            attributes: { exclude: ['password'] }
         });
 
         if (!client) {
@@ -611,11 +647,11 @@ exports.getBranchbyclient = async (req, res) => {
         }
 
         const branchData = branches.map(branch => {
-            const { password, ...safeBranchData } = branch.dataValues; 
+            const { password, ...safeBranchData } = branch.dataValues;
 
             return {
                 ...safeBranchData,
-                client: client.dataValues 
+                client: client.dataValues
             };
         });
 
@@ -629,7 +665,7 @@ exports.getBranchbyclient = async (req, res) => {
 exports.updateBranch = async (req, res) => {
     const { id } = req.params;
     try {
-        const updateBranch = await Branch.findByPk(id);  
+        const updateBranch = await Branch.findByPk(id);
         if (!updateBranch) {
             return res.status(404).json({
                 message: 'Branch not found',
@@ -714,30 +750,30 @@ exports.changeClientStatus = async (req, res) => {
     try {
         console.log('Request ID:', req.params.id);
         const client = await Client.findByPk(req.params.id);
-        
+
         if (!client) {
-            console.log('Client not found'); 
+            console.log('Client not found');
             return res.status(404).json({ message: 'Client not found' });
         }
 
         console.log('Client:', client);
-        console.log('Current Status:', client.status); 
+        console.log('Current Status:', client.status);
 
         // Change status logic
         if (client.status === 'Active') {
             client.status = 'Inactive';
-            console.log('Changing status to Inactive'); 
+            console.log('Changing status to Inactive');
         } else if (client.status === 'Inactive') {
             client.status = 'Active';
-            console.log('Changing status to Active');  
+            console.log('Changing status to Active');
         }
 
         await client.save();
-        console.log('Client status saved:', client.status);  
+        console.log('Client status saved:', client.status);
 
         res.status(200).json({ message: `Client status changed to ${client.status}` });
     } catch (err) {
-        console.log('Error:', err.message);  
+        console.log('Error:', err.message);
         res.status(500).json({ message: 'Error changing client status', error: err.message });
     }
 };
@@ -772,8 +808,8 @@ exports.updateClient = async (req, res) => {
         agreementPeriod,
         customTemplate,
         clientLogo,
-        accountManagement,        
-        scopeOfServices,       
+        accountManagement,
+        scopeOfServices,
         standardProcess,
         loginRequired,
         username2,
@@ -853,17 +889,17 @@ exports.fetchdataforclientmanager = async (req, res) => {
 
     try {
         const branches = await Branch.findAll({
-            where: { id : id }, 
-            attributes: ['id', 'user_id', 'clientId', 'branchName'] 
+            where: { id: id },
+            attributes: ['id', 'user_id', 'clientId', 'branchName']
         });
 
         if (!branches || branches.length === 0) {
             return res.status(404).json({ message: 'Branch not found' });
         }
-            const clientId = branches[0].clientId;
-            const client = await Client.findOne({
-                where: { clientId: clientId },
-            attributes: ['scopeOfServices', 'clientId'] 
+        const clientId = branches[0].clientId;
+        const client = await Client.findOne({
+            where: { clientId: clientId },
+            attributes: ['scopeOfServices', 'clientId']
         });
 
         if (!client) {
@@ -873,7 +909,7 @@ exports.fetchdataforclientmanager = async (req, res) => {
         const branchData = branches.map(branch => {
             const branchValues = branch.dataValues;
             return {
-                ...branchValues, 
+                ...branchValues,
                 scopeOfServices: client.scopeOfServices,
                 clientId: client.clientId
             };
