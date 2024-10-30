@@ -161,11 +161,10 @@ exports.createClient = async (req, res) => {
                 <div>Dear <span>${organizationName}</span>,</div><br>
                 <div>Greetings!!!!</div><br>
                 <div>A warm welcome to <strong>\"Track Master\" Background Verification Portal\".</strong> Kindly review the service level agreement and scope of services selected for your Organisation before we proceed further.</div><br>
-   <div>Please Find the attached ScreeningStar Solutions \"PDF\" to know more about our standard \"Scope of Process - SOP\".</div><br>
-   <br>
-   <div>Feel free to notify us if discrepancies in \"Client MASTER DATA\" page. so that we are happy to assist you.</div><br>
-   <div><h3>Login Details:</h3></div><br>
-                <div><h3>Login Details:</h3></div>
+                <div>Please Find the attached ScreeningStar Solutions \"PDF\" to know more about our standard \"Scope of Process - SOP\".</div><br>
+                <br>
+                <div>Feel free to notify us if discrepancies in \"Client MASTER DATA\" page. so that we are happy to assist you.</div><br>
+                <div><h3>Login Details:</h3></div><br>
                 <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
                     <tr style="background-color: #ffd3d3;">
                         <th style="padding: 10px; border: 1px solid #000; text-align: center;">USER</th>
@@ -189,10 +188,10 @@ exports.createClient = async (req, res) => {
                     ` : ''}
                 </table><br><div>For sub user's, kindly create the login credentials from the \"CREATE USER MENU\" Menu in \"Track Master\"</div><br>
             <div>our client relationship Manager/Dedicated single point of contact will be available between 9:30 AM to 7:00 PM for any support related to BGV process or status of any Applications processed</div><div><br><br>
-   <div>Regards</div>
-   <div>Team - Track Master (Tool)</div>
-   <div>ScreeningStar Solutions Pvt Ltd</div>
-   <div>Mobile Number - 9980004953</div>
+            <div>Regards</div>
+            <div>Team - Track Master (Tool)</div>
+            <div>ScreeningStar Solutions Pvt Ltd</div>
+            <div>Mobile Number - 9980004953</div>
             `,
             attachments: [
                 {
