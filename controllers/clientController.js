@@ -178,7 +178,7 @@ console.log('newClient',newClient)
                     ${username2 ? `
                     <tr>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">Secondary User</td>
-                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="https://webstepdev.com/demo/screening">https://webstepdev.com/demo/screening/</a></td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="https://webstepdev.com/demo/screening">https://webstepdev.com/demo/screening</a></td>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">${username2}</td>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
                     </tr>
@@ -201,7 +201,36 @@ console.log('newClient',newClient)
                 console.log('Client email sent: ' + info.response);
             }
         });
-
+        if (username2) {
+            const secondaryUserMailOptions = {
+                from: 'yashikawebstep@gmail.com',
+                to: username2,
+                subject: 'Secondary Login Created',
+                html: `
+                    <div>Dear ${organizationName},</div><br>
+                    <div>Greetings!!!!</div><br>
+                    <div>A warm welcome to <strong>GQVTS - Screening Star Verification Tracking System.</strong> Please note the secondary login credentials included with this email.</div><br>
+                    <div>We assure our best services at all the time.</div><br>
+                    <div>Our customer service team will be available for any support 24 x 7.</div><br>
+                    <div><h3>Secondary Login Details:</h3></div>
+                    <div>Email: <b>${username2}</b></div>
+                    <div>Password: <b>${secondaryPassword}</b></div><br>
+                    <div><a href="https://webstepdev.com/demo/screening">Please Click here to login</a><br><br>
+                    <div>Best Regards</div>
+                    <div>Screening Star BGV Team</div>
+                `,
+               
+            };
+        
+            transporter.sendMail(secondaryUserMailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error sending email to secondary user:', error);
+                } else {
+                    console.log('Secondary user email sent: ' + info.response);
+                }
+            });
+        }
+        
         res.status(201).json({
             message: 'Client and branches created successfully',
             client: {
