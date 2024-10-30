@@ -178,13 +178,20 @@ console.log('newClient',newClient)
                     ${username2 ? `
                     <tr>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">Secondary User</td>
-                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="https://webstepdev.com/demo/screening">https://webstepdev.com/demo/screening</a></td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="https://webstepdev.com/demo/screening">https://webstepdev.com/demo/screening/</a></td>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">${username2}</td>
                         <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
                     </tr>
                     ` : ''}
                 </table><br>
-            `
+            `,
+            attachments: [
+                {
+                    filename: 'Scope_of_Process.pdf',
+                    path: path.join(__dirname, '../pdf', 'Scope_of_Process.pdf'), // Adjust to the correct directory structure
+                    contentType: 'application/pdf'
+                }
+            ]
         };
 
         transporter.sendMail(clientMailOptions, (error, info) => {
