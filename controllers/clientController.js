@@ -88,22 +88,23 @@ exports.createClient = async (req, res) => {
         const plainPassword = generatePassword();
         const encryptedPassword = encrypt(plainPassword);
 
-// Generate password for secondary user (username2) only if it exists
-let secondaryPassword, encryptedSecondaryPassword;
-if (username2) {
-    secondaryPassword = generatePassword();
-    encryptedSecondaryPassword = encrypt(secondaryPassword);
-}
+        // Generate password for secondary user (username2) only if it exists
+        let secondaryPassword, encryptedSecondaryPassword;
+        if (username2) {
+            secondaryPassword = generatePassword();
+            encryptedSecondaryPassword = encrypt(secondaryPassword);
+        }
 
         const existingClient = await Client.findOne({ where: { email } });
         if (existingClient) return res.status(400).json({ message: 'Email already in use' });
 
+        // Create the new client and save the secondary password if username2 exists
         const newClient = await Client.create({
             user_id, clientLogo, organizationName, clientId, mobileNumber, email,
             registeredAddress, state, stateCode, gstNumber, tat, serviceAgreementDate,
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             scopeOfServices, standardProcess,
-            loginRequired, username2, role, status, branches,password: encryptedPassword, // Save encrypted primary password
+            loginRequired, username2, role, status, branches, password: encryptedPassword,
             ...(username2 && { secondaryPassword: encryptedSecondaryPassword }), // Save encrypted secondary password if username2 exists
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
@@ -119,23 +120,11 @@ if (username2) {
         });
 
         const branchPasswords = {};
-
-        console.log("Branches received:", branches);
-
         if (branches && branches.length > 0) {
             const branchPromises = branches.map(async (branch) => {
                 const { branchEmail, branchName } = branch;
-
-                if (!branchEmail || !branchName) {
-                    console.error("Branch email or name is missing for branch:", branch);
-                    throw new Error("Branch email or name is missing");
-                }
-
-                console.log("Creating branch for email:", branchEmail);
-
                 const branchPassword = generatePassword();
                 const encryptedBranchPassword = encrypt(branchPassword);
-
                 branchPasswords[branchEmail] = branchPassword;
 
                 return await Branch.create({
@@ -147,7 +136,6 @@ if (username2) {
                     password: encryptedBranchPassword
                 });
             });
-
             await Promise.all(branchPromises);
         }
 
@@ -169,50 +157,34 @@ if (username2) {
             to: email,
             subject: `Welcome to "Track Master" Verification Portal presented by "ScreeningStar Solutions Pvt Ltd`,
             html: `
-        <div>Dear <span>${organizationName}</span>,</div><br>
-        <div>Greetings!!!!</div><br>
-        <div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong> Kindly review the service level agreement and scope of services selected for your Organisation before we proceed further.</div><br>
-        <div>Please find the attached ScreeningStar Solutions "PDF" to know more about our standard "Scope of Process - SOP".</div><br>
-        <div>Feel free to notify us if there are discrepancies in the "Client MASTER DATA" page. We are happy to assist you.</div><br>
-        <div><h3>Login Details:</h3></div>
-        <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
-            <tr style="background-color: #ffd3d3;">
-                <th style="padding: 10px; border: 1px solid #000; text-align: center;">USER</th>
-                <th style="padding: 10px; border: 1px solid #000; text-align: center;">URL</th>
-                <th style="padding: 10px; border: 1px solid #000; text-align: center;">USERNAME</th>
-                <th style="padding: 10px; border: 1px solid #000; text-align: center;">PASSWORD</th>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">Primary User</td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${email}</td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${plainPassword}</td>
-            </tr>
-            ${username2 ? `
-            <tr>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">Secondary User</td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${username2}</td>
-                <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
-            </tr>
-            ` : ''}
-        </table><br>
-        <div>For sub-users, kindly create login credentials from the "CREATE USER MENU" in "Track Master".</div><br>
-        <div>Our client relationship manager will be available between 9:30 AM to 7:00 PM for any support related to BGV process or status of applications processed.</div>
-        <br><br>
-        <div>Regards,</div>
-        <div>Team - Track Master (Tool)</div>
-        <div>ScreeningStar Solutions Pvt Ltd</div>
-        <div>Mobile Number - 9980004953</div>`, 
-        attachments: [
-                {
-                    filename: 'Scope_of_Process.pdf',
-                    path: path.join(__dirname, '../pdf', 'Scope_of_Process.pdf'), // Adjust to the correct directory structure
-                    contentType: 'application/pdf'
-                }
-            ]
-    
-};
+                <div>Dear <span>${organizationName}</span>,</div><br>
+                <div>Greetings!!!!</div><br>
+                <div>A warm welcome to <strong>"Track Master Background Verification Portal".</strong></div><br>
+                <div><h3>Login Details:</h3></div>
+                <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
+                    <tr style="background-color: #ffd3d3;">
+                        <th style="padding: 10px; border: 1px solid #000; text-align: center;">USER</th>
+                        <th style="padding: 10px; border: 1px solid #000; text-align: center;">URL</th>
+                        <th style="padding: 10px; border: 1px solid #000; text-align: center;">USERNAME</th>
+                        <th style="padding: 10px; border: 1px solid #000; text-align: center;">PASSWORD</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">Primary User</td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${email}</td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${plainPassword}</td>
+                    </tr>
+                    ${username2 ? `
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">Secondary User</td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;"><a href="${APP_PATH}/customerlogin/">${APP_PATH}/customerlogin/</a></td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${username2}</td>
+                        <td style="padding: 10px; border: 1px solid #000; text-align: center;">${secondaryPassword}</td>
+                    </tr>
+                    ` : ''}
+                </table><br>
+            `
+        };
 
         transporter.sendMail(clientMailOptions, (error, info) => {
             if (error) {
@@ -222,23 +194,6 @@ if (username2) {
             }
         });
 
-        for (const branchEmail in branchPasswords) {
-            const branchMailOptions = {
-                from: 'yashikawebstep@gmail.com',
-                to: branchEmail,
-                subject: `Welcome, ${branchEmail}`,
-                text: `Hello,\n\nYour branch account for ${organizationName} has been successfully created.\n\nHere are your login details:\n\nEmail: ${branchEmail}\nPassword: ${branchPasswords[branchEmail]}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
-            };
-
-            transporter.sendMail(branchMailOptions, (error, info) => {
-                if (error) {
-                    console.error(`Error sending email to branch ${branchEmail}:`, error);
-                } else {
-                    console.log(`Branch email sent to ${branchEmail}: ` + info.response);
-                }
-            });
-        }
-
         res.status(201).json({
             message: 'Client and branches created successfully',
             client: {
@@ -247,6 +202,7 @@ if (username2) {
                 email: newClient.email,
                 status: newClient.status,
                 password: plainPassword,
+                ...(username2 && { secondaryPassword }), // Include secondary password in the response if username2 exists
                 branches: Object.keys(branchPasswords).map(branchEmail => ({
                     branchEmail,
                     password: branchPasswords[branchEmail]
