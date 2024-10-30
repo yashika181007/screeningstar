@@ -105,7 +105,7 @@ exports.createClient = async (req, res) => {
             clientProcedure, agreementPeriod, customTemplate, accountManagement,
             scopeOfServices, standardProcess,
             loginRequired, username2, role, status, branches, password: encryptedPassword,
-            ...(username2 && { secondaryPassword: encryptedSecondaryPassword }), // Save encrypted secondary password if username2 exists
+             secondaryPassword: encryptedSecondaryPassword , // Save encrypted secondary password if username2 exists
             totalBranches: (branches ? branches.length : 0) + 1,
             clientSpoc, escalationManager, billingSpoc, billingEscalation, authorizedPerson
         });
