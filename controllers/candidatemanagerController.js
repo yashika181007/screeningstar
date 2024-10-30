@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const nodemailer = require('nodemailer');
 const Service = require('../models/Service');
+const path = require('path');
 
 exports.createcandidatemanager = async (req, res) => {
     try {
