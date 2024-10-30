@@ -59,7 +59,8 @@ exports.createuser = async (req, res) => {
         if (req.file) {
             employeePhotoPath = req.file.path;
         }
-
+        console.log('Uploaded file info:', employeePhoto);
+        
         // Create new user in the database with image path
         const newUser = await User.create({
             employeePhoto: employeePhotoPath,
