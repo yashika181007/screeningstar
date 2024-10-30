@@ -42,11 +42,15 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => {
+exports.createuser = async (req, res) => { 
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
+        const employeePhoto = req.file;  // Access uploaded file via req.file
 
-        // Check for duplicate email
+        if (!employeePhoto) {
+            return res.status(400).json({ message: 'Employee photo is required.' });
+        }
+
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already in use' });
@@ -54,16 +58,9 @@ exports.createuser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Check if file is provided, then save its path to employeePhoto
-        let employeePhotoPath = null;
-        if (req.file) {
-            employeePhotoPath = req.file.path;
-        }
-        console.log('Uploaded file info:', employeePhoto);
-        
-        // Create new user in the database with image path
+        // Save only the file name to the database
         const newUser = await User.create({
-            employeePhoto: employeePhotoPath,
+            employeePhoto: employeePhoto.filename,
             employeeName,
             employeeMobile,
             email,
@@ -73,7 +70,7 @@ exports.createuser = async (req, res) => {
             status,
         });
 
-        // Send a welcome email
+        // Send confirmation email
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
@@ -88,7 +85,7 @@ exports.createuser = async (req, res) => {
             from: 'yashikawebstep@gmail.com',
             to: email,
             subject: `Welcome, ${employeeName}`,
-            text: `Hello ${employeeName},\n\nYour ${role} account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour Screeningstar Team`
+            text: `Hello ${employeeName},\n\nYour ${role} account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour ScreeningStar Team`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
