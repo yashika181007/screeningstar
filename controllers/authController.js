@@ -42,10 +42,11 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => { 
+exports.createuser = async (req, res) => {
     try {
-        const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
+        const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
 
+        // Check for duplicate email
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already in use' });
@@ -53,8 +54,15 @@ exports.createuser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Check if file is provided, then save its path to employeePhoto
+        let employeePhotoPath = null;
+        if (req.file) {
+            employeePhotoPath = req.file.path;
+        }
+
+        // Create new user in the database with image path
         const newUser = await User.create({
-            employeePhoto,
+            employeePhoto: employeePhotoPath,
             employeeName,
             employeeMobile,
             email,
@@ -63,13 +71,15 @@ exports.createuser = async (req, res) => {
             role,
             status,
         });
+
+        // Send a welcome email
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw' // Replace with your actual email password or an app-specific password
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 

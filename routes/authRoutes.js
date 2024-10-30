@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
+const verifyToken = require('../config/verifyToken');
+const upload = require('../config/multer');
 
 router.post('/login',  authController.login);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/verif-login', verifyToken, authController.veriflogin);
-router.post('/createuser', authController.createuser);
+router.post('/createuser', upload.single('employeePhoto'),authController.createuser);
 router.get('/download-admin-login-log-excel', verifyToken, authController.downloadAdminLoginLogExcel);
 
 router.get('/users', verifyToken, authController.getAllUsers);
