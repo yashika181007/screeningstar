@@ -4,35 +4,31 @@ const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
 
 const upload = require('../config/multer');
-const exec = require('child_process').exec; // To run shell commands
+const simpleGit = require('simple-git');
+const path = require('path');
 
-// Upload and process image
-router.post('/createuser', upload.single('employeePhoto'), (req, res) => {
+const git = simpleGit('path/to/your/repo'); // Path to your Git repository
+
+router.post('/createuser', upload.single('employeePhoto'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
 
     const filePath = `uploads/${req.file.filename}`;
 
-    // Configure Git user details if not already set
-    exec('git config --global user.email "yashikawebstep@gmail.com" && git config --global user.name "Yashika"', (err, stdout, stderr) => {
-        if (err) {
-            console.error('Error configuring Git user:', err);
-            return res.status(500).json({ message: 'Failed to configure Git user', error: err });
-        }
+    try {
+        // Ensure you're in the correct directory and have set up Git
+        await git.add(filePath);
+        await git.commit(`Auto-commit: Add new image ${req.file.filename}`);
+        await git.push('origin', 'master');
 
-        // Run the Git commands to add, commit, and push the uploaded file to `master`
-        exec(`git add -f ${filePath} && git commit -m "Auto-commit: Add new image ${req.file.filename}" && git push origin master`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error pushing to GitHub: ${error}`);
-                return res.status(500).json({ message: 'Failed to push image to GitHub', error });
-            }
-
-            console.log('File pushed to GitHub:', stdout);
-            res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
-        });
-    });
+        res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
+    } catch (error) {
+        console.error('Error pushing to GitHub:', error);
+        return res.status(500).json({ message: 'Failed to push image to GitHub', error });
+    }
 });
+
 router.post('/login', authController.login);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/verif-login', verifyToken, authController.veriflogin);
