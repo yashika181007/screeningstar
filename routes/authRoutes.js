@@ -4,11 +4,31 @@ const authController = require('../controllers/authController');
 const verifyToken = require('../config/verifyToken');
 
 const upload = require('../config/multer');
+const exec = require('child_process').exec; // To run shell commands
 
+// Upload and process image
+app.post('/createuser', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+    }
+
+    const filePath = `uploads/${req.file.filename}`;
+
+    // Run the Git commands to add, commit, and push the uploaded file
+    exec(`git add -f ${filePath} && git commit -m "Auto-commit: Add new image ${req.file.filename}" && git push origin main`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error pushing to GitHub: ${error}`);
+            return res.status(500).json({ message: 'Failed to push image to GitHub', error });
+        }
+
+        console.log('File pushed to GitHub:', stdout);
+        res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
+    });
+});
 router.post('/login',  authController.login);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/verif-login', verifyToken, authController.veriflogin);
-router.post('/createuser', upload.single('employeePhoto'),authController.createuser);
+// router.post('/createuser', upload.single('employeePhoto'),authController.createuser);
 router.get('/download-admin-login-log-excel', verifyToken, authController.downloadAdminLoginLogExcel);
 
 router.get('/users', verifyToken, authController.getAllUsers);
