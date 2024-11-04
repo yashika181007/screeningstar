@@ -42,66 +42,6 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => { 
-    try {
-        const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        const employeePhoto = req.file;  // Access uploaded file via req.file
-
-        if (!employeePhoto) {
-            return res.status(400).json({ message: 'Employee photo is required.' });
-        }
-
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ message: 'Email already in use' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Save only the file name to the database
-        const newUser = await User.create({
-            employeePhoto: employeePhoto.filename,
-            employeeName,
-            employeeMobile,
-            email,
-            designation,
-            password: hashedPassword,
-            role,
-            status,
-        });
-
-        // Send confirmation email
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'
-            },
-        });
-
-        const mailOptions = {
-            from: 'yashikawebstep@gmail.com',
-            to: email,
-            subject: `Welcome, ${employeeName}`,
-            text: `Hello ${employeeName},\n\nYour ${role} account has been successfully created.\n\nHere are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep your password secure.\n\nBest regards,\nYour ScreeningStar Team`
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email to new user:', error);
-            } else {
-                console.log('User email sent: ' + info.response);
-            }
-        });
-
-        return res.status(201).json({ message: 'Employee registered successfully', user: newUser });
-    } catch (error) {
-        console.error('Error registering employee:', error);
-        return res.status(500).json({ message: 'Error registering employee', error: error.message });
-    }
-};
 
 exports.login = async (req, res) => {
     try {
