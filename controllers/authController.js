@@ -41,7 +41,8 @@ const generatePassword = (length = 8) => {
 
     return passwordArray.join('');
 };
-
+sir can i take leave im having fever and shivering<'hhhh'>
+(hg)
 exports.createuser = async (req, res) => { 
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
