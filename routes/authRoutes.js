@@ -17,9 +17,15 @@ router.post('/createuser', upload.single('employeePhoto'), async (req, res) => {
     const filePath = `uploads/${req.file.filename}`;
 
     try {
-        // Ensure you're in the correct directory and have set up Git
+        // Set Git user email and name
+        await git.addConfig('user.email', 'yashikawebstep@gmail.com');
+        await git.addConfig('user.name', 'Yashika');
+
+        // Add the file to the Git repository
         await git.add(filePath);
+        // Commit the changes
         await git.commit(`Auto-commit: Add new image ${req.file.filename}`);
+        // Push the changes to the remote repository
         await git.push('origin', 'master');
 
         res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
