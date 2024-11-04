@@ -11,7 +11,7 @@ router.post('/verif-login', verifyToken, authController.veriflogin);
 router.post('/createuser', upload.single('employeePhoto'),authController.createuser);
 router.get('/download-admin-login-log-excel', verifyToken, authController.downloadAdminLoginLogExcel);
 
-router.get('/users', verifyToken, authController.getAllUsers);
+router.get('/users', authController.getAllUsers);
 router.get('/users/active', verifyToken, authController.getActiveUsers);
 router.get('/users/inactive', verifyToken, authController.getInactiveUsers);
 router.get('/users/:id', verifyToken, authController.getUserById);
