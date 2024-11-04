@@ -21,10 +21,6 @@ router.post('/createuser', upload.single('employeePhoto'), async (req, res) => {
         await git.addConfig('user.email', 'yashikawebstep@gmail.com');
         await git.addConfig('user.name', 'Yashika');
 
-        // Add the GitHub remote URL (replace with your GitHub repository URL)
-        const remoteUrl = 'https://github.com/yashika181007/screeningstar.git';
-        await git.addRemote('origin', remoteUrl);
-
         // Add the file to the Git repository
         await git.add(filePath);
         // Commit the changes
