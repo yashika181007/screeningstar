@@ -7,7 +7,7 @@ const upload = require('../config/multer');
 const simpleGit = require('simple-git');
 const path = require('path');
 
-const git = simpleGit('/'); // Set this to the path of your Git repository
+const git = simpleGit(path.join(__dirname, '../uploads/screeningstar'));
 
 router.post('/createuser', upload.single('employeePhoto'), async (req, res) => {
     if (!req.file) {
