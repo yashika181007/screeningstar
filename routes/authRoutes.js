@@ -5,39 +5,32 @@ const verifyToken = require('../config/verifyToken');
 
 const upload = require('../config/multer');
 const exec = require('child_process').exec; // To run shell commands
-exec('git config --global user.email "yashikawebstep@gmail.com" && git config --global user.name "Yashika"', (err, stdout, stderr) => {
-    if (err) {
-        console.error('Error configuring Git user:', err);
-        return;
-    }
-    console.log('Git user configured:', stdout);
-    // Proceed with the Git add, commit, and push after setting user configuration
-    exec(`git add -f ${filePath} && git commit -m "Auto-commit: Add new image ${req.file.filename}" && git push origin main`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error pushing to GitHub: ${error}`);
-            return res.status(500).json({ message: 'Failed to push image to GitHub', error });
-        }
-        console.log('File pushed to GitHub:', stdout);
-        res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
-    });
-});
+
 // Upload and process image
 router.post('/createuser', upload.single('employeePhoto'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
 
-    const filePath = `uploads/${req.file.filename}`;
+    const filePath = `uploads/${req.file.filename}`; // Define filePath based on uploaded file
 
-    // Run the Git commands to add, commit, and push the uploaded file
-    exec(`git add -f ${filePath} && git commit -m "Auto-commit: Add new image ${req.file.filename}" && git push origin main`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error pushing to GitHub: ${error}`);
-            return res.status(500).json({ message: 'Failed to push image to GitHub', error });
+    // Configure Git user details if not already set (one-time setup per environment)
+    exec('git config --global user.email "yashikawebstep@gmail.com" && git config --global user.name "Yashika"', (err, stdout, stderr) => {
+        if (err) {
+            console.error('Error configuring Git user:', err);
+            return res.status(500).json({ message: 'Failed to configure Git user', error: err });
         }
+        
+        // Run the Git commands to add, commit, and push the uploaded file
+        exec(`git add -f ${filePath} && git commit -m "Auto-commit: Add new image ${req.file.filename}" && git push origin main`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error pushing to GitHub: ${error}`);
+                return res.status(500).json({ message: 'Failed to push image to GitHub', error });
+            }
 
-        console.log('File pushed to GitHub:', stdout);
-        res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
+            console.log('File pushed to GitHub:', stdout);
+            res.status(200).json({ message: 'File uploaded and pushed to GitHub', filePath });
+        });
     });
 });
 router.post('/login',  authController.login);
