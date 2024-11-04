@@ -45,8 +45,7 @@ const generatePassword = (length = 8) => {
 exports.createuser = async (req, res) => { 
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        const employeePhoto = req.file;  // Access uploaded file via req.file
-
+        const employeePhoto = req.file; 
         if (!employeePhoto) {
             return res.status(400).json({ message: 'Employee photo is required.' });
         }
@@ -57,8 +56,6 @@ exports.createuser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Save only the file name to the database
         const newUser = await User.create({
             employeePhoto: employeePhoto.filename,
             employeeName,
@@ -70,7 +67,6 @@ exports.createuser = async (req, res) => {
             status,
         });
 
-        // Send confirmation email
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
