@@ -242,7 +242,14 @@ exports.getAllUsers = async (req, res) => {
         const users = await User.findAll({
             attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
-        res.status(200).json(users);
+
+        // Construct full URLs for employee photos
+        const usersWithPhotos = users.map(user => ({
+            ...user.dataValues,
+            employeePhoto: `${req.protocol}://${req.get('host')}/uploads/${user.employeePhoto}`
+        }));
+
+        res.status(200).json(usersWithPhotos);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching users', error: err.message });
     }

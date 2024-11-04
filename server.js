@@ -24,6 +24,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const generateReportRoutes = require('./routes/generateReportRoutes');
 const candidateportalRoutes = require('./routes/candidateportalRoutes');
 const app = express();
+app.use('/uploads', express.static('uploads'));
 
 app.use(cors());
 app.use(cookieParser());
