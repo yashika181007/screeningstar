@@ -7,7 +7,7 @@ const upload = require('../config/multer');
 const exec = require('child_process').exec; // To run shell commands
 
 // Upload and process image
-router.post('/createuser', upload.single('image'), (req, res) => {
+router.post('/createuser', upload.single('employeePhoto'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
