@@ -118,6 +118,8 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+        console.log(`User - `, user);
+
         // Check if the user has an active session based on login_expiry
         if (user.login_expiry && moment().isBefore(user.login_expiry)) {
             await AdminLoginLog.create({
