@@ -265,6 +265,20 @@ exports.forgotPassword = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
+        const token = req.headers['authorization']?.split(' ')[1];
+
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'No token provided' });
+        }
+
+        const decoded = jwt.verify(token, config.jwtSecret);
+        const userId = decoded.id;
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
         const users = await User.findAll({
             attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
