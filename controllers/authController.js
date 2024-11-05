@@ -120,8 +120,13 @@ exports.login = async (req, res) => {
 
         console.log(`User - `, user);
 
-        // Check if the user has an active session based on login_expiry
-        if (user.login_expiry && moment().isBefore(user.login_expiry)) {
+        const currentTime = moment();
+        const loginExpiry = moment(user.login_expiry);
+
+        console.log('Current time:', currentTime.toISOString());
+        console.log('User login_expiry:', loginExpiry.toISOString());
+
+        if (user.login_expiry && currentTime.isBefore(loginExpiry)) {
             await AdminLoginLog.create({
                 email,
                 status: 'Failed',
@@ -130,6 +135,7 @@ exports.login = async (req, res) => {
             });
             return res.status(400).json({ message: 'Another admin is currently logged in' });
         }
+
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
@@ -170,6 +176,8 @@ exports.login = async (req, res) => {
             status: 'Success',
             message: 'Login successful',
             ipAddress,
+            currentTime,
+            loginExpiry
         });
 
         res.status(200).json({ message: 'Login successful', user: userData, token });
