@@ -7,7 +7,6 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
-const moment = require('moment');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -118,18 +117,6 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        if (req.session.isLoggedIn && req.session.email === email) {
-            const now = moment();
-            const loginTime = moment(req.session.loginTime); // Store the login time in the session
-
-            // Check if the session is still valid (6 hours expiration)
-            const isSessionValid = now.diff(loginTime, 'hours') < 6; // 6 hours check
-
-            if (isSessionValid) {
-                return res.status(400).json({ message: 'Another admin is currently logged in, try again later' });
-            }
-        }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             await AdminLoginLog.create({
@@ -161,6 +148,7 @@ exports.login = async (req, res) => {
             status: 'Success',
             message: 'Login successful',
             ipAddress,
+            data: req.session
         });
 
         res.status(200).json({ message: 'Login successful', user: userData, token });
