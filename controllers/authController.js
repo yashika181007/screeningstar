@@ -118,6 +118,17 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+        // Check if the user has an active session based on login_expiry
+        if (user.login_expiry && moment().isBefore(user.login_expiry)) {
+            await AdminLoginLog.create({
+                email,
+                status: 'Failed',
+                message: 'Another admin is currently logged in',
+                ipAddress,
+            });
+            return res.status(400).json({ message: 'Another admin is currently logged in' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             await AdminLoginLog.create({
@@ -139,6 +150,7 @@ exports.login = async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.email = user.email;
 
+        // Set new login expiry to 15 minutes from now
         user.login_expiry = moment().add(15, 'minutes').toDate();
         await user.save();
 
