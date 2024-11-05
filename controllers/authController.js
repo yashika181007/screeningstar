@@ -383,17 +383,15 @@ exports.deleteUser = async (req, res) => {
         const decoded = jwt.verify(token, config.jwtSecret);
         const userId = decoded.id;
 
-        const user = await User.findByPk(userId);
-        if (!user) {
+        const user_verify = await User.findByPk(userId);
+        if (!user_verify) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        /*
         const user = await User.findByPk(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        */
 
         await user.destroy();
         res.status(200).json({ message: 'User deleted successfully' });
