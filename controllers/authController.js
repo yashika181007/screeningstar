@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
+const moment = require('moment');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -128,27 +129,33 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+        // Create JWT token
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
 
+        // Update session information
         req.session.token = token;
         req.session.userid = user.id;
         req.session.userRole = user.role;
         req.session.isLoggedIn = true;
         req.session.email = user.email;
 
+        user.login_expiry = moment().add(15, 'minutes').toDate();
+        await user.save();
+
         const userData = {
             id: user.id,
             name: user.employeeName,
             email: user.email,
-            role: user.role
+            role: user.role,
+            login_expiry: user.login_expiry // Optionally include this in the user data response
         };
         console.log('userData', userData);
+
         await AdminLoginLog.create({
             email,
             status: 'Success',
             message: 'Login successful',
             ipAddress,
-            data: req.session
         });
 
         res.status(200).json({ message: 'Login successful', user: userData, token });

@@ -13,7 +13,7 @@ const User = sequelize.define('users', {
         primaryKey: true,
     },
     employeePhoto: {
-        type: DataTypes.STRING, 
+        type: DataTypes.STRING,
         allowNull: true,
     },
     employeeName: {
@@ -34,19 +34,24 @@ const User = sequelize.define('users', {
         allowNull: true,
     },
     password: {
-        type: DataTypes.STRING(255),  
+        type: DataTypes.STRING(255),
         allowNull: false,
     },
     role: {
         type: DataTypes.ENUM('admin', 'user', 'sub_user', 'super_user'),
         allowNull: false,
-    }, status: {
+    },
+    status: {
         type: DataTypes.ENUM('Active', 'In Active'),
         allowNull: false,
+    },
+    login_expiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
     }
 }, {
-    tableName: 'users', 
-    timestamps: true,  
+    tableName: 'users',
+    timestamps: true,
 });
 
 sequelize.sync();
