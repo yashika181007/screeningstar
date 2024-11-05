@@ -7,7 +7,6 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
-const moment = require('moment');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -47,10 +46,9 @@ exports.createuser = async (req, res) => {
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
         const employeePhoto = req.file;
-
-        /*if (!employeePhoto) {
+        if (!employeePhoto) {
             return res.status(400).json({ message: 'Employee photo is required.' });
-        }*/
+        }
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -59,8 +57,7 @@ exports.createuser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
-            // employeePhoto: employeePhoto ? employeePhoto.filename : null,
-            employeePhoto: employeePhoto ? employeePhoto : null,
+            employeePhoto: employeePhoto.filename,
             employeeName,
             employeeMobile,
             email,
@@ -120,20 +117,6 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const currentTime = moment();
-        const loginExpiry = moment(user.login_expiry);
-
-        if (user.login_expiry && currentTime.isBefore(loginExpiry)) {
-            await AdminLoginLog.create({
-                email,
-                status: 'Failed',
-                message: 'Another admin is currently logged in',
-                ipAddress,
-            });
-            return res.status(400).json({ status: 'Failed', message: 'Another admin is currently logged in' });
-        }
-
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             await AdminLoginLog.create({
@@ -145,35 +128,26 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Create JWT token
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
 
-        // Update session information
         req.session.token = token;
         req.session.userid = user.id;
         req.session.userRole = user.role;
         req.session.isLoggedIn = true;
         req.session.email = user.email;
 
-        // Set new login expiry to 15 minutes from now
-        user.login_expiry = moment().add(15, 'minutes').toDate();
-        await user.save();
-
         const userData = {
             id: user.id,
             name: user.employeeName,
             email: user.email,
-            role: user.role,
-            login_expiry: user.login_expiry // Optionally include this in the user data response
+            role: user.role
         };
-
+        console.log('userData', userData);
         await AdminLoginLog.create({
             email,
             status: 'Success',
             message: 'Login successful',
             ipAddress,
-            currentTime,
-            loginExpiry
         });
 
         res.status(200).json({ message: 'Login successful', user: userData, token });
@@ -265,20 +239,6 @@ exports.forgotPassword = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
         const users = await User.findAll({
             attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
@@ -297,19 +257,6 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getActiveUsers = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
         const activeUsers = await User.findAll({
             where: { status: 'Active' }
         });
@@ -325,20 +272,6 @@ exports.getActiveUsers = async (req, res) => {
 
 exports.getInactiveUsers = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
         const inactive = await User.findAll({
             where: { status: 'Inactive' }
         });
@@ -354,20 +287,6 @@ exports.getInactiveUsers = async (req, res) => {
 
 exports.getUserById = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
         const user = await User.findByPk(req.params.id, {
             attributes: ['id', 'employeePhoto', 'employeeName', 'employeeMobile', 'email', 'designation', 'password', 'role']
         });
@@ -385,21 +304,6 @@ exports.updateUser = async (req, res) => {
     const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status } = req.body;
 
     try {
-
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
         const user = await User.findByPk(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -430,25 +334,10 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
         const user = await User.findByPk(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         await user.destroy();
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
@@ -458,20 +347,6 @@ exports.deleteUser = async (req, res) => {
 
 exports.changeUserStatus = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
-
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'No token provided' });
-        }
-
-        const decoded = jwt.verify(token, config.jwtSecret);
-        const userId = decoded.id;
-
-        const user_verify = await User.findByPk(userId);
-        if (!user_verify) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        
         const user = await User.findByPk(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
