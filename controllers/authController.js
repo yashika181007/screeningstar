@@ -118,13 +118,8 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        console.log(`User - `, user);
-
         const currentTime = moment();
         const loginExpiry = moment(user.login_expiry);
-
-        console.log('Current time:', currentTime.toISOString());
-        console.log('User login_expiry:', loginExpiry.toISOString());
 
         if (user.login_expiry && currentTime.isBefore(loginExpiry)) {
             await AdminLoginLog.create({
@@ -133,7 +128,7 @@ exports.login = async (req, res) => {
                 message: 'Another admin is currently logged in',
                 ipAddress,
             });
-            return res.status(400).json({ message: 'Another admin is currently logged in' });
+            return res.status(400).json({ status: 'Failed', message: 'Another admin is currently logged in' });
         }
 
 
@@ -169,7 +164,6 @@ exports.login = async (req, res) => {
             role: user.role,
             login_expiry: user.login_expiry // Optionally include this in the user data response
         };
-        console.log('userData', userData);
 
         await AdminLoginLog.create({
             email,
