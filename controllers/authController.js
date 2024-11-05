@@ -184,7 +184,8 @@ exports.login = async (req, res) => {
 
 exports.veriflogin = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
+        // const token = req.headers['authorization']?.split(' ')[1];
+        const token = '123';
 
         if (!token) {
             return res.status(400).json({ success: false, message: 'No token provided' });
