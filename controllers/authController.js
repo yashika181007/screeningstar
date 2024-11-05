@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
+const moment = require('moment');
 
 const { addTokenToBlacklist } = require('../config/blacklist');
 
@@ -102,9 +103,9 @@ exports.createuser = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('req.body',req.body);
+        console.log('req.body', req.body);
+        
         const user = await User.findOne({ where: { email } });
-
         const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         if (!user) {
@@ -115,6 +116,19 @@ exports.login = async (req, res) => {
                 ipAddress,
             });
             return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Check if the user is already logged in
+        if (req.session.isLoggedIn && req.session.email === email) {
+            const now = moment();
+            const loginTime = moment(req.session.loginTime); // Store the login time in the session
+
+            // Check if the session is still valid (6 hours expiration)
+            const isSessionValid = now.diff(loginTime, 'hours') < 6; // 6 hours check
+
+            if (isSessionValid) {
+                return res.status(400).json({ message: 'Another admin is currently logged in, try again later' });
+            }
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -130,19 +144,21 @@ exports.login = async (req, res) => {
 
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '6h' });
 
+        // Update session information with login time
         req.session.token = token;
         req.session.userid = user.id;
         req.session.userRole = user.role;
         req.session.isLoggedIn = true;
         req.session.email = user.email;
+        req.session.loginTime = new Date(); // Store the login time
 
         const userData = {
             id: user.id,
             name: user.employeeName,
             email: user.email,
-            role: user.role
+            role: user.role,
         };
-        console.log('userData',userData);
+        console.log('userData', userData);
         await AdminLoginLog.create({
             email,
             status: 'Success',
@@ -157,6 +173,7 @@ exports.login = async (req, res) => {
         res.status(400).json({ message: 'Error logging in', error: err.message });
     }
 };
+
 
 exports.veriflogin = async (req, res) => {
     try {
