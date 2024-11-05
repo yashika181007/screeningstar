@@ -47,9 +47,10 @@ exports.createuser = async (req, res) => {
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
         const employeePhoto = req.file;
-        if (!employeePhoto) {
+
+        /*if (!employeePhoto) {
             return res.status(400).json({ message: 'Employee photo is required.' });
-        }
+        }*/
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -58,7 +59,8 @@ exports.createuser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
-            employeePhoto: employeePhoto.filename,
+            // employeePhoto: employeePhoto ? employeePhoto.filename : null,
+            employeePhoto: employeePhoto ? employeePhoto : null,
             employeeName,
             employeeMobile,
             email,
