@@ -2,7 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const AdminLoginLog = require('../models/AdminLoginLog'); 
+const AdminLoginLog = require('../models/AdminLoginLog');
 const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
 const path = require('path');
@@ -18,7 +18,7 @@ const generatePassword = (length = 8) => {
     const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
     const numericChars = '0123456789';
-    const specialChars = '@#_'; 
+    const specialChars = '@#_';
 
     const passwordArray = [
         uppercaseChars[Math.floor(Math.random() * uppercaseChars.length)] // First character must be uppercase
@@ -42,10 +42,10 @@ const generatePassword = (length = 8) => {
     return passwordArray.join('');
 };
 
-exports.createuser = async (req, res) => { 
+exports.createuser = async (req, res) => {
     try {
         const { employeeName, employeeMobile, email, designation, password, role, status = 'Active' } = req.body;
-        const employeePhoto = req.file; 
+        const employeePhoto = req.file;
         if (!employeePhoto) {
             return res.status(400).json({ message: 'Employee photo is required.' });
         }
@@ -102,7 +102,7 @@ exports.createuser = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('req.body',req.body);
+        console.log('req.body', req.body);
         const user = await User.findOne({ where: { email } });
 
         const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -115,6 +115,18 @@ exports.login = async (req, res) => {
                 ipAddress,
             });
             return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        if (req.session.isLoggedIn && req.session.email === email) {
+            const now = moment();
+            const loginTime = moment(req.session.loginTime); // Store the login time in the session
+
+            // Check if the session is still valid (6 hours expiration)
+            const isSessionValid = now.diff(loginTime, 'hours') < 6; // 6 hours check
+
+            if (isSessionValid) {
+                return res.status(400).json({ message: 'Another admin is currently logged in, try again later' });
+            }
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -142,7 +154,7 @@ exports.login = async (req, res) => {
             email: user.email,
             role: user.role
         };
-        console.log('userData',userData);
+        console.log('userData', userData);
         await AdminLoginLog.create({
             email,
             status: 'Success',
@@ -210,7 +222,7 @@ exports.forgotPassword = async (req, res) => {
             secure: true,
             auth: {
                 user: 'yashikawebstep@gmail.com',
-                pass: 'tnudhsdgcwkknraw'         
+                pass: 'tnudhsdgcwkknraw'
             },
         });
 
@@ -299,36 +311,36 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.updateUser = async (req, res) => {  
-        
-        const {employeePhoto, employeeName, employeeMobile, email, designation, password, role, status } = req.body;
-       
-        try {
-            const user = await User.findByPk(req.params.id);
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword;
-            }
-      
-            user.employeeName = employeeName || user.employeeName;
-            user.employeeMobile = employeeMobile || user.employeeMobile;
-            user.email = email || user.email;
-            user.designation = designation || user.designation;
-            user.role = role || user.role;
-            user.employeePhoto = employeePhoto || user.employeePhoto;
-            user.status = status || user.status;
+exports.updateUser = async (req, res) => {
 
-            await user.save();
+    const { employeePhoto, employeeName, employeeMobile, email, designation, password, role, status } = req.body;
 
-            res.status(200).json({ message: 'User updated successfully', user });
-
-        } catch (error) {
-            console.error('Error updating user:', error);
-            return res.status(500).json({ message: 'Error updating user', error: error.message });
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.password = hashedPassword;
+        }
+
+        user.employeeName = employeeName || user.employeeName;
+        user.employeeMobile = employeeMobile || user.employeeMobile;
+        user.email = email || user.email;
+        user.designation = designation || user.designation;
+        user.role = role || user.role;
+        user.employeePhoto = employeePhoto || user.employeePhoto;
+        user.status = status || user.status;
+
+        await user.save();
+
+        res.status(200).json({ message: 'User updated successfully', user });
+
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
 
 };
 
@@ -353,7 +365,7 @@ exports.changeUserStatus = async (req, res) => {
         }
 
         user.status = user.status === 'Active' ? 'Inactive' : 'Active';
-        await user.save(); 
+        await user.save();
 
         res.status(200).json({ message: `User status changed to ${user.status}` });
     } catch (err) {
@@ -363,10 +375,10 @@ exports.changeUserStatus = async (req, res) => {
 
 exports.logout = (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; 
+        const token = req.headers['authorization']?.split(' ')[1];
 
         if (token) {
-            addTokenToBlacklist(token); 
+            addTokenToBlacklist(token);
         }
 
         req.session.destroy((err) => {
@@ -381,7 +393,7 @@ exports.logout = (req, res) => {
         res.status(400).json({ message: 'Error signing out', error: err.message });
     }
 };
- 
+
 exports.downloadAdminLoginLogExcel = async (req, res) => {
     try {
         console.log('Fetching logs from AdminLoginLog...');
