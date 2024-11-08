@@ -226,6 +226,8 @@ exports.veriflogin = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    const updateExpiryResult = await updateLoginExpiryById(user.id);
+
     res.status(200).json({
       success: true,
       message: "Login verified",
