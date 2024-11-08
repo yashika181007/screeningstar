@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { updateLoginExpiryById } = require("../models/customeFunction");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
@@ -159,6 +160,8 @@ exports.login = async (req, res) => {
     req.session.isLoggedIn = true;
     req.session.email = user.email;
 
+    const updateExpiryResult = await updateLoginExpiryById(user.id);
+
     const userData = {
       id: user.id,
       name: user.employeeName,
@@ -171,6 +174,7 @@ exports.login = async (req, res) => {
       status: "Success",
       message: "Login successful",
       ipAddress,
+      updateExpiryResult,
     });
 
     res
@@ -202,13 +206,11 @@ exports.veriflogin = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Login verified",
-        user: { id: user.id, email: user.email, role: user.role },
-      });
+    res.status(200).json({
+      success: true,
+      message: "Login verified",
+      user: { id: user.id, email: user.email, role: user.role },
+    });
   } catch (err) {
     console.error(err);
 
@@ -220,13 +222,11 @@ exports.veriflogin = async (req, res) => {
       return res.status(401).json({ success: false, message: "Token expired" });
     }
 
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error verifying login",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error verifying login",
+      error: err.message,
+    });
   }
 };
 
@@ -533,11 +533,9 @@ exports.downloadAdminLoginLogExcel = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching logs or creating Excel file:", err);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching logs or creating Excel file",
-        error: err.message,
-      });
+    res.status(500).json({
+      message: "Error fetching logs or creating Excel file",
+      error: err.message,
+    });
   }
 };
