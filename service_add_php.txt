@@ -1,0 +1,63 @@
+<?php
+$arr = [
+    "A" => [
+        "POST-GRADUATION",
+        "GRADUATION",
+        "12TH-STD",
+        "10TH-STD",
+        "DIPLOMA",
+        "ITI",
+        "TECH-EDU"
+    ],
+    "B" => [
+        "ACTIVE EMPLOYMENT",
+        "LATEST EMPLOYMENT-1",
+        "EX EMPLOYMENT-2",
+        "PREVIOUS EMPLOYMENT-3",
+        "PREVIOUS EMPLOYMENT-4",
+        "PREVIOUS EMPLOYMENT-5",
+        "PREVIOUS EMPLOYMENT-6",
+        "EMPLOYMENT CHECK SITE VISIT",
+        "UAN/PF SCREENING",
+        "FORM 26",
+        "EMPLOYMENT GAP ANALYSIS",
+        "FORM 16",
+        "DIGITAL EX EMPLOYMENT",
+        "CV VALIDATION",
+        "PRE EMPLOYMENT HEALTH CHECK-UPS",
+        "REFERENCE CHECK-1",
+        "REFERENCE CHECK-2",
+        "SUPERVISOR CHECK-1",
+        "SUPERVISOR CHECK-2"
+    ],
+    "C" => [
+        "PASSPORT VERIFICATION",
+        "DRIVING LICENSE-CHECK",
+        "AADHAAR VERIFICATION",
+        "VOTER ID VERIFICATION",
+        "PAN CARD VERIFICATION"
+    ]
+];
+
+$user_id = 5;
+$createdAt = '2024-11-08 05:30:23';
+$updatedAt = '2024-11-08 05:30:38';
+
+$id = 1; // Start with id 1
+$sql = "INSERT INTO `service` (`id`, `user_id`, `group`, `servicecode`, `serviceName`, `sub_serviceName`, `createdAt`, `updatedAt`) VALUES\n";
+
+foreach ($arr as $group => $services) {
+    foreach ($services as $index => $serviceName) {
+        $serviceCode = $group . ($index + 1); // Generate service code like 'A1', 'A2', ...
+        $sub_serviceName = $serviceName; // Assuming sub_serviceName is the same as serviceName
+
+        // Append the INSERT statement for each service
+        $sql .= "(" . $id++ . ", $user_id, '$group', '$serviceCode', '$serviceName', '$sub_serviceName', '$createdAt', '$updatedAt'),\n";
+    }
+}
+
+// Remove the trailing comma and newline from the last entry
+$sql = rtrim($sql, ",\n");
+
+echo $sql;
+?>
