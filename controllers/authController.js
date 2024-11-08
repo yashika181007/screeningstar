@@ -1,5 +1,8 @@
 const User = require("../models/User");
-const { updateLoginExpiryById } = require("../models/customeFunction");
+const {
+  updateLoginExpiryById,
+  setLoginExpiryToNullById,
+} = require("../models/customeFunction");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
@@ -8,7 +11,7 @@ const nodemailer = require("nodemailer");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const fs = require("fs");
-const moment = require('moment');
+const moment = require("moment");
 
 const { addTokenToBlacklist } = require("../config/blacklist");
 
@@ -461,13 +464,28 @@ exports.changeUserStatus = async (req, res) => {
   }
 };
 
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
   try {
     const token = req.headers["authorization"]?.split(" ")[1];
 
     if (token) {
       addTokenToBlacklist(token);
     }
+
+    const { email } = req.body;
+    console.log("req.body", req.body);
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      await AdminLoginLog.create({
+        email,
+        status: "Failed",
+        message: "Invalid email",
+      });
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const updateExpiryResult = await setLoginExpiryToNullById(user.id);
 
     req.session.destroy((err) => {
       if (err) {
