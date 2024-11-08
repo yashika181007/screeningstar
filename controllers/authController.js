@@ -139,6 +139,22 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
+    const currentTime = moment();
+    const loginExpiry = moment(user.login_expiry);
+
+    if (user.login_expiry && currentTime.isBefore(loginExpiry)) {
+      await AdminLoginLog.create({
+        email,
+        status: "Failed",
+        message: "Another admin is currently logged in",
+        ipAddress,
+      });
+      return res.status(400).json({
+        status: "Failed",
+        message: "Another admin is currently logged in",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       await AdminLoginLog.create({
